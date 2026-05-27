@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Histórico de Pedidos | RAÍCES</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#3a4b3b",
+                      "on-background": "#1c1c18",
+                      "surface-container": "#f0eee8",
+                      "on-tertiary-fixed": "#351000",
+                      "surface-variant": "#e5e2dc",
+                      "surface-bright": "#fcf9f3",
+                      "secondary": "#934b19",
+                      "on-primary-container": "#96a995",
+                      "surface-dim": "#dcdad4",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "inverse-surface": "#31312d",
+                      "secondary-container": "#ffa26a",
+                      "on-surface-variant": "#434842",
+                      "secondary-fixed": "#ffdbc9",
+                      "inverse-primary": "#b8ccb7",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#783603",
+                      "primary": "#18281a",
+                      "tertiary-fixed": "#ffdbcd",
+                      "on-secondary-fixed": "#321200",
+                      "surface-container-high": "#ebe8e2",
+                      "surface-tint": "#516352",
+                      "primary-fixed-dim": "#b8ccb7",
+                      "inverse-on-surface": "#f3f0ea",
+                      "error-container": "#ffdad6",
+                      "background": "#fcf9f3",
+                      "tertiary-container": "#672500",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "surface-container-highest": "#e5e2dc",
+                      "on-primary": "#ffffff",
+                      "primary-fixed": "#d4e8d3",
+                      "on-tertiary-container": "#ff8040",
+                      "on-secondary-fixed-variant": "#753401",
+                      "surface-container-low": "#f6f3ed",
+                      "primary-container": "#2d3e2f",
+                      "on-error-container": "#93000a",
+                      "surface": "#fcf9f3",
+                      "outline": "#747872",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#1c1c18",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "outline-variant": "#c3c8c0",
+                      "tertiary": "#441600",
+                      "on-primary-fixed": "#0f1f12",
+                      "secondary-fixed-dim": "#ffb68c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "48px",
+                      "container-max": "1280px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "section-gap": "80px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Domine"],
+                      "body-md": ["Work Sans"],
+                      "label-md": ["Work Sans"],
+                      "headline-lg-mobile": ["Domine"],
+                      "label-sm": ["Work Sans"],
+                      "headline-md": ["Domine"],
+                      "body-lg": ["Work Sans"],
+                      "display-lg": ["Domine"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fcf9f3;
+            color: #1c1c18;
+            font-family: 'Work Sans', sans-serif;
+        }
+        .order-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-container-low shadow-sm dark:shadow-none sticky top-0 z-50">
+<div class="flex flex-col w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex justify-between items-center w-full">
+<a class="font-headline-lg text-headline-lg tracking-tight text-primary dark:text-primary-fixed uppercase" href="#">RAÍCES</a>
+<nav class="hidden md:flex gap-8">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md" href="#">Cuias</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md" href="#">Erva Mate</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md" href="#">Bombilhas</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md" href="#">Sets de Mate</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md" href="#">Artesanato</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md" href="#">Nossa História</a>
+</nav>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim cursor-pointer">favorite</span>
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim cursor-pointer">shopping_bag</span>
+<!-- Active User Icon indicating we are in account area -->
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1 cursor-pointer" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-desktop py-12 md:py-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Account Side Navigation -->
+<aside class="md:col-span-3 space-y-8">
+<div>
+<h1 class="font-headline-md text-headline-md text-primary mb-2">Meu Perfil</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Olá, Martina.</p>
+</div>
+<nav class="flex flex-col space-y-4">
+<a class="flex items-center gap-3 text-primary font-bold border-l-4 border-primary pl-4 transition-all py-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-md text-label-md">Meus Pedidos</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-primary hover:pl-2 transition-all pl-4 py-1" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-label-md text-label-md">Endereços</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-primary hover:pl-2 transition-all pl-4 py-1" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Pagamento</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-primary hover:pl-2 transition-all pl-4 py-1" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Dados Pessoais</span>
+</a>
+<hr class="border-surface-variant my-4"/>
+<a class="flex items-center gap-3 text-error hover:pl-2 transition-all pl-4 py-1" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Sair da Conta</span>
+</a>
+</nav>
+</aside>
+<!-- Main Order History Content -->
+<section class="md:col-span-9">
+<div class="flex justify-between items-end mb-8">
+<h2 class="font-headline-md text-headline-md text-primary">Histórico de Pedidos</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">8 pedidos realizados nos últimos 12 meses</span>
+</div>
+<!-- Order List -->
+<div class="space-y-6">
+<!-- Order Item 1: Delivered -->
+<div class="order-card bg-surface-container-low p-6 rounded-xl border border-transparent">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">#12045</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Realizado em 15 de Outubro, 2023</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-green-100 text-on-primary-fixed-variant rounded-full">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="font-label-sm text-label-sm">Entregue</span>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="flex -space-x-3 overflow-hidden">
+<img alt="Cuia de Madeira" class="inline-block h-16 w-16 rounded-lg ring-2 ring-surface object-cover" data-alt="A close-up shot of a traditional handcrafted wooden mate gourd with ornate silver carvings, resting on a rustic parchment surface. The lighting is warm and golden, emphasizing the deep textures of the wood grain and polished metal. The overall aesthetic is premium, organic, and rooted in Argentinian heritage, using a warm neutral and forest green color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7lhmufmdUz0s0HzXWYWxnzu1634uIpVqGCu_n3Am-aJpf2_jn6FhfCCqWHjCT96LHh_AKxWQ0kS12dVrsj98XvPJJGaC2T-7nmMotaHkkzpbNMrka1d7ImtQ9RTRvs7qmGBReyuxLd1TM6i2mQj8MGEZb_xUwyq3KT3_MVRJbD0clSPlLpP0rEe4_blP0Os5l2rUV1NOb8XxKLGqNEgw4Yu3xTmDQk9vKjm_Sdj12Z1BO351-Rd7LBsQ17aZMpUkA7ZpGc-ex0iW0"/>
+<img alt="Erva Mate Premium" class="inline-block h-16 w-16 rounded-lg ring-2 ring-surface object-cover" data-alt="A premium bag of organic yerba mate with minimalist typography and forest green accents. The bag sits against a soft cream background with dramatic shadows and natural light. Small samples of dry green mate leaves are scattered artistically around the package, creating a tactile and sensory experience of high-end traditional craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2gd_RbgcEcK05akKEBSG7o49qRVPnpLi8LVb94c4smOee6VKBJ_-iHkYSEOM6dPyw-7NVHiLQi14xUhg5xJBQsWMmVKADZNosO8SOroFsCKwoFo8a6og-3k9JwOVLrhHtFmi0yxZdm2YivDKs3TiC4LSGkHY2pIBaGTeLsfMDSqPAY_fLZBSGoU-zxiusp45DQBCPFunxap8MTo6ni72Tf2YpZdjVOZqczpiW6hG6nrtOT25hogux6hj3t4qvtdIsQHDF2vV9LeqT"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-primary">3 Itens</p>
+<p class="font-headline-md text-headline-md text-secondary">R$ 365,00</p>
+</div>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-2 border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Ver Detalhes</button>
+<button class="flex-1 md:flex-none px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">Repetir Pedido</button>
+</div>
+</div>
+</div>
+<!-- Order Item 2: In Transit -->
+<div class="order-card bg-surface-container-low p-6 rounded-xl border border-transparent">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">#12089</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Realizado em 28 de Outubro, 2023</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-amber-100 text-on-secondary-fixed-variant rounded-full">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+<span class="font-label-sm text-label-sm">Em trânsito</span>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="flex overflow-hidden">
+<img alt="Bombilha de Alpaca" class="inline-block h-16 w-16 rounded-lg ring-2 ring-surface object-cover" data-alt="A macro shot of an exquisite alpaca silver bombilha straw featuring intricate artisan engravings. The straw lies on a textured linen cloth with soft morning light illuminating the metallic sheen. The scene is shot with a shallow depth of field, highlighting the artisanal quality and traditional craftsmanship, maintaining the brand's sophisticated and earthy identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_x8DtplzRqY9EJ4kG_ooPJEK1ONHyH5lwMy8KCFergrF0Hgg7QP9sg7QULDMoVJsPo2gelHPk4YyjMFRDb3m1RBUfP2An7FupTXzYfD5SswRqOKsvHtGFH55s6RHqhH-eqqKi2eSE-99ooLfhycX0rAd8Nem6rVOkTt3xGefb9ZreSsjyuUhMAvP-H9L2PrtlitT3b-34jR53VIwYpk5zVzydeHRYpyXLnPSpqnxQypI8mjWkCfm0aMS23WVNTCAYYa__CaCgBfm_"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-primary">1 Item</p>
+<p class="font-headline-md text-headline-md text-secondary">R$ 145,00</p>
+</div>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-2 border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Rastrear Pedido</button>
+<button class="flex-1 md:flex-none px-6 py-2 border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Ver Detalhes</button>
+</div>
+</div>
+</div>
+<!-- Order Item 3: Cancelled -->
+<div class="order-card bg-surface-container-low p-6 rounded-xl border border-transparent opacity-75">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">#11992</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Realizado em 02 de Setembro, 2023</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+<span class="font-label-sm text-label-sm">Cancelado</span>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="flex -space-x-3 overflow-hidden grayscale">
+<img alt="Cuia" class="inline-block h-16 w-16 rounded-lg ring-2 ring-surface object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrc94vvbqrOUS_gyKiHHjqC89SSY9qD-dHByIEkOcszG5Df8id49t4kHzYdQb0gP7uLmzTA_ZJPPYacOvHco84Gtgqc9uXSFO-gGlw-2x7viPQlabEykDjIUv9ZPCPlJfOmr8J1icLjHNZcN41AKWNb0tjUrrWsg_CpqxA-cb1LNLCvI5g9arwFUYwLTsdaZqJdgP0BpoW1dPA2NVRYxyexcjt86Ghq8ZP7YbjM_5StuORN_4mvRIz91PkAwg8JwSdsg-seZAAmD0v"/>
+<img alt="Erva" class="inline-block h-16 w-16 rounded-lg ring-2 ring-surface object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAoZQHqvX1gwEySojIikXemU22QPXUAsYMP36vtsOE6BWd9qZpFStKBtnqltNOfwap35Wm4u5Qwznc0RuKQW8k9gzCEJIsb7mgmkGarl-nLADihWj9_hj-MmOOmFkyGtVBL6vQEvlKBM1VWZZdGmqazl1DPCav1hWVwqg-WYKJfq0ieTmy9ILtYrRhOy1HEIqD0sqxX4WKzsNlWp0150viDsVaiplDDWZXCvitnNrfy8zTpFYcXORRru5P7wU4V5f9HAJsg9uYD5R1"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-primary">2 Itens</p>
+<p class="font-headline-md text-headline-md text-secondary">R$ 280,00</p>
+</div>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-2 border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Ver Detalhes</button>
+</div>
+</div>
+</div>
+<!-- Order Item 4: Delivered -->
+<div class="order-card bg-surface-container-low p-6 rounded-xl border border-transparent">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">#11840</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Realizado em 12 de Agosto, 2023</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-green-100 text-on-primary-fixed-variant rounded-full">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="font-label-sm text-label-sm">Entregue</span>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="flex overflow-hidden">
+<img alt="Set de Mate" class="inline-block h-16 w-16 rounded-lg ring-2 ring-surface object-cover" data-alt="A complete 'Set de Mate' luxury gift box containing a leather-wrapped thermos, a silver bombilha, and a hand-carved mate gourd. The items are nestled in a bed of natural straw inside a premium wood and cardboard box. The lighting is sophisticated and atmospheric, emphasizing the rich leather textures and dark forest green branding. The image conveys a sense of high-end gifting and artisanal value." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGbvim5PTzxxJrHH_nc6YxaDeLj4rItv2k8CzigT5nOxBJOcpEDi4Pd0zyGeEc9ZKssczfQe9OPeG03XJGw2VXGBU_Xs9Mx2mnOAVtWqRClPfYf60SIjyUJUIMmsL2OT3niB9XJznqGY_473MycAKHWLaBYLrJ6Gt-Y2UYj_aiiesQM1npUFA3yMeuUDEkCEDmMw6VxcaooyEvPawYhnmqwhm3W4uA8MoPIhFG9J9h9SS3WhAtrG0UtlYDvHeNjvvoxY0KZ1bwB0O-"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-primary">1 Item</p>
+<p class="font-headline-md text-headline-md text-secondary">R$ 890,00</p>
+</div>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-2 border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Ver Detalhes</button>
+<button class="flex-1 md:flex-none px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">Repetir Pedido</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination/Load More -->
+<div class="mt-12 flex justify-center">
+<button class="px-8 py-3 border border-outline text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-all flex items-center gap-2">
+                        Ver pedidos anteriores
+                        <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-high dark:bg-surface-container-highest">
+<div class="flex flex-col md:flex-row justify-between items-start w-full px-margin-desktop py-section-gap max-w-container-max mx-auto gap-12 md:gap-gutter">
+<div class="max-w-xs">
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed mb-4">RAÍCES</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Levando a alma e o artesanato argentino para o mundo, uma cuia de cada vez.</p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer">share</span>
+<span class="material-symbols-outlined text-primary cursor-pointer">public</span>
+<span class="material-symbols-outlined text-primary cursor-pointer">alternate_email</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-12">
+<div>
+<h4 class="font-label-md text-label-md text-primary mb-4">Institucional</h4>
+<ul class="space-y-2">
+<li><a class="text-on-surface-variant font-body-md text-body-md hover:text-primary underline transition-all" href="#">Sobre Nós</a></li>
+<li><a class="text-on-surface-variant font-body-md text-body-md hover:text-primary underline transition-all" href="#">Sustentabilidade</a></li>
+<li><a class="text-on-surface-variant font-body-md text-body-md hover:text-primary underline transition-all" href="#">Contato</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-primary mb-4">Ajuda</h4>
+<ul class="space-y-2">
+<li><a class="text-on-surface-variant font-body-md text-body-md hover:text-primary underline transition-all" href="#">Envios</a></li>
+<li><a class="text-on-surface-variant font-body-md text-body-md hover:text-primary underline transition-all" href="#">Trocas e Devoluções</a></li>
+<li><a class="text-on-surface-variant font-body-md text-body-md hover:text-primary underline transition-all" href="#">Termos de Uso</a></li>
+</ul>
+</div>
+</div>
+<div class="w-full md:w-auto">
+<h4 class="font-label-md text-label-md text-primary mb-4">Newsletter</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Receba histórias e ofertas exclusivas.</p>
+<div class="flex gap-2">
+<input class="bg-surface border border-outline-variant px-4 py-2 rounded-lg font-body-md text-body-md flex-grow focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Seu e-mail" type="email"/>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md">Assinar</button>
+</div>
+</div>
+</div>
+<div class="w-full px-margin-desktop py-8 border-t border-surface-variant max-w-container-max mx-auto">
+<p class="font-label-md text-label-md text-on-surface-variant text-center md:text-left">© 2024 RAÍCES ARTESANÍA. Todos os direitos reservados.</p>
+</div>
+</footer>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('.order-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.borderColor = 'var(--primary)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderColor = 'transparent';
+            });
+        });
+    </script>
+</body></html>

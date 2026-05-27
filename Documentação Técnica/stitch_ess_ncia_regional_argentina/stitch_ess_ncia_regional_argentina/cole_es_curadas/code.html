@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RAÍCES - Categorías</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#516352",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "tertiary-container": "#672500",
+                      "on-error-container": "#93000a",
+                      "on-secondary-container": "#783603",
+                      "tertiary-fixed": "#ffdbcd",
+                      "surface-container": "#f0eee8",
+                      "on-surface-variant": "#434842",
+                      "on-tertiary-container": "#ff8040",
+                      "on-secondary-fixed": "#321200",
+                      "on-background": "#1c1c18",
+                      "outline": "#747872",
+                      "primary": "#18281a",
+                      "on-tertiary-fixed": "#351000",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f3f0ea",
+                      "on-primary-container": "#96a995",
+                      "secondary-fixed-dim": "#ffb68c",
+                      "on-secondary-fixed-variant": "#753401",
+                      "outline-variant": "#c3c8c0",
+                      "tertiary": "#441600",
+                      "secondary-container": "#ffa26a",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#b8ccb7",
+                      "surface-variant": "#e5e2dc",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#fcf9f3",
+                      "surface": "#fcf9f3",
+                      "inverse-surface": "#31312d",
+                      "secondary-fixed": "#ffdbc9",
+                      "primary-fixed": "#d4e8d3",
+                      "on-primary-fixed": "#0f1f12",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#b8ccb7",
+                      "surface-container-highest": "#e5e2dc",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dcdad4",
+                      "primary-container": "#2d3e2f",
+                      "secondary": "#934b19",
+                      "on-surface": "#1c1c18",
+                      "on-primary-fixed-variant": "#3a4b3b",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#f6f3ed",
+                      "background": "#fcf9f3",
+                      "surface-container-high": "#ebe8e2",
+                      "surface-container-lowest": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "section-gap": "80px",
+                      "margin-desktop": "48px",
+                      "base": "8px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Domine"],
+                      "body-lg": ["Work Sans"],
+                      "headline-lg-mobile": ["Domine"],
+                      "label-sm": ["Work Sans"],
+                      "headline-md": ["Domine"],
+                      "label-md": ["Work Sans"],
+                      "display-lg": ["Domine"],
+                      "body-md": ["Work Sans"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal filter list */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased md:hidden selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface rounded-none transition-colors duration-200">
+<button aria-label="Menu" class="text-primary hover:bg-surface-container rounded-full p-2 transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold tracking-widest text-primary">RAÍCES</span>
+<button aria-label="Shopping Bag" class="text-primary hover:bg-surface-container rounded-full p-2 transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shopping_bag</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-[80px] pb-[100px] px-margin-mobile flex flex-col gap-gutter">
+<!-- Header Section -->
+<section class="flex flex-col items-center text-center mt-4 mb-2">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-1">Explore Collections</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Curated Selection</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-[280px]">Discover the finest artesanal pieces, crafted with heritage and earth.</p>
+</section>
+<!-- Sophisticated Filters -->
+<nav class="flex gap-3 overflow-x-auto hide-scrollbar pb-2 pt-1 -mx-margin-mobile px-margin-mobile">
+<button class="whitespace-nowrap font-label-md text-label-md bg-primary text-on-primary px-5 py-2.5 rounded-full shadow-[0_2px_8px_rgba(139,69,19,0.08)]">
+                All Collections
+            </button>
+<button class="whitespace-nowrap font-label-md text-label-md bg-surface-container text-on-surface-variant px-5 py-2.5 rounded-full border border-outline-variant hover:bg-surface-variant transition-colors">
+                Material
+            </button>
+<button class="whitespace-nowrap font-label-md text-label-md bg-surface-container text-on-surface-variant px-5 py-2.5 rounded-full border border-outline-variant hover:bg-surface-variant transition-colors">
+                Artisan
+            </button>
+<button class="whitespace-nowrap font-label-md text-label-md bg-surface-container text-on-surface-variant px-5 py-2.5 rounded-full border border-outline-variant hover:bg-surface-variant transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+                More Filters
+            </button>
+</nav>
+<!-- Editorial Banners (Asymmetric List) -->
+<section class="flex flex-col gap-6 mt-4">
+<!-- Category 1: Cuias Heritage -->
+<article class="relative w-full h-[340px] rounded-[16px] overflow-hidden group shadow-[0_8px_24px_rgba(24,40,26,0.06)] bg-surface-container-low">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="A close-up, highly detailed photograph of a traditional, hand-carved wooden mate gourd (cuia) resting on a rough-hewn wooden table. The lighting is warm and dramatic, resembling late afternoon sun streaming through a window, highlighting the intricate textures of the wood grain and a polished silver bombilla. The overall aesthetic is rustic, tactile, and premium, evoking a sense of deep South American heritage within a modern editorial layout." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA188GG5QdLZcgGGmTjKfC2SjkqA2e-rJG3FVAvV-X905NpUd2A-Oh6QnpX4hJ82_GHyM4iN00ilj7A8Oa_7AvrcvrAMN3vYdZSc96lzGt_ngaTR2TCaXAL6SuYGYBkR0PWgI1Y1Wea5fHobovfC_xTqCKh7SlU50QPvPQ1Uqf1JWqrBre2QJ2rSwJ1w4rh8pBsl9vTeW9p0yVg74Eer61UQ3cz5dKf9Sr3uekf653HKD2cAnuHm8U3LWh3wQzRHzDbQg7De2-5hxJ7');">
+</div>
+<!-- Gradient overlay for text legibility -->
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-primary/20 to-primary/90"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 flex flex-col items-start gap-3">
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-3 py-1 rounded-sm shadow-sm backdrop-blur-sm bg-opacity-90">Signature</span>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-primary">Cuias Heritage</h2>
+<p class="font-body-md text-body-md text-inverse-on-surface mt-1 opacity-90">Carved from historic algarrobo.</p>
+</div>
+<!-- Quick View Trigger -->
+<button class="mt-2 flex items-center gap-2 font-label-md text-label-md text-on-primary border-b border-secondary-container pb-0.5 hover:text-secondary-container transition-colors">
+                        Explore Collection <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Category 2: Premium Blends -->
+<article class="relative w-full h-[280px] rounded-[16px] overflow-hidden group shadow-[0_8px_24px_rgba(24,40,26,0.06)] bg-surface-container-low">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="An overhead, editorial-style macro shot of loose-leaf yerba mate blend scattered elegantly on a textured, light parchment-colored linen cloth. Woven into the green leaves are delicate dried orange peels and small yellow chamomile flowers, adding subtle pops of color. The lighting is soft and diffused, creating a bright, organic, and clean aesthetic that feels incredibly fresh and premium." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDv2xsqrVIqrB3fsPOUW_NGIaCkYnQXp2Z4DariVCwI6xgL4z8RXJ01gQ6aN2idM-sjsePxGxfPAOxnqlPuUpYdyyCQ53oHZot9gIDobxR-LVL4zQ0XtIZ0_6IOFk4TZpoDMpnRNLJ25ZMTxT2KkvsPlDaIhgtutIbmQVwZTya282cXH7nxPl1FdYZkUaSSM2ZxNh3UjgJO9_mAfjEwxWpgthIvN4M65Bw9QJ5dHz5BVLOoTiF1q1_tHJ4feEz0aD9YhCsaWa3di1_u');">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-tint/90 via-surface-tint/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 flex justify-between items-end">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-primary">Premium Blends</h2>
+<p class="font-body-md text-body-md text-primary-fixed mt-1">Organic, wild-harvested.</p>
+</div>
+<!-- Quick View FAB-style -->
+<button aria-label="Quick view blends" class="w-12 h-12 rounded-full bg-surface text-primary flex items-center justify-center shadow-lg hover:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">visibility</span>
+</button>
+</div>
+</article>
+<!-- Category 3: Alpaca Accessories (Smaller card) -->
+<article class="relative w-full h-[200px] rounded-[16px] overflow-hidden group shadow-[0_8px_24px_rgba(24,40,26,0.06)] bg-surface-container-low">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="A close-up photograph of intricately engraved silver metalwork, specifically an Argentinian bombilla (metal straw), resting on a piece of rich, dark brown leather. The shallow depth of field blurs the background, focusing sharply on the artisanal craftsmanship and reflective qualities of the metal. The lighting is moody and sophisticated, highlighting the tactile modernism and high-end heritage feel of the brand." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCXtko0HoUTTPxth35VtSTacGPhK77Np_mM5TNKAscyGW3yEIxxl2wnhewE1Pf9cy1fC7tvFZXKbkkNQv6Keg0CdrNnda-ztSOaXAzKlXFRzhQYFz-NlhzDFhBE9lwVkGAzRHj66VqpOJnOEWiEpHEEUtBb4jr7sLK5njzjOQ9kzdZ55JmsjJkMvpes35-Ya0JDW0mhfRwWx3onu7_Qj6-py80-rzv-Jvbp7xdyg-wWRMnZNy9hr-h67pjNixqsl6b6jv_Qx3PtTkmr');">
+</div>
+<div class="absolute inset-0 bg-primary/40 group-hover:bg-primary/50 transition-colors"></div>
+<div class="absolute inset-0 p-6 flex flex-col justify-center items-center text-center">
+<h2 class="font-headline-md text-headline-md text-on-primary">Alpaca Silver</h2>
+<button class="mt-3 px-4 py-2 border border-on-primary text-on-primary font-label-md text-label-md rounded-full hover:bg-on-primary hover:text-primary transition-colors backdrop-blur-sm">
+                        View Artisan Works
+                    </button>
+</div>
+</article>
+</section>
+<!-- Join the Club Section -->
+<section class="mt-8 mb-4 bg-surface-container rounded-[24px] p-8 text-center flex flex-col items-center gap-4 relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/20 rounded-bl-full -z-0"></div>
+<div class="w-16 h-16 rounded-full bg-secondary-fixed flex items-center justify-center mb-2 z-10">
+<span class="material-symbols-outlined text-on-secondary-fixed text-3xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="z-10">
+<h2 class="font-headline-md text-headline-md text-primary">Join Club RAÍCES</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Gain exclusive access to limited edition drops, artisan stories, and private sourcing events.</p>
+</div>
+<button class="mt-2 w-full font-label-md text-label-md bg-primary text-on-primary py-4 rounded-full hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-md z-10">
+                Apply for Membership
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center pt-2 pb-4 px-2 bg-surface shadow-[0_-4px_12px_rgba(139,69,19,0.08)] docked full-width rounded-t-[24px]">
+<!-- Inactive Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">storefront</span>
+<span class="font-label-sm text-label-sm mt-1">Tienda</span>
+</a>
+<!-- Active Tab: Categorías -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">category</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Categorías</span>
+</a>
+<!-- Inactive Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">favorite</span>
+<span class="font-label-sm text-label-sm mt-1">Favoritos</span>
+</a>
+<!-- Inactive Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-label-sm mt-1">Perfil</span>
+</a>
+</nav>
+</body></html>

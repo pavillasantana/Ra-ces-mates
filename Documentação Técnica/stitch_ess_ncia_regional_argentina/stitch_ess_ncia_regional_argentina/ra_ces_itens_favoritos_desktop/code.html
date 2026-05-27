@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-surface": "#31312d",
+                      "tertiary-fixed": "#ffdbcd",
+                      "surface-container-lowest": "#ffffff",
+                      "outline": "#747872",
+                      "surface-container-highest": "#e5e2dc",
+                      "secondary-fixed-dim": "#ffb68c",
+                      "surface-container": "#f0eee8",
+                      "on-background": "#1c1c18",
+                      "inverse-primary": "#b8ccb7",
+                      "outline-variant": "#c3c8c0",
+                      "on-tertiary-container": "#ff8040",
+                      "on-surface-variant": "#434842",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#f3f0ea",
+                      "primary-fixed-dim": "#b8ccb7",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed-variant": "#753401",
+                      "surface-container-high": "#ebe8e2",
+                      "tertiary": "#441600",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#934b19",
+                      "on-tertiary-fixed": "#351000",
+                      "surface-dim": "#dcdad4",
+                      "on-primary-container": "#96a995",
+                      "primary-container": "#2d3e2f",
+                      "background": "#fcf9f3",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#516352",
+                      "tertiary-container": "#672500",
+                      "primary": "#18281a",
+                      "secondary-container": "#ffa26a",
+                      "surface-bright": "#fcf9f3",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "on-surface": "#1c1c18",
+                      "surface-container-low": "#f6f3ed",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#0f1f12",
+                      "secondary-fixed": "#ffdbc9",
+                      "primary-fixed": "#d4e8d3",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#783603",
+                      "on-primary-fixed-variant": "#3a4b3b",
+                      "surface-variant": "#e5e2dc",
+                      "surface": "#fcf9f3",
+                      "on-secondary-fixed": "#321200"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "48px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px",
+                      "section-gap": "80px",
+                      "base": "8px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Domine"],
+                      "headline-md": ["Domine"],
+                      "display-lg": ["Domine"],
+                      "body-md": ["Work Sans"],
+                      "body-lg": ["Work Sans"],
+                      "label-sm": ["Work Sans"],
+                      "label-md": ["Work Sans"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .product-card-hover:hover .add-to-cart-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .transition-standard {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md">
+<!-- TopNavBar -->
+<header class="bg-surface shadow-sm sticky top-0 z-50 transition-standard">
+<div class="flex flex-col w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex justify-between items-center w-full">
+<!-- Brand Logo -->
+<a class="font-headline-lg text-headline-lg tracking-tight text-primary" href="#">RAÍCES</a>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center space-x-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Cuias</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Erva Mate</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Bombilhas</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Sets de Mate</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Artesanato</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Nossa História</a>
+</nav>
+<!-- Trailing Icons -->
+<div class="flex items-center space-x-6">
+<button aria-label="Favorites" class="flex items-center text-primary font-bold border-b-2 border-primary pb-1 relative">
+<span class="material-symbols-outlined filled-icon" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="absolute -top-2 -right-2 bg-secondary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">4</span>
+</button>
+<button aria-label="Shopping Bag" class="text-on-surface-variant hover:text-primary transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+<button aria-label="Profile" class="text-on-surface-variant hover:text-primary transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-desktop py-12">
+<!-- Wishlist Title -->
+<header class="mb-12">
+<h1 class="font-display-lg text-display-lg text-primary mb-2">Meus Favoritos</h1>
+<p class="font-body-lg text-on-surface-variant max-w-2xl">
+                Sua curadoria pessoal de peças artesanais que celebram a tradição e o cuidado do mate.
+            </p>
+</header>
+<!-- Wishlist Grid -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Product Item 1 -->
+<article class="group relative flex flex-col bg-surface-container-low transition-standard hover:shadow-lg rounded-lg overflow-hidden product-card-hover">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A premium handcrafted Imperial Mate cup made of deep black leather with an ornate alpaca silver rim. The product is placed on a rustic wooden table with soft, warm morning sunlight hitting the intricate carvings. The background is a blurred traditional Argentinian interior with earthy neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_sdZQ3cQKILS0b7Ypxuf_LP5440H0qqDhP_VhvZCuFXCPhMul21PHo_3iVPBsU5ZTjkuSLg_eF7uPN8e1KF2nT0YkVDZ3kEYKUzzaz-sTmu5nD4Mmz5eyVmqItAICXT9WRTKrk5XaW8knnFVD6IoNJX-xSGCzxn7np9ETWmENv1De0vWLYsYiWYepjMMpy_q_WAbmKDDVMC8DqBs4GhCtlojeiITRfPSTa1ZyPRyBUH7tQPxbpbtMRKqidnCgHG-XXgyqkq23Ty0d"/>
+<button class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-2 rounded-full text-on-surface-variant hover:text-error transition-colors" title="Remover dos favoritos">
+<span class="material-symbols-outlined filled-icon" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Mate Imperial Couro Negro</h3>
+<p class="font-body-md text-on-surface-variant mb-4">R$ 450,00</p>
+<div class="mt-auto">
+<button class="w-full py-3 px-4 border border-secondary text-secondary font-label-md rounded-lg hover:bg-secondary hover:text-white transition-all active:scale-95">
+                            ADICIONAR AO CARRINHO
+                        </button>
+</div>
+</div>
+</article>
+<!-- Product Item 2 -->
+<article class="group relative flex flex-col bg-surface-container-low transition-standard hover:shadow-lg rounded-lg overflow-hidden product-card-hover">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A package of premium organic Yerba Mate displayed alongside a traditional wooden bowl. The scene is bright and airy, with natural light emphasizing the rich green color of the dried herbs. The packaging features elegant typography and a minimalist forest-inspired design, set against a parchment paper background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgsgAZOOTm-_Je1HS6_0Otzoh7mNXMjl76eSJLDwRO2jV2hWscyWFZNu5AZRDLUwlG0B5KIIAKWRo0dTqd39VKneXXAr2rBU0SRp2OZUvOVnEfI9MfswgmSR4Z_p4N5tw_wcidfz9hGVjnc1epnA38eWGkj7Zuif3cOyjZ2Mg7p-XqgtX6YQiFDkcJU_x8ToyZ6itAlA2Yge4ewxTVSIJ44AIClhA8d6GrgYaunmRklBAZi90_vSqwPx0g8KObDUZ3XtG948jcEhj2"/>
+<button class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-2 rounded-full text-on-surface-variant hover:text-error transition-colors" title="Remover dos favoritos">
+<span class="material-symbols-outlined filled-icon" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<span class="absolute top-4 left-4 bg-secondary text-white font-label-sm px-2 py-1 rounded">ORGÂNICO</span>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Erva Mate Orgânica 1kg</h3>
+<p class="font-body-md text-on-surface-variant mb-4">R$ 68,00</p>
+<div class="mt-auto">
+<button class="w-full py-3 px-4 border border-secondary text-secondary font-label-md rounded-lg hover:bg-secondary hover:text-white transition-all active:scale-95">
+                            ADICIONAR AO CARRINHO
+                        </button>
+</div>
+</div>
+</article>
+<!-- Product Item 3 -->
+<article class="group relative flex flex-col bg-surface-container-low transition-standard hover:shadow-lg rounded-lg overflow-hidden product-card-hover">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A polished alpaca silver bombilla with an intricate filter and a gold-plated mouthpiece. It is photographed in extreme close-up to show the artisanal details of the craftsmanship. The lighting is dramatic, casting soft shadows on a slate grey stone surface, emphasizing the metallic textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ-QQRX2BP7LLNz5SndsUJFeM22ucgFxj1SfN80sFa4XmYn0G7tfRfzGFwN-uJgBqMx4F1VxgNNfhbuWbVczSp5CI8_7dE0hqluuHRX-EFWP5IDkyvCH_aj8ZNjzCbwVmQxzCuwKXu0OSpGAdg0gXyiwetmvywO4PXpTvlVd2pj00xnC_yuRx4TkUcCmkfDnZNAfruFcKZiGONrp_fCRHZo-oekMfN6THNnVjKIz8QDCWheU9UXEp3HSk1gcZNxecrbCe1CyNiJEoE"/>
+<button class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-2 rounded-full text-on-surface-variant hover:text-error transition-colors" title="Remover dos favoritos">
+<span class="material-symbols-outlined filled-icon" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Bombilha de Alpaca Cinzelada</h3>
+<p class="font-body-md text-on-surface-variant mb-4">R$ 185,00</p>
+<div class="mt-auto">
+<button class="w-full py-3 px-4 border border-secondary text-secondary font-label-md rounded-lg hover:bg-secondary hover:text-white transition-all active:scale-95">
+                            ADICIONAR AO CARRINHO
+                        </button>
+</div>
+</div>
+</article>
+<!-- Product Item 4 -->
+<article class="group relative flex flex-col bg-surface-container-low transition-standard hover:shadow-lg rounded-lg overflow-hidden product-card-hover">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A complete mate set including a leather-wrapped thermos, a brown leather mate cup, and a matching carrying case. The collection is arranged artistically in a high-end boutique setting with warm spotlights and textures of polished wood and aged leather in the periphery. Sophisticated and heritage-focused aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbdtheiWo0IAvPgel8Xfqhx-pdSgvUdnh3v8C1lnHuBubaq7RVjg6SYTQTYgJ6-falhNASmSa7luoqeixus-0COeRaG9Stl7xkSrXKmGvRwzTek16_d4tEQDZkaY78kMk0SoFAREYK2y4NC18k16_QZGSTv4gala2Ibz7Y3bl9hgvzYShx0VCBCLcLsDFKWRNzfZM_xdKuqek3306-3NX26aezDoJW-URxIaTgQdYyRyRW6IhPZ8-7rhnC8LcOOnW_3dwW3_rWnp35"/>
+<button class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-2 rounded-full text-on-surface-variant hover:text-error transition-colors" title="Remover dos favoritos">
+<span class="material-symbols-outlined filled-icon" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Set Tradicional de Couro</h3>
+<p class="font-body-md text-on-surface-variant mb-4">R$ 890,00</p>
+<div class="mt-auto">
+<button class="w-full py-3 px-4 border border-secondary text-secondary font-label-md rounded-lg hover:bg-secondary hover:text-white transition-all active:scale-95">
+                            ADICIONAR AO CARRINHO
+                        </button>
+</div>
+</div>
+</article>
+</section>
+<!-- Story Block Callout -->
+<section class="mt-24 py-16 px-12 bg-surface-container-high rounded-xl flex flex-col md:flex-row items-center gap-12">
+<div class="md:w-1/2">
+<img class="rounded-lg shadow-md aspect-square object-cover w-full max-w-md" data-alt="A close-up portrait of an elderly Argentinian artisan with weathered hands working on a piece of leather in a sunlit workshop. The background is filled with traditional tools and rolls of leather. The mood is authentic, peaceful, and honors the heritage of the craft." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv7Gr5ICR0KsTcaaOLDFVmKdEPpBnDAcHC2FHBXSkk_pZm2lHZJ7EDpsGiWfaRTQsG-NGRZfPBTozcXbjb55mZ6aP5-yw9KP4uZngS3_5CKUhHFiXthNwjPOE8tJO11BzEe0EcKJc6mM-PFVzMepzMwYQ8PDCQQvRQ4LHKTRJFe4klbp7n8kis1Lcqcxa9KFju2ZoT4DVvjpFoWs1Aucbfg2YdUvBwydjriP23gqZkGwxMJVj-N4SzMcSWYMKfHDj57l3_tanMxs0k"/>
+</div>
+<div class="md:w-1/2 text-center md:text-left">
+<blockquote class="mb-6">
+<p class="font-headline-lg text-primary italic leading-tight">
+                        "Cada peça que você escolhe carrega a história de mãos que honram a terra."
+                    </p>
+</blockquote>
+<p class="font-label-md text-secondary tracking-widest uppercase">Raízes • Artesania Autêntica</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-high mt-section-gap border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-start w-full px-margin-desktop py-section-gap max-w-container-max mx-auto gap-12">
+<div class="space-y-6 max-w-xs">
+<span class="font-headline-md text-headline-md text-primary">RAÍCES</span>
+<p class="font-body-md text-on-surface-variant">Conectando você ao coração da cultura platina através de produtos que transcendem gerações.</p>
+<div class="flex space-x-4">
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#"><span class="material-symbols-outlined">camera</span></a>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-x-12 gap-y-4">
+<a class="font-label-md text-on-surface-variant hover:text-primary underline transition-all" href="#">Sobre Nós</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary underline transition-all" href="#">Sustentabilidade</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary underline transition-all" href="#">Envios</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary underline transition-all" href="#">Trocas e Devoluções</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary underline transition-all" href="#">Contato</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary underline transition-all" href="#">Termos de Uso</a>
+</div>
+<div class="flex flex-col space-y-4 w-full md:w-auto">
+<h4 class="font-label-md text-primary">NEWSLETTER</h4>
+<div class="flex">
+<input class="bg-surface border-outline-variant px-4 py-2 w-full md:w-64 text-body-md focus:ring-2 focus:ring-primary outline-none transition-all" placeholder="Seu e-mail" type="email"/>
+<button class="bg-primary text-white px-6 py-2 font-label-md hover:bg-primary-container hover:text-on-primary-container transition-all">OK</button>
+</div>
+</div>
+</div>
+<div class="w-full px-margin-desktop py-8 border-t border-outline-variant/20 max-w-container-max mx-auto text-center">
+<p class="font-label-md text-on-surface-variant">© 2024 RAÍCES ARTESANÍA. Todos os direitos reservados.</p>
+</div>
+</footer>
+<script>
+        // Micro-interaction for removing items (visual only)
+        document.querySelectorAll('.material-symbols-outlined[data-icon="favorite"]').forEach(btn => {
+            btn.parentElement.addEventListener('click', function(e) {
+                if (this.title === 'Remover dos favoritos') {
+                    const card = this.closest('article');
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+
+        // Hover lift effect logic via JS for smoother orchestration if needed
+        const cards = document.querySelectorAll('article');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('shadow-xl');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('shadow-xl');
+            });
+        });
+    </script>
+</body></html>

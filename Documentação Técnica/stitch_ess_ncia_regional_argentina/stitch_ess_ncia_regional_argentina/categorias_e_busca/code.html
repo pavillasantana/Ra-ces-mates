@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RAÍCES - Categorias</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#441600",
+                        "on-primary-fixed-variant": "#3a4b3b",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#434842",
+                        "secondary-fixed-dim": "#ffb68c",
+                        "surface": "#fcf9f3",
+                        "on-tertiary-fixed-variant": "#7c2e00",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#b8ccb7",
+                        "surface-variant": "#e5e2dc",
+                        "inverse-surface": "#31312d",
+                        "surface-container-highest": "#e5e2dc",
+                        "background": "#fcf9f3",
+                        "secondary-container": "#ffa26a",
+                        "tertiary-fixed-dim": "#ffb595",
+                        "on-secondary-fixed-variant": "#753401",
+                        "outline": "#747872",
+                        "inverse-on-surface": "#f3f0ea",
+                        "secondary": "#934b19",
+                        "on-primary-container": "#96a995",
+                        "on-primary-fixed": "#0f1f12",
+                        "on-surface": "#1c1c18",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ebe8e2",
+                        "on-background": "#1c1c18",
+                        "surface-dim": "#dcdad4",
+                        "on-tertiary-container": "#ff8040",
+                        "surface-container": "#f0eee8",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdbc9",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdbcd",
+                        "primary-container": "#2d3e2f",
+                        "primary": "#18281a",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f6f3ed",
+                        "surface-bright": "#fcf9f3",
+                        "tertiary-container": "#672500",
+                        "on-tertiary-fixed": "#351000",
+                        "on-secondary-container": "#783603",
+                        "outline-variant": "#c3c8c0",
+                        "primary-fixed-dim": "#b8ccb7",
+                        "on-secondary-fixed": "#321200",
+                        "surface-tint": "#516352",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#d4e8d3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "section-gap": "80px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Domine"],
+                        "headline-lg": ["Domine"],
+                        "headline-lg-mobile": ["Domine"],
+                        "label-sm": ["Work Sans"],
+                        "display-lg": ["Domine"],
+                        "label-md": ["Work Sans"],
+                        "body-lg": ["Work Sans"],
+                        "body-md": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen selection:bg-primary selection:text-on-primary">
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface dark:bg-inverse-surface shadow-sm">
+<button class="p-2 -ml-2 text-primary dark:text-primary-fixed hover:bg-surface-container dark:hover:bg-surface-variant transition-colors duration-200 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold tracking-widest text-primary dark:text-primary-fixed">RAÍCES</h1>
+<button class="p-2 -mr-2 text-primary dark:text-primary-fixed hover:bg-surface-container dark:hover:bg-surface-variant transition-colors duration-200 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+</header>
+<main class="flex-grow pt-24 pb-28 md:pt-32 max-w-container-max mx-auto w-full">
+<section class="px-margin-mobile mb-8">
+<div class="relative w-full max-w-2xl mx-auto">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-full py-4 pl-12 pr-4 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]" placeholder="Buscar artesanatos, materiais..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-on-primary rounded-full p-2 flex items-center justify-center hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</section>
+<section class="mb-10 w-full overflow-hidden">
+<div class="px-margin-mobile flex gap-3 overflow-x-auto hide-scrollbar pb-2 pt-1 max-w-2xl mx-auto">
+<button class="flex-shrink-0 flex items-center gap-2 bg-surface border border-outline-variant rounded-full px-4 py-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>
+<span class="font-label-md text-label-md text-on-surface">Filtros</span>
+</button>
+<div class="w-px h-8 bg-outline-variant mx-1 self-center"></div>
+<button class="flex-shrink-0 bg-secondary-fixed text-on-secondary-fixed-variant border border-transparent rounded-full px-4 py-2 font-label-md text-label-md transition-colors shadow-sm">
+                    Preço <span class="material-symbols-outlined text-[14px] align-middle ml-1">keyboard_arrow_down</span>
+</button>
+<button class="flex-shrink-0 bg-surface border border-outline-variant rounded-full px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">
+                    Material <span class="material-symbols-outlined text-[14px] align-middle ml-1">keyboard_arrow_down</span>
+</button>
+<button class="flex-shrink-0 bg-surface border border-outline-variant rounded-full px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">
+                    Região
+                </button>
+</div>
+</section>
+<section class="px-margin-mobile">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 max-w-2xl mx-auto">Explorar Culturas</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-container-max mx-auto auto-rows-[160px] md:auto-rows-[220px]">
+<div class="col-span-2 row-span-1 md:col-span-2 md:row-span-2 relative rounded-xl overflow-hidden group cursor-pointer shadow-sm">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A close-up, high-quality photograph of a handcrafted leather mate bag (bolso matero) resting on a rustic wooden table. The lighting is warm and natural, emphasizing the rich texture of the brown leather and detailed stitching. The scene reflects a premium, tactile modernism aesthetic with deep wood brown and forest green tones in the background. The mood is authentic and artisanal, capturing the essence of traditional South American craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtfrgT3JdSsnn5kDd9YvuIV87M0tmKd12Qwx9wN0LUCU53daOlykcmOpNp5w06a2g1pTwkwZvjmcvw59w8cbYVhUuKDunNIXIf87MR37qzZF5Gk5XH8qpkT4MGKK3w0MkIIkEz3BKwoqSQL-Z7OMSKg1OB7vwRLsK7qbrlZsIYxWy_SrPAU450jCDs6zM01-mLRTFHqwrQJxux0s1WKb3LM_K3jg_oPHpPs2UpblVPbb4inETOjKo780W3LJt99FCpk4h98z-sRbBQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4 md:p-6 w-full">
+<span class="inline-block px-2 py-1 bg-surface/20 backdrop-blur-md rounded-md font-label-sm text-label-sm text-on-secondary mb-2 border border-white/10">Mais Vendidos</span>
+<h3 class="font-headline-md text-headline-md text-on-primary">Bolsos Materos</h3>
+<p class="font-body-md text-body-md text-surface-container-low hidden md:block mt-1 opacity-90">Couro legítimo trabalhado à mão</p>
+</div>
+</div>
+<div class="col-span-1 row-span-1 md:row-span-2 relative rounded-xl overflow-hidden group cursor-pointer shadow-sm bg-surface-container">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A sleek, stainless steel thermos placed elegantly next to traditional South American textiles. The composition is minimalist but rich in texture, shot in a high-end editorial style. Natural sunlight creates soft, ambient shadows on a light parchment-colored background. The color palette features warm neutrals and subtle metallic reflections, highlighting a sophisticated, modern approach to everyday traditional items." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkDAUzkZLlrcA1tJlSdWvm4if1PgmsBpyqOahIdB8Qx_WQ62jd_-YqmnczZ1FlOl2ztz6jwn4vISrygysT53uNkKAoK-pIJ5n_vIJ9VT3Hyk1rE7Cpb9VvuxPzRhuvqGFN2egKmwXjhWG77vcAea1l-6T6rHrRdJTTBZ4LpN98mGKApnxSHQZVaiBoShUSqmz_smIZTWyleYM7vAp0KY95gJGQym8iXmpXjGFHeM0hW3a48zFtWqaZacg_kwGwOBOSf48AtXIzGJQd"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4 w-full">
+<h3 class="font-headline-md text-headline-md text-on-primary text-[20px] md:text-[24px]">Termos</h3>
+</div>
+</div>
+<div class="col-span-1 row-span-1 md:row-span-1 relative rounded-xl overflow-hidden group cursor-pointer shadow-sm">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Detailed macro photography of artisan hands working on a piece of thick, high-quality leather. The focus is on the tools and the deep grain of the material, evoking a sensory experience of a traditional workshop. The lighting is moody and directional, casting soft shadows that enhance the tactile modernism style. Rich earthy tones, deep browns, and warm ambient light create an atmosphere of authentic craftsmanship and heritage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUMXiDGoBgLiEJ8-a1BUpMdLVv3-L6axXgsg-1kM8m2vrwaoAU3XftO-IR1_-_ze7o9udddbIaGR03_STHwUVY1L58c23cmspCp43eUrILopQJ5NeVlzWmbe_72d3Z5A0lG_Fj0zJD7_YvPXyYxCbimaSMeRKSyBqBJiHKVJSDWD-QqM6_XnzhDpwx2JmEqZ93mWr30Bml7VRiyUX8nF-vby-fpzccWN3O_TtfDt9Vul5ueEmuXqv7R8jxpM0TpRX1Rgh-Kc45EORg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-tertiary/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4 w-full">
+<h3 class="font-headline-md text-headline-md text-on-primary text-[18px] leading-tight">Artesanato em Couro</h3>
+</div>
+</div>
+<div class="col-span-2 row-span-1 md:col-span-1 md:row-span-1 relative rounded-xl overflow-hidden group cursor-pointer shadow-sm bg-surface-container-high flex items-center justify-center p-6">
+<div class="text-center">
+<span class="material-symbols-outlined text-primary text-4xl mb-2" style="font-variation-settings: 'FILL' 1;">explore</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[18px]">Ver Todas <br/> as Categorias</h3>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center pt-2 pb-4 px-2 bg-surface dark:bg-inverse-surface shadow-[0_-4px_12px_rgba(139,69,19,0.08)] md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-sm text-label-sm mt-1">Tienda</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="category" style="font-variation-settings: 'FILL' 1;">category</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Categorías</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm mt-1">Favoritos</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Perfil</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#934b19",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffdbc9",
+                    "surface-container-low": "#f6f3ed",
+                    "outline-variant": "#c3c8c0",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#b8ccb7",
+                    "surface-tint": "#516352",
+                    "on-error": "#ffffff",
+                    "primary-container": "#2d3e2f",
+                    "on-secondary-fixed": "#321200",
+                    "surface-container-high": "#ebe8e2",
+                    "on-surface-variant": "#434842",
+                    "background": "#fcf9f3",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e5e2dc",
+                    "on-secondary-fixed-variant": "#753401",
+                    "primary-fixed": "#d4e8d3",
+                    "on-primary-fixed-variant": "#3a4b3b",
+                    "tertiary-fixed-dim": "#ffb595",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdbcd",
+                    "secondary-fixed-dim": "#ffb68c",
+                    "error": "#ba1a1a",
+                    "on-background": "#1c1c18",
+                    "inverse-on-surface": "#f3f0ea",
+                    "primary-fixed-dim": "#b8ccb7",
+                    "on-tertiary-fixed-variant": "#7c2e00",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#0f1f12",
+                    "on-surface": "#1c1c18",
+                    "surface-variant": "#e5e2dc",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#fcf9f3",
+                    "tertiary": "#441600",
+                    "tertiary-container": "#672500",
+                    "on-secondary-container": "#783603",
+                    "surface": "#fcf9f3",
+                    "secondary-container": "#ffa26a",
+                    "primary": "#18281a",
+                    "outline": "#747872",
+                    "on-tertiary-fixed": "#351000",
+                    "surface-dim": "#dcdad4",
+                    "surface-container": "#f0eee8",
+                    "on-tertiary-container": "#ff8040",
+                    "on-primary-container": "#96a995",
+                    "inverse-surface": "#31312d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "container-max": "1280px",
+                    "base": "8px",
+                    "margin-desktop": "48px",
+                    "section-gap": "80px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Work Sans"],
+                    "display-lg": ["Domine"],
+                    "body-lg": ["Work Sans"],
+                    "headline-lg": ["Domine"],
+                    "headline-md": ["Domine"],
+                    "body-md": ["Work Sans"],
+                    "label-md": ["Work Sans"],
+                    "headline-lg-mobile": ["Domine"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-gradient {
+            background: linear-gradient(to bottom, rgba(24, 40, 26, 0.4), rgba(24, 40, 26, 0.8));
+        }
+        .text-shadow-sm {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Section 1: Header (TopNavBar) -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-md shadow-sm dark:shadow-none">
+<nav class="flex flex-col w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex justify-between items-center w-full">
+<!-- Brand Logo -->
+<div class="font-headline-lg text-headline-lg tracking-tight text-primary uppercase">RAÍCES</div>
+<!-- Desktop Navigation -->
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Cuias</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Erva Mate</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Bombilhas</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Sets de Mate</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Artesanato</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Nossa História</a>
+</div>
+<!-- Trailing Icons -->
+<div class="flex gap-4 items-center">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">person</span>
+</button>
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden p-2 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</nav>
+</header>
+<!-- Section 2: Hero Section -->
+<section class="relative h-[921px] min-h-[600px] flex items-center justify-center overflow-hidden pt-20">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A close-up photograph capturing the weathered, skilled hands of an elderly artisan meticulously stitching a thick, dark leather wrap around a natural dried gourd. The workshop environment is warm and atmospheric, with dust motes dancing in a soft golden sunbeam. The color palette is dominated by deep forest greens, rich mahogany browns, and warm cream tones, reflecting a premium heritage aesthetic. The overall mood is quiet, reverent, and deeply connected to traditional craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG1sbER9-cSTPnE_MHsugbzHlt_YQVv7GLc2Z030RCla3AYoOlvIsnSjK7zrXdvpLeq013bzS72MZKdNQOUWcbtKkgUeSuIQAysevQXVbnQcdj49Ccl89g0w4MHIEpq_OBALUGo1o8YlA82v_q5G0I4eviWZJBGKToGeOctz6yoRWIZdt80VngyW9DtD9g_nzO-udM-I2iIeOiqdajwCvVa74ML7ycPwpGSNgwqCCRvXCV633DTgvB6rtpxPVcJ-8kCx79pSZ6a5Lp"/>
+<div class="absolute inset-0 hero-gradient"></div>
+<div class="relative z-10 text-center px-margin-mobile max-w-4xl mx-auto">
+<h1 class="font-display-lg text-display-lg text-white text-shadow-sm mb-6">Nossa Herança: Onde o Tempo Encontra a Alma</h1>
+<p class="font-body-lg text-body-lg text-surface-container-low max-w-2xl mx-auto opacity-90">
+                Preservando a tradição gaúcha através de peças únicas, esculpidas pela mão do homem e pela paciência do tempo.
+            </p>
+</div>
+</section>
+<!-- Section 3: The Craft (Process) -->
+<section class="py-section-gap px-margin-desktop max-w-container-max mx-auto">
+<div class="text-center mb-16">
+<span class="font-label-md text-label-md text-secondary uppercase tracking-widest">A Arte do Feito à Mão</span>
+<h2 class="font-headline-lg text-headline-lg text-primary mt-2">O Ritual da Criação</h2>
+</div>
+<div class="space-y-32">
+<!-- Process 1 -->
+<div class="flex flex-col md:flex-row items-center gap-16">
+<div class="w-full md:w-1/2">
+<img class="w-full h-[500px] object-cover rounded-lg shadow-sm" data-alt="A dramatic, high-contrast photograph of a natural gourd being cured over a small, controlled ember fire. Wisps of smoke curl around the organic shape, highlighting its textured surface. The lighting is low-key and intimate, focusing on the warmth of the fire against a dark, artisanal background. The image uses earthy browns and deep blacks to convey a sense of ancient ritual and meticulous preservation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtD79DVpMpHLIdcX3y02N6Jsh1TfkKhLgQ4XhfvSJyXr8gbQKdQwMPv0fLNgvw1M_yKvapXELevqnvrgAw5Aq0EtOGpWYpxD-uaHtgbVEOuwIlGZn_nIbpxB8CBUyclc8hQ5dUWHz9Yv_EsL3oYsXSfJ0-5ifdKVIiGVdsa7oc9vIj2EotFzdfTJ_6JtIEvzcxC0X6ZoPfHT317gY5KZ1RXhQYEjODaSOsBRfOlShDujJoRs6JlA9chcqPBdjcdLmviNU6aaKsIbt9"/>
+</div>
+<div class="w-full md:w-1/2 space-y-6">
+<h3 class="font-headline-md text-headline-md text-primary">Ritual do Fogo</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        A cura da porongo não é apenas um processo técnico, é um batismo. Através do calor controlado e de ervas selecionadas, a fibra natural é selada para receber a infusão sagrada. Cada peça passa dias em repouso, absorvendo a alma do pampa antes de se tornar uma Cuia RAÍCES.
+                    </p>
+<div class="flex items-center gap-2 text-secondary font-label-md">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>PROCESSO ANCESTRAL</span>
+</div>
+</div>
+</div>
+<!-- Process 2 -->
+<div class="flex flex-col md:flex-row-reverse items-center gap-16">
+<div class="w-full md:w-1/2">
+<img class="w-full h-[500px] object-cover rounded-lg shadow-sm" data-alt="Macro detail shot of a silver engraving tool being used to carve intricate traditional patterns into a polished alpaca silver rim. Small metal shavings are visible near the tip of the tool, emphasizing the physical effort and precision. The lighting is crisp and bright, reflecting off the metallic surface with a clean, high-end shine. The aesthetic is sophisticated and tactile, showcasing the luxury of handcrafted metalwork." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCWuEk4Q48YPvvLIWFNYnJ9vDcre-xOENWjVqEVXrC6cOuBnXZ95F1r1-6osnhQ5DudH7yZets0hNEouE6cWPgHIUCtDcXGcoIDgKT3kpHwlE7UMD4S57JmL41tfs_WqepSikpeausO6vubR3f7W0V7TNlewxnbp9PFZ2W0pcGxhNlwKe7fepfPnSf2Q8k6AMesVEJNt8vXNW7VTjQS9FXHOSjQMxlFWxV6dgYFuvZfzaD4mpcOK8JOSdOGOZyFFzJC3Y1Gr_T3Zag"/>
+</div>
+<div class="w-full md:w-1/2 space-y-6 text-right">
+<h3 class="font-headline-md text-headline-md text-primary">Cizelado em Prata</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Nossos mestres ourives dedicam horas ao cizelado manual da alpaca e da prata. Cada traço conta uma história de identidade, inspirada na flora e fauna das planícies. Não existem duas gravações idênticas, garantindo que sua peça seja tão única quanto a sua própria jornada.
+                    </p>
+<div class="flex items-center gap-2 text-secondary font-label-md justify-end">
+<span>DETALHE EXCLUSIVO</span>
+<span class="material-symbols-outlined">verified</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Our Origins (Historical) -->
+<section class="relative py-32 bg-primary-container overflow-hidden">
+<div class="absolute inset-0 opacity-20 mix-blend-overlay">
+<img class="w-full h-full object-cover" data-alt="A wide-angle, sepia-toned landscape of the vast Argentine Pampa at sunset. A lone silhouette of a gaucho on horseback is visible in the distance against a horizon of endless grass. The lighting is soft and nostalgic, with a muted palette of dusty ochres and deep browns. The image evokes a sense of timeless history, rugged elegance, and the deep roots of the gaucho culture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm4ZfKyKMKYrpGT_BWPRANh5jqHF1iRPogMrex4aQCLmCC38h0m29__EV-Emr0uNQjZ2LdkMrrFyAcVJuKCcd0UrN8pIIjRewpzOARsGhnIn6e0-bqIw8JTYlo7kjE8D-6NzrBdAfXrNQMYGugGu3R5zQnCxjVZ2W0EQZDewUDcFN6EgNAHjo1IFIquoP8A5gMn7_n-JwBEEGpYDF0TUpYj95Lr59C-3JuWbkEz3pathX-RhUFT2Kq176CgegPvD3I5AgMYinKNWZJ"/>
+</div>
+<div class="relative z-10 px-margin-desktop max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
+<div class="space-y-8">
+<h2 class="font-headline-lg text-headline-lg text-primary-fixed">Nossas Raízes no Pampa</h2>
+<p class="font-body-lg text-body-lg text-on-primary-container">
+                    Originária do coração das estâncias argentinas, a RAÍCES nasceu da necessidade de honrar a matéria-prima em seu estado mais puro. Do couro curtido no sul à madeira de Algarrobo colhida de forma sustentável, cada elemento é um tributo à terra que nos sustenta.
+                </p>
+<div class="p-6 border-l-4 border-secondary bg-surface/5 backdrop-blur-sm">
+<p class="font-body-md italic text-primary-fixed-dim">"A terra não nos pertence, nós pertencemos à terra. O que criamos é apenas uma forma de agradecer."</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-4">
+<div class="h-40 bg-surface-container-high/20 rounded flex items-center justify-center p-8 text-center border border-outline/20">
+<span class="text-primary-fixed font-headline-md">100% Autêntico</span>
+</div>
+<div class="h-64 bg-surface-container-high/20 rounded overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="High-quality close-up of premium raw leather hides stacked in an estancia workshop. The textures of the natural grain are sharp and clear, with rich variations in brown and tan tones. Soft side-lighting emphasizes the thickness and durability of the material. The aesthetic is raw yet high-end, representing the premium sourcing of materials for artisanal craft." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAbJ-YO5nZKKrqgunAoh6rlXDw6QAZEzTO31nHqqjv4H2PhaLnUiXqPfcErsAMtQWvSGPaqt9UM18ITxnrAAyl9-m82vH89GKLx6SyyzqqulwM2WHrlPOkiVk_lONLGlQi_NPdEcXs9ulyhw46GE8JYVQYIcr2n2ijx71tPVFPck8e2ImcZZHqHKo9zzTeOzrQRhJz4r31uuloujppDsvWPI93HagspZQDQ9_5CaW4gf6CKf1jTXc8c1HElGanUqiGUewOjrsqugr4"/>
+</div>
+</div>
+<div class="space-y-4 pt-8">
+<div class="h-64 bg-surface-container-high/20 rounded overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up of weathered wooden logs of Algarrobo wood, showing the deep, dark grain and rugged bark. The image is shot in natural outdoor light, emphasizing the connection to the forest. The color palette is earthy and warm, focusing on the organic beauty of the material before it is shaped by human hands." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWj7gIHrZnsiWal_Cg-O8znhmUwk3JJ5CDjs5sPEqasWE53IxTRgEAaAU6QFWGxtXi9FmnKNkP7QGy8xageb0e2n-tLikULgaOUDGmiIqDpRLTdCyeJEVonchLZS_kc5EDT2Qiac_9YXplIeKXjxUzMLoiggNoTDuY7rhR0cDsInKT8_FlAYpQO9kdL63KX711sCcCccLRFfCOWggOM-tp8shygP-9PfaGHOdcARrxTP1Fwg5s8xWPx2zzsOjtUXw3dPUtwmFhbHYw"/>
+</div>
+<div class="h-40 bg-secondary/20 rounded flex items-center justify-center p-8 text-center border border-secondary/30">
+<span class="text-secondary-fixed-dim font-headline-md">Origem Controlada</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Artisan Spotlight -->
+<section class="py-section-gap px-margin-desktop max-w-container-max mx-auto">
+<div class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col lg:flex-row shadow-sm">
+<div class="lg:w-1/2">
+<img class="w-full h-full object-cover min-h-[500px]" data-alt="A masterful black and white portrait of 'Mestre Mateo Silveira', an elderly artisan with a face full of character and wisdom. He is wearing a traditional beret and a simple linen shirt. His eyes are focused and kind, looking slightly off-camera. The lighting is dramatic and moody, highlighting the deep lines of his face and the texture of his skin. This editorial-style portrait conveys authority, experience, and the soul of the artisan." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUgTz9KPsl53pIQ_AsYo2Dwn6OhNPL6MS0G2IxkSijex5Qbqn1RoyNFvmeLBt6clPXDj55nNzfqPoKrEeQjxda18asNbW0iFkKJ-qzM8Ec2CFROGGqILqfqVyEYztUb7FNmbLjpjiUIgvRNq_37Zj5EWnS4or5PqGnssdh-ebrRZQZphMCGExJq6irdlIMdcqF6A8T84x8i-nH_rq30RW0QFoQr0pkeap0M8zrEk-Um3G-RtfC0xgOMecIDKay3fd3I6srC1__o7eS"/>
+</div>
+<div class="lg:w-1/2 p-12 md:p-20 flex flex-col justify-center bg-surface-container-low border-y md:border-y-0 md:border-l border-outline-variant/30">
+<span class="font-label-md text-label-md text-secondary mb-4 tracking-widest uppercase">O Mestre por trás da Peça</span>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-8">Mateo Silveira</h2>
+<blockquote class="font-display-lg text-headline-md text-on-surface-variant leading-tight mb-8 italic">
+                    "Uma peça feita à mão nunca está pronta até que encontre um dono. Nós não vendemos objetos; entregamos capítulos de uma história que começou há séculos no pampa e continuará na sua mão."
+                </blockquote>
+<div class="w-16 h-1 bg-secondary mb-4"></div>
+<p class="font-body-md text-on-surface-variant">Artesão Chefe - 45 anos de tradição</p>
+</div>
+</div>
+</section>
+<!-- Section 6: Values & Mission -->
+<section class="py-section-gap bg-surface">
+<div class="px-margin-desktop max-w-container-max mx-auto">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-primary">Nossos Pilares</h2>
+<div class="w-24 h-0.5 bg-secondary mx-auto mt-4"></div>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="p-10 bg-white border border-surface-container-high hover:shadow-lg transition-all group">
+<div class="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-4">Sustentabilidade Social</h3>
+<p class="font-body-md text-on-surface-variant leading-relaxed">
+                        Trabalhamos diretamente com comunidades locais, garantindo remuneração justa e condições dignas que fortalecem a economia das estâncias.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="p-10 bg-white border border-surface-container-high hover:shadow-lg transition-all group">
+<div class="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">history_edu</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-4">Preservação Cultural</h3>
+<p class="font-body-md text-on-surface-variant leading-relaxed">
+                        Cada técnica utilizada é um registro histórico. Lutamos para que a arte do cizelado e da cura não se perca para a industrialização.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="p-10 bg-white border border-surface-container-high hover:shadow-lg transition-all group">
+<div class="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">diamond</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-4">Excelência Atemporal</h3>
+<p class="font-body-md text-on-surface-variant leading-relaxed">
+                        Nossas peças são projetadas para durar gerações. A qualidade superior da matéria-prima garante que o tempo apenas embeleze o seu mate.
+                    </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 7: Call to Action -->
+<section class="py-32 bg-primary flex flex-col items-center text-center">
+<div class="max-w-2xl px-margin-mobile">
+<h2 class="font-headline-lg text-headline-lg text-white mb-8">Dê o Próximo Passo na Sua Jornada</h2>
+<p class="font-body-lg text-primary-fixed-dim mb-12">
+                Conheça a coleção completa e sinta a diferença de um autêntico artesanato RAÍCES.
+            </p>
+<a class="inline-block bg-secondary text-white px-12 py-5 rounded-full font-label-md hover:bg-secondary-container hover:text-on-secondary-container transition-all scale-100 active:scale-95 shadow-xl" href="#">
+                EXPLORAR A COLEÇÃO
+            </a>
+</div>
+</section>
+<!-- Section 8: Footer -->
+<footer class="bg-surface-container-high dark:bg-surface-container-highest">
+<div class="flex flex-col md:flex-row justify-between items-start w-full px-margin-desktop py-section-gap max-w-container-max mx-auto gap-12">
+<div class="space-y-6 max-w-sm">
+<div class="font-headline-md text-headline-md text-primary uppercase">RAÍCES</div>
+<p class="font-body-md text-on-surface-variant">Artesania de luxo inspirada na tradição gaúcha. Criando pontes entre o passado e o presente.</p>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">language</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">mail</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-x-12 gap-y-8">
+<div class="flex flex-col gap-4">
+<span class="font-label-md text-primary mb-2">SHOP</span>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Cuias</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Bombilhas</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Kits</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="font-label-md text-primary mb-2">INSTITUCIONAL</span>
+<a class="text-secondary font-bold font-body-md text-body-md" href="#">Sobre Nós</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Sustentabilidade</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Contato</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="font-label-md text-primary mb-2">AJUDA</span>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Envios</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Trocas</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">Termos de Uso</a>
+</div>
+</div>
+</div>
+<div class="border-t border-outline-variant/30 py-8 px-margin-desktop max-w-container-max mx-auto text-center">
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">© 2024 RAÍCES ARTESANÍA. Todos os direitos reservados.</p>
+</div>
+</footer>
+<script>
+        // Smooth scroll for anchors
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Simple Fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10');
+            observer.observe(section);
+        });
+    </script>
+</body></html>

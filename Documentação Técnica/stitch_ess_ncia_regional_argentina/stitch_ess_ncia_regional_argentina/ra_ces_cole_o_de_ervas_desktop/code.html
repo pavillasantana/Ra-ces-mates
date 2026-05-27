@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .text-shadow-subtle {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fcf9f3",
+                      "on-surface": "#1c1c18",
+                      "on-secondary-fixed": "#321200",
+                      "primary-fixed-dim": "#b8ccb7",
+                      "on-secondary-fixed-variant": "#753401",
+                      "tertiary-container": "#672500",
+                      "background": "#fcf9f3",
+                      "surface-container-high": "#ebe8e2",
+                      "primary": "#18281a",
+                      "inverse-primary": "#b8ccb7",
+                      "inverse-surface": "#31312d",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#c3c8c0",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "on-tertiary-fixed": "#351000",
+                      "on-primary-fixed-variant": "#3a4b3b",
+                      "primary-container": "#2d3e2f",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#ff8040",
+                      "surface-container": "#f0eee8",
+                      "inverse-on-surface": "#f3f0ea",
+                      "surface-bright": "#fcf9f3",
+                      "secondary-container": "#ffa26a",
+                      "tertiary-fixed": "#ffdbcd",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "on-primary-fixed": "#0f1f12",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#441600",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#d4e8d3",
+                      "surface-variant": "#e5e2dc",
+                      "surface-container-highest": "#e5e2dc",
+                      "secondary": "#934b19",
+                      "on-primary-container": "#96a995",
+                      "surface-tint": "#516352",
+                      "secondary-fixed-dim": "#ffb68c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "outline": "#747872",
+                      "on-surface-variant": "#434842",
+                      "on-secondary-container": "#783603",
+                      "on-background": "#1c1c18",
+                      "surface-container-low": "#f6f3ed",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#dcdad4",
+                      "secondary-fixed": "#ffdbc9"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "section-gap": "80px",
+                      "margin-desktop": "48px",
+                      "container-max": "1280px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-md": ["Work Sans"],
+                      "headline-lg": ["Domine"],
+                      "display-lg": ["Domine"],
+                      "label-sm": ["Work Sans"],
+                      "body-md": ["Work Sans"],
+                      "headline-lg-mobile": ["Domine"],
+                      "headline-md": ["Domine"],
+                      "body-lg": ["Work Sans"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky z-50 bg-surface/95 dark:bg-surface-dim/95 backdrop-blur-md shadow-sm">
+<nav class="flex justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<a class="font-display-lg text-display-lg font-bold tracking-tighter text-primary dark:text-inverse-primary" href="#">RAÍCES</a>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-label-md text-label-md font-work-sans text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">Materia</a>
+<a class="font-label-md text-label-md font-work-sans text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">Cuero</a>
+<a class="font-label-md text-label-md font-work-sans text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">Plata</a>
+<a class="font-label-md text-label-md font-work-sans text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">Textiles</a>
+<a class="font-label-md text-label-md font-work-sans text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">Muebles</a>
+<a class="font-label-md text-label-md font-work-sans text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#">Nuestra Historia</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="search" class="p-2 hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined text-primary">search</span>
+</button>
+<button aria-label="person" class="p-2 hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined text-primary">person</span>
+</button>
+<button aria-label="shopping_bag" class="p-2 hover:bg-surface-container transition-colors rounded-full relative">
+<span class="material-symbols-outlined text-primary">shopping_bag</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative h-[614px] flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover brightness-50" data-alt="A cinematic, high-angle shot of a traditional Argentine mate ceremony in the late afternoon sun. Warm, golden light spills across a rustic wooden table where a silver-mounted calabash mate and high-quality yerba mate leaves are displayed alongside a steaming copper kettle. The atmosphere is rich with cultural heritage, featuring earthy textures of wood and metal against a blurred, serene backdrop of the Pampas landscape." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHK52jxSt0OVud7JXxvTo50UMdWXGZ9t4oyDCc8j_Cp4SBCg0MJmyluWum0gNrkMNg32RP44__Sihb5yJnOfleheUJ8JO2PRNxFwI9VxN-MhmcDOrDm_MYO2YJ8mrGSgwitPKj8cHtBkhZtzumhraz1q3XiP912TgV6ujhdeCRS6G_p5IqGyP8QwkKFhkYqyAL2r5WnCvHRrAwtdprgom9_pKE4DcGw40VtfwuX43rABPp6ohoJqE4erG4IdMPq1LPFUKJs72U8MBS"/>
+</div>
+<div class="relative z-10 text-center px-4 max-w-4xl">
+<h1 class="font-display-lg text-display-lg text-white mb-6 tracking-tight">Erva Mate: A Alma do Ritual</h1>
+<p class="font-body-lg text-body-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
+                    A seleção da erva é o primeiro ato de respeito à tradição. De blends intensos e defumados a notas cítricas e leves, cada colheita conta a história de sua terra. Encontre a essência que despertará seus sentidos e elevará seu momento.
+                </p>
+</div>
+</section>
+<!-- Product Collection - Editorial Layout -->
+<section class="max-w-container-max mx-auto px-margin-desktop py-section-gap">
+<!-- Product 1: Asymmetric Left -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center mb-40">
+<div class="md:col-span-7 group overflow-hidden bg-surface-container-low shadow-sm">
+<div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A professional product photograph of a dark, hand-carved wooden bowl filled with high-quality, vibrant green dry yerba mate leaves. The lighting is soft and focused, highlighting the coarse texture and the distinct smoky aroma implied by the deep forest green hues. The composition is minimalist and premium, set against a warm, neutral parchment background that emphasizes the product's artisanal origins in Misiones, Argentina." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVF0iy_4Ws5n9VptDPK-KKPYjMRdxGFYTPqBtUXxUZcrIxaO5iJKo0o0DMQJGuOi5Qh7SbIn-UNTzXiG-aaoKyWxU6Ktl2uhE4XMnCz4NE6WcNB4Y8-Yu0CJcuZyf_GeY13FuXYYdadSQL2qGo70CZQJJOgNc2XuFpxLaRWHu0Ie0i7u2muXscMzNFyAJZ2RZ_gr_FBLYbL77zcy_mXu4Qfmnn-a-ho0e7_QRYHbt-8eG95N5V879POnZCCL74Euj9qZsc7T9wddPv"/>
+</div>
+</div>
+<div class="md:col-span-5 md:pl-12">
+<div class="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm mb-4">
+                        MISIONES, ARGENTINA
+                    </div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Erva Mate Premium</h2>
+<h3 class="font-body-md text-body-md text-secondary italic mb-6">Blend Tradicional</h3>
+<div class="space-y-6 mb-8 border-l-2 border-surface-container-high pl-6">
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider mb-1">Perfil de Sabor</p>
+<p class="font-body-lg text-body-lg text-on-surface">Intenso, defumado e perfeitamente equilibrado.</p>
+</div>
+<div class="flex items-end gap-2">
+<span class="font-display-lg text-headline-lg text-primary">$4.200</span>
+<span class="font-label-md text-label-md text-outline mb-1">ARS / 500g</span>
+</div>
+</div>
+<button class="w-full md:w-auto px-10 py-4 bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all active:scale-95 shadow-lg shadow-primary/10">
+                        CONHECER DETALHES
+                    </button>
+</div>
+</div>
+<!-- Product 2: Asymmetric Right (Reversed) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center mb-40">
+<div class="md:col-span-5 md:order-1 order-2 md:pr-12">
+<div class="inline-block px-3 py-1 bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm mb-4">
+                        CORRIENTES, ARGENTINA
+                    </div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Erva Mate Orgânica</h2>
+<h3 class="font-body-md text-body-md text-secondary italic mb-6">Campo y Monte</h3>
+<div class="space-y-6 mb-8 border-l-2 border-surface-container-high pl-6">
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider mb-1">Perfil de Sabor</p>
+<p class="font-body-lg text-body-lg text-on-surface">Leve, herbal, com notas cítricas refrescantes.</p>
+</div>
+<div class="flex items-end gap-2">
+<span class="font-display-lg text-headline-lg text-primary">$4.850</span>
+<span class="font-label-md text-label-md text-outline mb-1">ARS / 500g</span>
+</div>
+</div>
+<button class="w-full md:w-auto px-10 py-4 bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all active:scale-95 shadow-lg shadow-primary/10">
+                        CONHECER DETALHES
+                    </button>
+</div>
+<div class="md:col-span-7 md:order-2 order-1 group overflow-hidden bg-surface-container-low shadow-sm">
+<div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="An elegant editorial shot of premium kraft paper yerba mate packaging featuring organic minimalist botanical illustrations. The bag sits on a light linen surface surrounded by fresh citrus peels and vibrant green herb sprigs, conveying a sense of natural purity and brightness. The lighting is high-key and soft, creating a clean, modern aesthetic with a focus on sustainable, organic farming practices in Corrientes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCivkoF30s03B2ZHdhiG8QamqrIkjvZdBAkzo21Q7fXyNF2vDmb7uWc6cHNw0Df6jarEqi3oVX58r_E29ZrYyD9AbqWvjCUC1jS5zQLbbqvdRW3LPZElfMNQgWnDI3A8R0loop2DeWd_rNFJsQ5NVxUD9zobSZjMptZ99swGJeMqYce-br724E6Kht6x-yfSIe4i_MvGbBGm6jlfWZfeR1LBgO8urfjKX9gcLP7jynxCoE4OnepXOJKUjddGN2LMwiDR3pEB5vjzyG9"/>
+</div>
+</div>
+</div>
+<!-- Product 3: Centered/Large Feature -->
+<div class="max-w-4xl mx-auto text-center mb-20">
+<div class="inline-block px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm mb-4">
+                    SUL DO BRASIL / NORDESTE ARGENTINA
+                </div>
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Erva Mate Especial</h2>
+<h3 class="font-body-lg text-body-lg text-secondary italic mb-10">Seleção de Outono (Reserva 24 Meses)</h3>
+<div class="relative group overflow-hidden mb-12 shadow-xl">
+<div class="aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" data-alt="A high-detail macro photograph capturing the rich, complex texture of aged yerba mate leaves. The leaves show a spectrum of deep olive and earthy ochre tones, indicating a 24-month aging process. Tiny particles of stems and finely ground leaves are visible, illuminated by side lighting that creates dramatic shadows and emphasizes the 'earthy notes' mentioned in the profile. The mood is sophisticated and premium, evoking a sense of time-honored expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeRnCXsd-aVy9R2OF57BesfCWKMbYZYfwXJ-Je-KAJT6m1VTIRvWsGdtLyh9092hGM-fy2a4eAkl_bFyiKdBMW6YIbIaoz1sa5X2knwoxG_bmPypIcUWo41ECWFc8QISs6cH4SwBik7Wh0fhqKXE9v7H5CBTkG7R4ftqLTZCS8X56MID1Xg-7P9tnJ8kKttPafg3Lb7SiZzxcE6hp7W1c8HCXjMrH81DC7DFCXwS4js70YgiSD7iK2uzbcD4URe3dYYG64OI3AF1rf"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-left bg-surface-container-low p-12 mb-10">
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider mb-2">Notas do Mestre</p>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                            Uma colheita excepcional que descansa por dois invernos para alcançar sua plenitude. Robusta, com notas terrosas profundas e um retrogosto persistente de chocolate amargo e madeira seca.
+                        </p>
+</div>
+<div class="flex flex-col justify-center items-end border-l border-outline-variant pl-12">
+<div class="flex items-end gap-2 mb-6">
+<span class="font-display-lg text-display-lg text-primary">$6.500</span>
+<span class="font-label-md text-label-md text-outline mb-2">ARS / 500g</span>
+</div>
+<button class="w-full px-12 py-5 bg-secondary text-on-primary font-label-md text-label-md hover:bg-on-secondary-container transition-all active:scale-95 shadow-lg">
+                            CONHECER DETALHES
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Story Block -->
+<section class="bg-primary py-24 text-on-primary">
+<div class="max-w-container-max mx-auto px-margin-desktop grid md:grid-cols-2 gap-16 items-center">
+<div class="relative">
+<img class="w-full aspect-[4/5] object-cover grayscale opacity-80" data-alt="A striking portrait of an elderly Argentine artisan yerba mate grower with deep-set lines on his face and weathered hands, holding a handful of freshly harvested green yerba mate leaves. He stands in a sun-drenched grove of Ilex paraguariensis trees. The image is captured in black and white with high contrast to emphasize his 'authentic' connection to the heritage and the sensory history of the ritual." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1DPivkOq2pHOSQk2QKwOyIvrRe3wk41DXeyOHOUFIy2vKItyPMtIj0HmAiJxQ2ExFNa9ORks5dTykzBZpUG8gYDowW9zjX4va696ifbyzHS7P0xndw2_HxtTTQmyYHW9DQiK2RU5g-rNpMmJyp9-bOyLDNm2KCGMSQiSbDLh4pnIaoxidCQWRAjmWxRB8QurYeA4O_4b2-RqFd9pUoU5gcTQKbl6_lhj6F4UvsGUp5CbzUVlkF6yThi2GCnXNsEErSf9d793trb99"/>
+</div>
+<div>
+<span class="material-symbols-outlined text-secondary text-5xl mb-6">format_quote</span>
+<p class="font-display-lg text-headline-lg italic mb-8 leading-tight">
+                        "O segredo de um bom mate não está apenas na água, mas no tempo que a folha esperou para ser servida. É um diálogo silencioso entre a terra e o homem."
+                    </p>
+<p class="font-label-md text-label-md text-primary-fixed-dim uppercase tracking-widest">Don Mateo, Mestre Produtor</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-section-gap bg-primary dark:bg-primary-container text-on-primary">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-16 max-w-container-max mx-auto">
+<div class="col-span-1 md:col-span-1">
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-primary dark:text-on-primary-container mb-4">RAÍCES</h2>
+<p class="font-body-md text-body-md font-work-sans text-on-primary/70 max-w-xs">
+                    Honrando a tradição e o artesanato argentino através de peças únicas e curadoria de excelência.
+                </p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-primary mb-6 uppercase tracking-widest">Coleção</h4>
+<ul class="space-y-3">
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Materia</a></li>
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Cuero</a></li>
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Textiles</a></li>
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Artesanos</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-primary mb-6 uppercase tracking-widest">Ajuda</h4>
+<ul class="space-y-3">
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Guia de Cuidado</a></li>
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Envios e Retiros</a></li>
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Preguntas Frecuentes</a></li>
+<li><a class="font-body-md text-body-md font-work-sans text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block duration-200" href="#">Contacto</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-primary mb-6 uppercase tracking-widest">Newsletter</h4>
+<p class="font-body-md text-body-md mb-4 text-on-primary/70">Receba histórias de nossa terra e novos lançamentos.</p>
+<div class="flex border-b border-on-primary/30 pb-2">
+<input class="bg-transparent border-none focus:ring-0 text-on-primary placeholder:text-on-primary/40 w-full font-body-md" placeholder="E-mail" type="email"/>
+<button class="text-on-primary hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">east</span>
+</button>
+</div>
+</div>
+</div>
+<div class="border-t border-on-primary/10 py-8 px-margin-desktop max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body-md text-body-md font-work-sans text-on-primary/60">© 2024 RAÍCES Artesanía Argentina. Todos os direitos reservados.</p>
+<div class="flex gap-6">
+<a class="text-on-primary/60 hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">social_leaderboard</span></a>
+<a class="text-on-primary/60 hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+<a class="text-on-primary/60 hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">camera</span></a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions for smooth scrolling or hover effects
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => el.classList.add('scale-95'));
+            el.addEventListener('mouseup', () => el.classList.remove('scale-95'));
+            el.addEventListener('mouseleave', () => el.classList.remove('scale-95'));
+        });
+
+        // Sticky Nav Glass Effect on Scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>

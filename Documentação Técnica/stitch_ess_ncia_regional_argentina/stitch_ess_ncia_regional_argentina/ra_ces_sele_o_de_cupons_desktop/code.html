@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f0eee8;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #747872;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fcf9f3",
+                      "on-surface": "#1c1c18",
+                      "on-secondary-fixed": "#321200",
+                      "on-secondary-fixed-variant": "#753401",
+                      "primary-fixed-dim": "#b8ccb7",
+                      "tertiary-container": "#672500",
+                      "background": "#fcf9f3",
+                      "surface-container-high": "#ebe8e2",
+                      "primary": "#18281a",
+                      "inverse-primary": "#b8ccb7",
+                      "on-primary": "#ffffff",
+                      "inverse-surface": "#313131",
+                      "outline-variant": "#c3c8c0",
+                      "on-tertiary-fixed": "#351000",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "primary-container": "#2d3e2f",
+                      "on-primary-fixed-variant": "#3a4b3b",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#ff8040",
+                      "surface-container": "#f0eee8",
+                      "inverse-on-surface": "#f3f0ea",
+                      "surface-bright": "#fcf9f3",
+                      "secondary-container": "#ffa26a",
+                      "tertiary-fixed": "#ffdbcd",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#0f1f12",
+                      "tertiary": "#441600",
+                      "error-container": "#ffdad6",
+                      "primary-fixed": "#d4e8d3",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e5e2dc",
+                      "secondary": "#934b19",
+                      "surface-variant": "#e5e2dc",
+                      "on-primary-container": "#96a995",
+                      "surface-tint": "#516352",
+                      "secondary-fixed-dim": "#ffb68c",
+                      "outline": "#747872",
+                      "on-surface-variant": "#434842",
+                      "on-secondary-container": "#783603",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-background": "#1c1c18",
+                      "surface-dim": "#dcdad4",
+                      "secondary-fixed": "#ffdbc9",
+                      "surface-container-low": "#f6f3ed",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "section-gap": "80px",
+                      "margin-desktop": "48px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Work Sans"],
+                      "body-md": ["Work Sans"],
+                      "label-md": ["Work Sans"],
+                      "headline-lg": ["Domine"],
+                      "display-lg": ["Domine"],
+                      "body-lg": ["Work Sans"],
+                      "headline-lg-mobile": ["Domine"],
+                      "headline-md": ["Domine"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-hidden">
+<!-- BACKGROUND CONTENT (DIMMED CHECKOUT STATE) -->
+<div class="fixed inset-0 z-0 flex flex-col pointer-events-none opacity-40">
+<!-- TopNavBar Mockup -->
+<header class="bg-surface shadow-sm w-full px-margin-desktop py-4 flex justify-between items-center">
+<span class="font-headline-lg text-headline-lg tracking-tight text-primary">RAÍCES</span>
+<div class="flex gap-6 items-center">
+<span class="material-symbols-outlined">favorite</span>
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="material-symbols-outlined">person</span>
+</div>
+</header>
+<main class="flex-grow flex gap-gutter px-margin-desktop py-12 max-w-container-max mx-auto w-full">
+<div class="flex-grow space-y-6">
+<h1 class="font-headline-lg text-headline-lg text-primary">Finalizar Compra</h1>
+<div class="h-48 w-full bg-surface-container border border-outline-variant rounded-lg"></div>
+<div class="h-64 w-full bg-surface-container border border-outline-variant rounded-lg"></div>
+</div>
+<div class="w-80 space-y-4">
+<div class="p-6 bg-surface-container-high rounded-xl h-96"></div>
+</div>
+</main>
+</div>
+<!-- MODAL OVERLAY -->
+<div class="fixed inset-0 z-50 bg-on-surface/40 backdrop-blur-sm flex items-center justify-center p-margin-mobile" id="coupon-modal-overlay">
+<!-- MODAL CONTAINER -->
+<div class="bg-surface w-full max-w-lg rounded-xl shadow-2xl flex flex-col relative overflow-hidden transition-all transform scale-100 opacity-100 animate-in fade-in zoom-in duration-300">
+<!-- HEADER -->
+<div class="px-8 pt-8 pb-4 flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-primary">Seus Cupons Disponíveis</h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" onclick="closeModal()">
+<span class="material-symbols-outlined" style="font-size: 28px;">close</span>
+</button>
+</div>
+<!-- SEARCH BAR -->
+<div class="px-8 pb-6">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg font-body-md text-on-surface outline-none transition-all" placeholder="Buscar cupom..." type="text"/>
+</div>
+</div>
+<!-- COUPON LIST (Scrollable) -->
+<div class="px-8 pb-4 space-y-4 max-h-[480px] overflow-y-auto custom-scrollbar">
+<!-- COUPON 1 -->
+<div class="group p-5 bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col gap-4 hover:border-primary-container hover:shadow-md transition-all">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded w-fit tracking-widest uppercase">PRIMEIRAMATE</span>
+<p class="font-headline-md text-headline-md text-on-surface mt-2">15% OFF na sua primeira compra.</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                                Válido até 31/12/2024
+                            </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary transition-colors flex items-center justify-center gap-2">
+                        Aplicar
+                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+</button>
+</div>
+<!-- COUPON 2 -->
+<div class="group p-5 bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col gap-4 hover:border-primary-container hover:shadow-md transition-all">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded w-fit tracking-widest uppercase">ARTESANAL10</span>
+<p class="font-headline-md text-headline-md text-on-surface mt-2">R$ 10,00 de desconto em itens de couro.</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                                Válido até 15/11/2024
+                            </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary transition-colors flex items-center justify-center gap-2">
+                        Aplicar
+                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+</button>
+</div>
+<!-- COUPON 3 -->
+<div class="group p-5 bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col gap-4 hover:border-primary-container hover:shadow-md transition-all">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded w-fit tracking-widest uppercase">FRETEGRATIS</span>
+<p class="font-headline-md text-headline-md text-on-surface mt-2">Frete grátis para todo o Brasil em compras acima de R$ 200.</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                                Válido até 01/12/2024
+                            </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary transition-colors flex items-center justify-center gap-2">
+                        Aplicar
+                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+</button>
+</div>
+<!-- STORY BLOCK REINFORCEMENT -->
+<div class="py-6 border-t border-outline-variant text-center">
+<p class="font-body-md text-body-md text-on-surface-variant italic">"A tradição que viaja com você, feita pelas mãos de nossos artesãos."</p>
+</div>
+</div>
+<!-- FOOTER -->
+<div class="p-8 pt-4 bg-surface-container-high/30 flex justify-center border-t border-outline-variant">
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-primary hover:underline transition-all uppercase tracking-wider" onclick="closeModal()">
+                    Cancelar
+                </button>
+</div>
+</div>
+</div>
+<!-- INTERACTION SCRIPTS -->
+<script>
+        function closeModal() {
+            const overlay = document.getElementById('coupon-modal-overlay');
+            overlay.classList.add('opacity-0');
+            overlay.querySelector('div').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        }
+
+        // Apply interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(this.textContent.trim().includes('Aplicar')) {
+                    this.innerHTML = `Aplicado <span class="material-symbols-outlined text-[18px]">check</span>`;
+                    this.classList.remove('bg-primary-container');
+                    this.classList.add('bg-primary');
+                    setTimeout(() => {
+                        closeModal();
+                    }, 600);
+                }
+            });
+        });
+    </script>
+</body></html>

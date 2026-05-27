@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#ffdbcd",
+                    "secondary-fixed": "#ffdbc9",
+                    "primary-container": "#2d3e2f",
+                    "on-error": "#ffffff",
+                    "tertiary": "#441600",
+                    "surface-bright": "#fcf9f3",
+                    "on-background": "#1c1c18",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#753401",
+                    "tertiary-fixed-dim": "#ffb595",
+                    "on-tertiary-fixed": "#351000",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#b8ccb7",
+                    "secondary-fixed-dim": "#ffb68c",
+                    "on-surface-variant": "#434842",
+                    "on-error-container": "#93000a",
+                    "on-primary": "#ffffff",
+                    "background": "#fcf9f3",
+                    "outline": "#747872",
+                    "on-secondary-container": "#783603",
+                    "inverse-on-surface": "#f3f0ea",
+                    "surface-container-low": "#f6f3ed",
+                    "primary": "#18281a",
+                    "on-tertiary-fixed-variant": "#7c2e00",
+                    "on-primary-fixed": "#0f1f12",
+                    "surface-dim": "#dcdad4",
+                    "tertiary-container": "#672500",
+                    "secondary": "#934b19",
+                    "primary-fixed": "#d4e8d3",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#321200",
+                    "surface-container-highest": "#e5e2dc",
+                    "inverse-surface": "#31312d",
+                    "surface-container-high": "#ebe8e2",
+                    "outline-variant": "#c3c8c0",
+                    "surface-variant": "#e5e2dc",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#516352",
+                    "surface-container": "#f0eee8",
+                    "surface": "#fcf9f3",
+                    "on-primary-container": "#96a995",
+                    "on-tertiary-container": "#ff8040",
+                    "secondary-container": "#ffa26a",
+                    "on-surface": "#1c1c18",
+                    "on-primary-fixed-variant": "#3a4b3b",
+                    "primary-fixed-dim": "#b8ccb7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "section-gap": "80px",
+                    "gutter": "24px",
+                    "base": "8px",
+                    "margin-desktop": "48px",
+                    "margin-mobile": "16px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Work Sans"],
+                    "display-lg": ["Domine"],
+                    "label-md": ["Work Sans"],
+                    "headline-lg-mobile": ["Domine"],
+                    "headline-lg": ["Domine"],
+                    "body-md": ["Work Sans"],
+                    "body-lg": ["Work Sans"],
+                    "headline-md": ["Domine"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .active-tab-border {
+            border-left: 4px solid #18281a;
+        }
+        /* Custom Toggle Switch Style */
+        .toggle-checkbox:checked {
+            right: 0;
+            background-color: #18281a;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #b8ccb7;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased">
+<!-- TopNavBar -->
+<header class="bg-surface shadow-sm sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary">Artesanal Heritage</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors duration-200" href="#">Cuías</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors duration-200" href="#">Erva Mate</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors duration-200" href="#">Bombilhas</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors duration-200" href="#">Sets de Mate</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors duration-200" href="#">Artesanato</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors duration-200" href="#">Nossa História</a>
+</nav>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-primary scale-95 active:opacity-80 transition-all" data-icon="search">search</button>
+<button class="material-symbols-outlined text-primary scale-95 active:opacity-80 transition-all" data-icon="shopping_bag">shopping_bag</button>
+<button class="material-symbols-outlined text-primary scale-95 active:opacity-80 transition-all" data-icon="person">person</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-desktop py-12 min-h-screen">
+<div class="flex flex-col md:flex-row gap-gutter">
+<!-- Side Navigation Menu -->
+<aside class="w-full md:w-64 flex-shrink-0">
+<nav class="flex flex-col space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md">Meu Perfil</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_basket">shopping_basket</span>
+<span class="font-label-md">Meus Pedidos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-fixed text-primary font-bold active-tab-border" href="#">
+<span class="material-symbols-outlined" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="font-label-md">Segurança</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+<span class="font-label-md">Endereços</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md">Pagamentos</span>
+</a>
+<hr class="border-outline-variant my-4"/>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-error hover:bg-error-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md">Sair da Conta</span>
+</a>
+</nav>
+</aside>
+<!-- Content Area -->
+<section class="flex-1 space-y-8">
+<!-- Header -->
+<div class="border-b border-outline-variant pb-6">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Segurança da Conta</h1>
+<p class="font-body-md text-on-surface-variant">Gerencie a proteção da sua conta e monitore suas atividades de acesso.</p>
+</div>
+<!-- Alterar Senha Section -->
+<div class="bg-surface-container-low p-8 rounded-xl shadow-sm space-y-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="lock_reset">lock_reset</span>
+<h2 class="font-headline-md text-headline-md text-primary">Alterar Senha</h2>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+<div class="space-y-2 col-span-full">
+<label class="font-label-md text-on-surface-variant">Senha Atual</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="••••••••" type="password"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-on-surface-variant">Nova Senha</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Mínimo 8 caracteres" type="password"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-on-surface-variant">Confirmar Nova Senha</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Repita a nova senha" type="password"/>
+</div>
+<div class="pt-4">
+<button class="bg-primary text-on-primary font-label-md px-8 py-3 rounded-full hover:opacity-90 active:scale-95 transition-all" type="submit">Redefinir Senha</button>
+</div>
+</form>
+</div>
+<!-- 2FA Section -->
+<div class="bg-surface-container-low p-8 rounded-xl shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-2 max-w-xl">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+<h2 class="font-headline-md text-headline-md text-primary">Autenticação de Dois Fatores (2FA)</h2>
+</div>
+<p class="font-body-md text-on-surface-variant">Adicione uma camada extra de segurança à sua conta. Sempre que você fizer login em um novo dispositivo, precisará fornecer um código enviado por SMS ou gerado pelo seu aplicativo de autenticação.</p>
+</div>
+<div class="flex items-center">
+<label class="flex items-center cursor-pointer select-none" for="toggle-2fa">
+<div class="relative">
+<input checked="" class="sr-only toggle-checkbox" id="toggle-2fa" type="checkbox"/>
+<div class="toggle-label block bg-outline-variant w-14 h-8 rounded-full transition-colors"></div>
+<div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all transform translate-x-6"></div>
+</div>
+<span class="ml-3 font-label-md text-primary">Ativado</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Recent Login Activity -->
+<div class="bg-surface-container-low p-8 rounded-xl shadow-sm space-y-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+<h2 class="font-headline-md text-headline-md text-primary">Atividade de Login Recente</h2>
+</div>
+<button class="text-secondary font-label-md hover:underline transition-all">Sair de todas as outras sessões</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="py-4 font-label-md text-on-surface-variant">Dispositivo</th>
+<th class="py-4 font-label-md text-on-surface-variant">Localização</th>
+<th class="py-4 font-label-md text-on-surface-variant">Data/Hora</th>
+<th class="py-4 font-label-md text-on-surface-variant text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="desktop_windows">desktop_windows</span>
+<div>
+<p class="font-label-md text-on-surface">Chrome on Windows 11</p>
+<p class="text-[12px] text-on-surface-variant">IP: 191.185.22.41</p>
+</div>
+</div>
+</td>
+<td class="py-5 font-body-md text-on-surface-variant">Buenos Aires, Argentina</td>
+<td class="py-5 font-body-md text-on-surface-variant">Hoje, às 14:32</td>
+<td class="py-5 text-right">
+<span class="bg-primary-fixed text-on-primary-fixed text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Sessão Atual</span>
+</td>
+</tr>
+<tr>
+<td class="py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="smartphone">smartphone</span>
+<div>
+<p class="font-label-md text-on-surface">iPhone 13 Pro</p>
+<p class="text-[12px] text-on-surface-variant">App Artesanal Heritage</p>
+</div>
+</div>
+</td>
+<td class="py-5 font-body-md text-on-surface-variant">Córdoba, Argentina</td>
+<td class="py-5 font-body-md text-on-surface-variant">Ontem, às 09:15</td>
+<td class="py-5 text-right text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="more_vert">more_vert</span>
+</td>
+</tr>
+<tr>
+<td class="py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="laptop_mac">laptop_mac</span>
+<div>
+<p class="font-label-md text-on-surface">MacBook Pro M1</p>
+<p class="text-[12px] text-on-surface-variant">Safari Browser</p>
+</div>
+</div>
+</td>
+<td class="py-5 font-body-md text-on-surface-variant">Montevideo, Uruguay</td>
+<td class="py-5 font-body-md text-on-surface-variant">30 Out, às 18:45</td>
+<td class="py-5 text-right text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="more_vert">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Account Security Overview Visual -->
+<div class="relative h-64 rounded-xl overflow-hidden group">
+<img alt="Security Banner" class="w-full h-full object-cover grayscale opacity-30 group-hover:grayscale-0 transition-all duration-700" data-alt="A moody, high-contrast photograph of a hand-carved wooden lock and an ornate iron key resting on a rustic leather tabletop. The lighting is low-key and dramatic, highlighting the organic textures of the wood grain and the worn surface of the metal. The scene evokes a sense of traditional craftsmanship, ancestral heritage, and unwavering security. Deep earthy tones of wood brown and forest green dominate the palette, creating a feeling of luxury and grounded protection." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEEV4Z1Y-T6mUgI8GWnNQsq5zKNU9YyVv4ASVO5XyFJNGcpxdg1ThKk95Xvff4GnYQ12FEfqHWjMKYhS90lE4tlQJuHPHlNpWWulaXeUg-6kSjX82UuwBVkzxb0jB8zyMB0JrTjsof-0j8kEyBWj2AAaWiIA__0ezprlyP0udGDbQPobuaWhTvPP8c98VPk7vj8ajIhsJjrjtOJ98vP3COx4fxm6PQOLuFgGb3i2GxclZwlriuew8KUfE9E4Cd_lxvBORqgilc49Be"/>
+<div class="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center px-12">
+<div class="max-w-md text-on-primary">
+<h3 class="font-headline-md text-headline-md mb-2">Sua proteção é nossa tradição</h3>
+<p class="font-body-md opacity-90">Combinamos os métodos mais modernos de criptografia com o cuidado que você encontraria em um ateliê artesanal.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container dark:bg-surface-container-lowest border-t border-outline-variant mt-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-section-gap max-w-container-max mx-auto">
+<div class="space-y-4">
+<div class="font-headline-md text-headline-md text-primary">Artesanal Heritage</div>
+<p class="text-on-surface-variant text-body-md">Honrando a tradição e o artesanato local em cada peça única que criamos.</p>
+</div>
+<div class="space-y-4">
+<h4 class="font-label-md text-primary">Explorar</h4>
+<ul class="space-y-2">
+<li><a class="text-on-surface-variant text-label-sm hover:text-primary underline transition-all" href="#">Nossa História</a></li>
+<li><a class="text-on-surface-variant text-label-sm hover:text-primary underline transition-all" href="#">Guia do Mate</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="font-label-md text-primary">Suporte</h4>
+<ul class="space-y-2">
+<li><a class="text-on-surface-variant text-label-sm hover:text-primary underline transition-all" href="#">Envios</a></li>
+<li><a class="text-on-surface-variant text-label-sm hover:text-primary underline transition-all" href="#">Suporte</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="font-label-md text-primary">Legal</h4>
+<ul class="space-y-2">
+<li><a class="text-on-surface-variant text-label-sm hover:text-primary underline transition-all" href="#">Políticas</a></li>
+</ul>
+<div class="flex gap-4 pt-4">
+<span class="material-symbols-outlined text-primary cursor-pointer" data-icon="facebook">face_nod</span>
+<span class="material-symbols-outlined text-primary cursor-pointer" data-icon="photo_camera">photo_camera</span>
+</div>
+</div>
+</div>
+<div class="border-t border-outline-variant/30 py-6 text-center">
+<p class="text-on-surface-variant text-label-sm">© 2024 Artesanal Heritage. Tradición Argentina en cada pieza.</p>
+</div>
+</footer>
+<script>
+        // Micro-interaction for the toggle
+        const toggle = document.getElementById('toggle-2fa');
+        const toggleDot = document.querySelector('.dot');
+        const toggleLabelText = toggle.parentElement.querySelector('span');
+
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                toggleDot.classList.add('translate-x-6');
+                toggleLabelText.textContent = 'Ativado';
+                toggleLabelText.classList.replace('text-on-surface-variant', 'text-primary');
+            } else {
+                toggleDot.classList.remove('translate-x-6');
+                toggleLabelText.textContent = 'Desativado';
+                toggleLabelText.classList.replace('text-primary', 'text-on-surface-variant');
+            }
+        });
+
+        // Form Submission visual feedback
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = 'Salvando...';
+            btn.classList.add('opacity-50', 'pointer-events-none');
+            
+            setTimeout(() => {
+                btn.textContent = 'Senha Atualizada!';
+                btn.classList.replace('bg-primary', 'bg-secondary');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.replace('bg-secondary', 'bg-primary');
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                    this.reset();
+                }, 2000);
+            }, 1000);
+        });
+    </script>
+</body></html>
