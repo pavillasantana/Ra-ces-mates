@@ -14,24 +14,41 @@ export default function Checkout() {
   const [formData, setFormData] = useState({
     nome: '', email: '', telefone: '', endereco: '', cidade: '', provincia: '', metodoFrete: 'mensajeria'
   });
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discountTotal = cartTotal * 0.9;
-  
-  // Cálculo de frete dinâmico simulado
+  const transferDiscountRate = 0.1;
+  const transferDiscountAmount = cartTotal * transferDiscountRate;
+  const couponDiscountAmount = appliedCoupon ? cartTotal * appliedCoupon.rate : 0;
+
   const freteBase = formData.metodoFrete === 'mensajeria' ? 3500 : 7000;
-  const totalFinal = discountTotal + freteBase;
+  const totalFinal = cartTotal - transferDiscountAmount - couponDiscountAmount + freteBase;
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const applyCoupon = () => {
+    const normalized = couponInput.trim().toUpperCase();
+    if (normalized === 'RAICES5') {
+      setAppliedCoupon({ code: 'RAICES5', rate: 0.05 });
+      setCouponError('');
+      return;
+    }
+
+    setAppliedCoupon(null);
+    setCouponError('Cupom inválido.');
+  };
+
   const handleWhatsAppCheckout = () => {
     const orderItems = cart.map(item => `${item.quantity}x ${item.name}`).join('%0A');
     const metodoFreteNome = formData.metodoFrete === 'mensajeria' ? 'Motomensajería (CABA/GBA)' : 'Correo Argentino (Interior)';
-    
-    const message = `*NOVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Endereço:* ${formData.endereco}, ${formData.cidade} - ${formData.provincia}%0A%0A*Itens:*%0A${orderItems}%0A%0A*Frete Escolhido:* ${metodoFreteNome} (${formatPrice(freteBase)})%0A*Total a Pagar (com Transferência):* ${formatPrice(totalFinal)}%0A%0A_Aguardando envio do comprovante para o alias: RAICES.MATE_`;
-    
+    const couponLine = appliedCoupon ? `%0A*Cupom:* ${appliedCoupon.code} (-${Math.round(appliedCoupon.rate * 100)}%)` : '';
+
+    const message = `*NOVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Endereço:* ${formData.endereco}, ${formData.cidade} - ${formData.provincia}%0A%0A*Itens:*%0A${orderItems}%0A%0A*Frete Escolhido:* ${metodoFreteNome} (${formatPrice(freteBase)})%0A*Desconto Transferência:* -${formatPrice(transferDiscountAmount)}${couponLine}%0A*Total a Pagar:* ${formatPrice(totalFinal)}%0A%0A_Aguardando envio do comprovante para o alias: RAICES.MATE_`;
+
     window.open(`https://wa.me/5491100000000?text=${message}`, '_blank');
     clearCart();
     navigate('/');
@@ -133,15 +150,37 @@ export default function Checkout() {
               </div>
             ))}
           </div>
-          
+
           <div className="summary-totals">
             <div className="total-line">
               <span>Subtotal:</span>
               <span>{formatPrice(cartTotal)}</span>
             </div>
             <div className="total-line discount-line">
-              <span>Desconto (10%):</span>
-              <span>- {formatPrice(cartTotal * 0.1)}</span>
+              <span>Desconto Transferência (10%):</span>
+              <span>- {formatPrice(transferDiscountAmount)}</span>
+            </div>
+            {appliedCoupon && (
+              <div className="total-line discount-line">
+                <span>Cupom ({appliedCoupon.code}):</span>
+                <span>- {formatPrice(couponDiscountAmount)}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', margin: '0.8rem 0' }}>
+              <label style={{ fontWeight: 600 }}>Cupom de desconto</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  placeholder="Ex: RAICES5"
+                  style={{ flex: 1, padding: '0.7rem', border: '1px solid #ccc', borderRadius: '8px' }}
+                />
+                <button type="button" onClick={applyCoupon} className="btn" style={{ padding: '0.7rem 1rem' }}>
+                  Aplicar
+                </button>
+              </div>
+              {couponError && <span style={{ color: '#d9534f', fontSize: '0.85rem' }}>{couponError}</span>}
             </div>
             <div className="total-line">
               <span>Custo de Frete:</span>

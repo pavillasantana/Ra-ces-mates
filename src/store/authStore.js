@@ -1,30 +1,40 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const API_URL = 'http://localhost:3001/api/auth';
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const useAuthStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
-      token: null,
-      tempToken: null,
       isAuthenticated: false,
       is2FAVerified: false,
-      error: null,
+      tempToken: null,
       loading: false,
+      error: null,
 
-      register: async (userData) => {
+      register: async ({ name, email, phone, password, docType, docNumber }) => {
         set({ loading: true, error: null });
+        await delay(500); // Mock delay
+
         try {
-          const res = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.message || 'Erro ao criar conta');
-          
+          const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
+          const exists = users.find(u => u.email === email);
+          if (exists) throw new Error('E-mail já cadastrado');
+
+          const newUser = {
+            id: Date.now().toString(),
+            name,
+            email,
+            phone,
+            password,
+            docType: docType || 'DNI',
+            docNumber: docNumber || '',
+            marketingOptIn: false
+          };
+          users.push(newUser);
+          localStorage.setItem('raices_users', JSON.stringify(users));
+
           set({ loading: false });
           return true;
         } catch (error) {
@@ -33,26 +43,19 @@ export const useAuthStore = create(
         }
       },
 
-      login: async (credentials) => {
+      login: async ({ email, password }) => {
         set({ loading: true, error: null });
+        await delay(500); // Mock delay
+
         try {
-          const res = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.message || 'Credenciais inválidas');
-          
-          // O backend retorna requires2FA e tempToken
-          if (data.requires2FA) {
-            set({ tempToken: data.tempToken, isAuthenticated: false, loading: false });
-            return '2fa';
-          } else {
-            // Caso o 2FA não seja exigido no backend
-            set({ token: data.tempToken, user: data.user, isAuthenticated: true, is2FAVerified: true, loading: false });
-            return 'success';
-          }
+          const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
+          const user = users.find(u => u.email === email && u.password === password);
+          if (!user) throw new Error('Credenciais inválidas');
+
+          // Sempre retorna 2fa por segurança no MVP
+          const fakeToken = Math.random().toString(36).substring(2);
+          set({ user, tempToken: fakeToken, isAuthenticated: false, loading: false });
+          return '2fa';
         } catch (error) {
           set({ error: error.message, loading: false });
           return 'error';
@@ -61,21 +64,12 @@ export const useAuthStore = create(
 
       verify2FA: async (code) => {
         set({ loading: true, error: null });
+        await delay(500);
+
         try {
-          const { tempToken } = get();
-          if (!tempToken) throw new Error('Sessão expirada. Faça login novamente.');
-
-          const res = await fetch(`${API_URL}/verify-2fa`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tempToken, code }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.message || 'Código 2FA inválido');
-
+          if (!code || code.length < 4) throw new Error('Código inválido');
+          
           set({ 
-            token: data.token, 
-            user: data.user, 
             isAuthenticated: true, 
             is2FAVerified: true, 
             tempToken: null,
@@ -88,12 +82,37 @@ export const useAuthStore = create(
         }
       },
 
-      logout: () => set({ user: null, token: null, tempToken: null, isAuthenticated: false, is2FAVerified: false }),
+      updateUser: (data) => {
+        set((state) => {
+          const updatedUser = { ...state.user, ...data };
+
+          // Opcional: Atualizar também no localStorage real do mock
+          const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
+          const userIndex = users.findIndex(u => u.email === state.user.email);
+          if (userIndex !== -1) {
+            users[userIndex] = { ...users[userIndex], ...data };
+            localStorage.setItem('raices_users', JSON.stringify(users));
+          }
+
+          return { user: updatedUser };
+        });
+      },
+
+      changePassword: ({ currentPassword, newPassword }) => {
+        const state = useAuthStore.getState();
+        if (!state.user || state.user.password !== currentPassword) {
+          return { ok: false, message: 'Senha atual inválida.' };
+        }
+        state.updateUser({ password: newPassword });
+        return { ok: true };
+      },
+
+      logout: () => set({ user: null, isAuthenticated: false, is2FAVerified: false, tempToken: null, error: null }),
       clearError: () => set({ error: null })
     }),
     {
       name: 'raices-auth',
-      partialize: (state) => ({ user: state.user, token: state.token, isAuthenticated: state.isAuthenticated, is2FAVerified: state.is2FAVerified }),
+      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated, is2FAVerified: state.is2FAVerified, marketingOptIn: state.user?.marketingOptIn }),
     }
   )
 );

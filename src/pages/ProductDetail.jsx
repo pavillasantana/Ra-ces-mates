@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
+import { useFavoritesStore } from '../store/favoritesStore';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -8,7 +9,8 @@ const formatPrice = (price) => {
 export default function ProductDetail({ products }) {
   const { id } = useParams();
   const { addToCart } = useCartStore();
-  
+  const { toggleFavorite, isFavorite } = useFavoritesStore();
+
   const product = products.find(p => p.id === parseInt(id));
 
   if (!product) return <div style={{padding: '5rem', textAlign: 'center'}}>Produto não encontrado.</div>;
@@ -21,16 +23,21 @@ export default function ProductDetail({ products }) {
       <div className="product-detail-info" style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{product.name}</h1>
         <p className="product-price" style={{ fontSize: '1.8rem', color: 'var(--color-highlight-terracotta)', marginBottom: '2rem' }}>{formatPrice(product.price)}</p>
-        
+
         <p style={{ lineHeight: '1.8', marginBottom: '2rem', color: '#555' }}>
           Este é um produto autêntico Raíces, cuidadosamente artesanal. Perfeito para rituais diários, unindo durabilidade e um design táctil e minimalista.
           <br /><br />
           <strong>Aviso Importante:</strong> Siga o guia de cura antes do primeiro uso. Não garantimos quebras por choque térmico em cuias orgânicas mal curadas.
         </p>
-        
-        <button className="btn" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} onClick={() => addToCart(product)}>
-          Adicionar ao Carrinho
-        </button>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <button className="btn" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} onClick={() => addToCart(product)}>
+            Adicionar ao Carrinho
+          </button>
+          <button className="btn btn-outline" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} onClick={() => toggleFavorite(product)}>
+            {isFavorite(product.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
+          </button>
+        </div>
       </div>
     </div>
   );

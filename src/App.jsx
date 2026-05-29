@@ -1,6 +1,9 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { useCartStore } from './store/cartStore';
+import { useAuthStore } from './store/authStore';
+import { useAppStore } from './store/appStore';
+import { useTranslation } from './hooks/useTranslation';
 
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
@@ -12,7 +15,11 @@ import Register from './pages/Register';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import Payments from './pages/Payments';
 import Contact from './pages/Contact';
-import { useAuthStore } from './store/authStore';
+import Category from './pages/Category';
+import Orders from './pages/Orders';
+import Favorites from './pages/Favorites';
+
+import { featuredProducts, collections } from './data/products';
 
 import './App.css';
 
@@ -20,27 +27,45 @@ const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
 };
 
-// Dados globais (Mockados para o MVP)
 const heroImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuCHsbju6NpoYQE5I2h48DthEDcPpvQ4jhRiFDy0aomy52Yi9dwxZubW8sBSM5ROLwnof1fs8JQe51IMXHl2pUbRRVwiDkh8hBQaBf3-f265PCQAWIbBZr8h-v4EtM1YZIfOJlpZPJnWTZcGtOGqWNkZJiDj-FiHUpJvdsYC5Bh1pDIiLj0RpJbFIfoKo8zAYzotinFgHYKO1wazRQ8LxFoRHr6ofIdDvgm1-xem6Lrw0hat3Jl-hKUkP0R7qEArFeuuxh6JwaCKcoZM";
-const collections = [
-  { id: 1, title: "Cuias Artesanais", description: "Mates premium", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDGniOY0C5GVh9fhgF4GNV_KkjVfH_4JGW7-pxzacj2eH9x4dR0VovB0kG3tdyp9WK4JGHSEVMo49khLtW3mZwQeqFLu4daZxSaVQ22Duypo8DQ9b64gBUsPOeI9jsI08u4ogwDr2TKbfXNnJCs9axWr6aZ9i1PZvXq6_nveIuA-ByrL1c6fQR47K_lrnwnEg5eeOrxE3arz0odJ3jjHYXZLGDPRrCzhAz21Oo4Q7IC9Bxi2tb3fFS-cm7U4nas4TTehHe79MjM2ryF" },
-  { id: 2, title: "Ervas Especiais", description: "Blends autênticos", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDGCD9syTpd148fvkt4a2DOHOoP7orD_sALeHGOOKjIcaPI27D2THhDwxkJte2xPDtlsxWZW0phIYrQP8fnkrIP0Zq6ktQv4TF5WNYZukr_lFlslAzX3egsgERWrU89P5JZkn7rOR-fv23n6n9WkBscwypGaUFb5rxN6k2WZ9Gm0iugvMhBhS7_r2Jap-FClCo_nH1lR7OYXxOdjZ6fC9icb5VxNBvRaJ-RgBOi2NoeuSvzWVtLTllfNS05z1U4VZTE05zDSKo5TmD0" },
-  { id: 3, title: "Kits Presente", description: "Conjuntos essenciais", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAkYmjnw3c-CB58V2cCUTemiCHy5HI4dxkLCyjIDcaHNHUieu1Bq3sl9MpewX8Pg3sJdLOkii2izeOs4kX1MDq7YYxlRZ1rupeH1BTEKGxNc3YDJZUlkFF0GWZCNtfDB9aZlNamr7yDTD5PNKkqW-_FWRgHuYEjwthNOFzVbcJugWRBbqQpeaAJp12q_Ad03fvfW46zGzQJtBbZH0dexO9MsJq5FbWDRLFz9JZ8f8i0vqt-J_TPbf-2yMdXtEMHM8ZmCtnIVStyZojA" }
-];
-export const featuredProducts = [
-  { id: 1, name: "Mate Torpedo Premium", price: 45000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA3uBpTCWR4cn5bwTKdmWu648doP03WYxKq6AkuvIvAL_97XCZIqD-PAuCbkabTzz4YlIK5cTXQD1PIyPY0XxxxtiJNNfSklFe-iW_CEii5TC1ZbSPAPCPknZGwXYqryz5SM6DoVYkDJko3ed95jWTUB-Kb_RF8zRAWPGsJfcEVEJIBD2FwiZKXWm0r5UxAFwkCHnBt9OS76cSWYsXG7i35Kwpfpwpw33Hl17ZLuXVsYdVatwhUvpguYbmBOaBEcO1dt577IaMGpf-W" },
-  { id: 2, name: "Mate Imperial Prata", price: 85000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAac5uBWn9u61-r939Y6SoM7xWzdFF8g2mpqzZe_r4PFgO438j4YRbnDvMLGy7SPcW63fGiv-3n_RArPBmCLEHzA0U1TCq1U0XZzQC4IUY64VbJ8hB6PJ3sxELBzq5D6Ky-l-hAEG6iNw-FNLcV3eyDWRFCTiplmxEwnva9gHGh4Br-yDJjbYv_XYRYBUT0LNl-g8g9lCNj9DWgIw8qQNno819U97Em162UOkAJ1LeZV-4igp2W61Fsu4LF2KFdcdbIZu-2mCYCkNC7" },
-  { id: 3, name: "Bombilha Alpaca", price: 32000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBmlBhBigvVPWmjRnXVtxHCq90fBCnSQ3UF1n0_l0DsMdLqYa_vrv1kPIvL6vUh2FwQWVXBCaikseTcL9ilZUN9CN_XoTh2QnZa7z6R7myvjU8nqXBjt-gB0fx6W5jreTUlEyqWSyySZ4dyARMHfHGlvP1WUqv6_o2oOFz1B8rGdGNj8U5I2ga7Os2w84dPcqdSzhzH_DrN4hZDZVIOEf5IKuBpAeyr8DAQ2dMV4iFQjtynS8QbjD-kUYZhXgNl6W87yboBsG0rP5m" }
-];
+
+const PrivateRoute = ({ children }) => {
+  const { isAuthenticated, is2FAVerified } = useAuthStore();
+  return (isAuthenticated && is2FAVerified)
+    ? children
+    : <Navigate to="/login" replace />;
+};
 
 function App() {
-  const [lang, setLang] = useState('ES');
+  const [isMPModalOpen, setIsMPModalOpen] = useState(false);
+  const [isCouponPopupOpen, setIsCouponPopupOpen] = useState(false);
+  const { setLang } = useAppStore();
+  const { t, lang } = useTranslation();
   const { cart, isCartOpen, toggleCart, removeFromCart, updateQuantity } = useCartStore();
   const { isAuthenticated, is2FAVerified } = useAuthStore();
 
+  useEffect(() => {
+    const dismissed = localStorage.getItem('raices-coupon-popup-dismissed');
+    if (!dismissed) {
+      const timer = setTimeout(() => setIsCouponPopupOpen(true), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discountTotal = cartTotal * 0.9;
+  const transferDiscountTotal = cartTotal * 0.9;
+  const qrDiscountTotal = cartTotal * 0.95;
   const cartItemCount = cart.reduce((count, item) => count + item.quantity, 0);
+
+  const handlePagamentoMP = () => {
+    toggleCart();
+    setIsMPModalOpen(true);
+  };
+
+  const closeCouponPopup = () => {
+    localStorage.setItem('raices-coupon-popup-dismissed', '1');
+    setIsCouponPopupOpen(false);
+  };
 
   return (
     <Router>
@@ -52,9 +77,9 @@ function App() {
           </div>
           <nav className="main-nav">
             <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/#produtos">Produtos</Link></li>
-              <li><Link to="/contato">Contato</Link></li>
+              <li><Link to="/">{t('nav_home')}</Link></li>
+              <li><Link to="/#produtos">{t('nav_products')}</Link></li>
+              <li><Link to="/contato">{t('nav_contact')}</Link></li>
             </ul>
           </nav>
           <div className="header-actions">
@@ -107,13 +132,13 @@ function App() {
                   </div>
                   <div className="total-line discount">
                     <span>C/ Transferência (-10%):</span>
-                    <span>{formatPrice(discountTotal)}</span>
+                    <span>{formatPrice(transferDiscountTotal)}</span>
                   </div>
                 </div>
                 <div className="checkout-options">
-                  <button className="btn btn-mp">Pagar com Mercado Pago</button>
+                  <button className="btn btn-mp" onClick={handlePagamentoMP}>{t('btn_mp')}</button>
                   <Link to="/checkout" className="btn btn-transfer" onClick={toggleCart} style={{ textAlign: 'center', display: 'block' }}>
-                    Checkout com Transferência
+                    {t('btn_transfer')}
                   </Link>
                 </div>
               </div>
@@ -125,15 +150,17 @@ function App() {
         <Routes>
           <Route path="/" element={<Home heroImage={heroImage} collections={collections} featuredProducts={featuredProducts} />} />
           <Route path="/produto/:id" element={<ProductDetail products={featuredProducts} />} />
+          <Route path="/categoria/:slug" element={<Category />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/2fa" element={<TwoFactorAuth />} />
-          <Route path="/perfil" element={<Profile />} />
-          <Route path="/perfil/enderecos" element={<Addresses />} />
-          <Route path="/perfil/pagamentos" element={<Payments />} />
-          <Route path="/perfil/pedidos" element={<Profile />} />
+          <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/perfil/enderecos" element={<PrivateRoute><Addresses /></PrivateRoute>} />
+          <Route path="/perfil/pagamentos" element={<PrivateRoute><Payments /></PrivateRoute>} />
+          <Route path="/perfil/pedidos" element={<PrivateRoute><Orders /></PrivateRoute>} />
+          <Route path="/perfil/favoritos" element={<PrivateRoute><Favorites /></PrivateRoute>} />
         </Routes>
 
         {/* Footer Global */}
@@ -144,9 +171,69 @@ function App() {
         </footer>
 
         {/* Botão Flutuante do WhatsApp */}
-        <a href="https://wa.me/5491100000000" target="_blank" rel="noopener noreferrer" className="whatsapp-float">
+        <a href="https://wa.me/NUMERO_REAL" target="_blank" rel="noopener noreferrer" className="whatsapp-float">
           ✆
         </a>
+
+        {/* Modal Mercado Pago QR Code */}
+        {isMPModalOpen && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 }}>
+            <div style={{ backgroundColor: '#fff', padding: '2.5rem', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '1.8rem', color: '#009ee3', fontWeight: 'bold' }}>mercado</span>
+                <span style={{ fontSize: '1.8rem', color: '#009ee3', fontWeight: '300' }}>pago</span>
+              </div>
+
+              <h3 style={{ margin: 0, fontSize: '1.3rem', color: '#333' }}>Pagamento via QR Code</h3>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Escaneie o código com o aplicativo do Mercado Pago ou do seu banco.</p>
+
+              <div style={{ border: '2px solid #009ee3', padding: '1rem', borderRadius: '12px', backgroundColor: '#fcfcfc', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: 'var(--shadow-subtle)' }}>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=009ee3&data=${encodeURIComponent(`https://www.mercadopago.com.ar/checkout/pay?amount=${qrDiscountTotal}`)}`}
+                  alt="Mercado Pago QR Code"
+                  style={{ width: '180px', height: '180px' }}
+                />
+              </div>
+
+              <div>
+                <span style={{ fontSize: '0.85rem', color: '#666', display: 'block' }}>Total a pagar:</span>
+                <strong style={{ fontSize: '1.6rem', color: 'var(--color-accent-green)' }}>{formatPrice(qrDiscountTotal)}</strong>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', width: '100%' }}>
+                <button 
+                  onClick={() => {
+                    const { clearCart } = useCartStore.getState();
+                    clearCart();
+                    setIsMPModalOpen(false);
+                    alert('Pagamento simulado com sucesso! Muito obrigado.');
+                  }} 
+                  className="btn" 
+                  style={{ width: '100%', padding: '0.8rem' }}
+                >
+                  Já realizei o pagamento
+                </button>
+                <button
+                  onClick={() => setIsMPModalOpen(false)}
+                  style={{ width: '100%', padding: '0.8rem', background: 'none', border: '1px solid #ccc', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem' }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isCouponPopupOpen && (
+          <div className="coupon-popup-overlay" onClick={closeCouponPopup}>
+            <div className="coupon-popup-card" onClick={(e) => e.stopPropagation()}>
+              <h3>Cupom de boas-vindas</h3>
+              <p>Use o código abaixo no checkout e ganhe 5% OFF.</p>
+              <div className="coupon-code">RAICES5</div>
+              <button className="btn" onClick={closeCouponPopup}>Entendi</button>
+            </div>
+          </div>
+        )}
       </div>
     </Router>
   );

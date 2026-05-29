@@ -6,7 +6,14 @@ export default function Register() {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuthStore();
   
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    password: '',
+    docType: 'DNI',
+    docNumber: ''
+  });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -33,6 +40,21 @@ export default function Register() {
             <label>Nome Completo</label>
             <input type="text" name="name" required value={formData.name} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
           </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label>Tipo Doc.</label>
+              <select name="docType" value={formData.docType} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#fff', height: '45px' }}>
+                <option value="DNI">DNI</option>
+                <option value="Estrangeiro">Estrangeiro</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label>Nº Documento</label>
+              <input type="text" name="docNumber" required placeholder="Ex: 40123456" value={formData.docNumber} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label>E-mail</label>
             <input type="email" name="email" required value={formData.email} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />

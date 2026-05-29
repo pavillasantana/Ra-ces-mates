@@ -186,6 +186,31 @@
   background-color: var(--color-bg-primary);
 }
 
+.filters-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-control {
+  width: 100%;
+  border: 1px solid rgba(28, 28, 24, 0.15);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.products-empty {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.2rem;
+  text-align: center;
+  color: #666;
+  box-shadow: var(--shadow-subtle);
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -217,6 +242,30 @@
   height: 100%;
   object-fit: cover;
   mix-blend-mode: multiply;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #777;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.favorite-btn.active {
+  color: #d9534f;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.05);
 }
 
 .product-info {
@@ -416,6 +465,49 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.coupon-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.coupon-popup-card {
+  background: #fff;
+  width: 100%;
+  max-width: 380px;
+  border-radius: 12px;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.18);
+  padding: 1.6rem;
+  display: grid;
+  gap: 1rem;
+  text-align: center;
+}
+
+.coupon-popup-card h3 {
+  margin: 0;
+}
+
+.coupon-popup-card p {
+  margin: 0;
+  color: #666;
+}
+
+.coupon-code {
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--color-accent-green);
+  background: #f2fbf5;
+  border: 1px dashed var(--color-accent-green);
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
 }
 
 
