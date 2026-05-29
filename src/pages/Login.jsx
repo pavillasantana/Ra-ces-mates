@@ -44,7 +44,7 @@ export default function Login() {
             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
           </div>
           <button type="submit" className="btn" disabled={loading} style={{ marginTop: '1rem' }}>
-            {loading ? 'Acessando...' : 'Entrar'}
+            {loading ? 'Verificando...' : 'Entrar'}
           </button>
         </form>
         <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>

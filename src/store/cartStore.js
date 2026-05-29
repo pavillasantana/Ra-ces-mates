@@ -27,24 +27,22 @@ export const useCartStore = create(
       })),
 
       updateQuantity: (productId, amount) => set((state) => {
-        const item = state.cart.find(i => i.id === productId);
-        if (item && item.quantity + amount <= 0) {
-          return { cart: state.cart.filter(i => i.id !== productId) };
-        }
-        return {
-          cart: state.cart.map(item =>
-            item.id === productId
-              ? { ...item, quantity: item.quantity + amount }
-              : item
-          )
-        };
+        const updatedCart = state.cart.map(item => {
+          if (item.id === productId) {
+            const newQuantity = item.quantity + amount;
+            return newQuantity > 0 ? { ...item, quantity: newQuantity } : null;
+          }
+          return item;
+        }).filter(Boolean);
+        
+        return { cart: updatedCart };
       }),
 
       clearCart: () => set({ cart: [] })
     }),
     {
       name: 'raices-cart',
-      partialize: (state) => ({ cart: state.cart }) // Salva apenas os itens, ignora isCartOpen
+      partialize: (state) => ({ cart: state.cart })
     }
   )
 );
