@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { Link } from 'react-router-dom';
+import { goToTiendanubeCheckout } from '../utils/tiendanube';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -37,6 +38,11 @@ export default function Home({ heroImage, collections, featuredProducts }) {
     if (sortBy === 'nameAsc') return [...results].sort((a, b) => a.name.localeCompare(b.name));
     return results;
   }, [featuredProducts, searchTerm, selectedCategory, priceRange, sortBy]);
+
+  const handleBuyNow = (product) => {
+    const redirected = goToTiendanubeCheckout(product.tiendanubeProductId, 1);
+    if (!redirected) alert('Produto sem ID da Tiendanube configurado.');
+  };
 
   return (
     <main className="main-content">
@@ -114,7 +120,10 @@ export default function Home({ heroImage, collections, featuredProducts }) {
                 <div className="product-info">
                   <h3><Link to={`/produto/${product.id}`}>{product.name}</Link></h3>
                   <p className="product-price">{formatPrice(product.price)}</p>
-                  <button className="btn btn-outline" onClick={() => addToCart(product)}>Adicionar</button>
+                  <div style={{ display: 'grid', gap: '0.6rem' }}>
+                    <button className="btn btn-outline" onClick={() => addToCart(product)}>Adicionar</button>
+                    <button className="btn" onClick={() => handleBuyNow(product)}>Comprar</button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
+import { goToTiendanubeCheckout } from '../utils/tiendanube';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -12,6 +13,13 @@ export default function ProductDetail({ products }) {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
 
   const product = products.find(p => p.id === parseInt(id));
+
+  const handleBuyNow = () => {
+    const redirected = goToTiendanubeCheckout(product?.tiendanubeProductId, 1);
+    if (!redirected) {
+      alert('Este produto ainda não está configurado para compra direta.');
+    }
+  };
 
   if (!product) return <div style={{padding: '5rem', textAlign: 'center'}}>Produto não encontrado.</div>;
 
@@ -30,9 +38,12 @@ export default function ProductDetail({ products }) {
           <strong>Aviso Importante:</strong> Siga o guia de cura antes do primeiro uso. Não garantimos quebras por choque térmico em cuias orgânicas mal curadas.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gap: '1rem' }}>
           <button className="btn" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} onClick={() => addToCart(product)}>
             Adicionar ao Carrinho
+          </button>
+          <button className="btn btn-outline" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} onClick={handleBuyNow}>
+            Comprar
           </button>
           <button className="btn btn-outline" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} onClick={() => toggleFavorite(product)}>
             {isFavorite(product.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
