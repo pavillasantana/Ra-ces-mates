@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
+import { goToTiendanubeCheckout } from '../utils/tiendanube';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -16,6 +17,13 @@ export default function Favorites() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleBuyNow = (product) => {
+    const redirected = goToTiendanubeCheckout(product?.tiendanubeProductId, 1);
+    if (!redirected) {
+      alert('Este produto ainda não está configurado para compra direta.');
+    }
   };
 
   return (
@@ -57,6 +65,7 @@ export default function Favorites() {
                   <p className="product-price">{formatPrice(product.price)}</p>
                   <div style={{ display: 'grid', gap: '0.6rem' }}>
                     <button className="btn" onClick={() => addToCart(product)}>Adicionar</button>
+                    <button className="btn btn-outline" onClick={() => handleBuyNow(product)}>Comprar</button>
                     <button className="btn btn-outline" onClick={() => removeFavorite(product.id)}>Remover</button>
                   </div>
                 </div>

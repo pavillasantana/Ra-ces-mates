@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { featuredProducts } from '../data/products';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
+import { goToTiendanubeCheckout } from '../utils/tiendanube';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -39,6 +40,11 @@ export default function Category() {
     if (sortBy === 'nameAsc') return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
     return filtered;
   }, [slug, searchTerm, priceRange, sortBy]);
+
+  const handleBuyNow = (product) => {
+    const redirected = goToTiendanubeCheckout(product.tiendanubeProductId, 1);
+    if (!redirected) alert('Produto sem ID da Tiendanube configurado.');
+  };
 
   return (
     <div style={{ padding: '5rem 5%', minHeight: '80vh', backgroundColor: 'var(--color-bg-primary)' }}>
@@ -85,7 +91,10 @@ export default function Category() {
               <div className="product-info">
                 <h3><Link to={`/produto/${product.id}`}>{product.name}</Link></h3>
                 <p className="product-price">{formatPrice(product.price)}</p>
-                <button className="btn btn-outline" onClick={() => addToCart(product)}>Adicionar</button>
+                <div style={{ display: 'grid', gap: '0.6rem' }}>
+                  <button className="btn btn-outline" onClick={() => addToCart(product)}>Adicionar</button>
+                  <button className="btn" onClick={() => handleBuyNow(product)}>Comprar</button>
+                </div>
               </div>
             </div>
           ))}
