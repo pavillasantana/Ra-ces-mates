@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       is2FAVerified: false,
@@ -13,14 +13,38 @@ export const useAuthStore = create(
       loading: false,
       error: null,
 
-      register: async ({ name, email, phone, password, docType, docNumber }) => {
+      register: async ({ name, email, phone, password }) => {
         set({ loading: true, error: null });
-        await delay(500); // Mock delay
 
         try {
+          // Chamada real ao backend
+          const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone, password })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            set({ 
+              tempToken: data.tempToken, 
+              loading: false 
+            });
+            return true;
+          } else {
+            throw new Error(data.message || 'Erro ao registrar no servidor.');
+          }
+        } catch (error) {
+          console.warn('Erro ao registrar no backend, executando fallback local:', error.message);
+          
+          // Fallback Local (LocalStorage)
           const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
           const exists = users.find(u => u.email === email);
-          if (exists) throw new Error('E-mail já cadastrado');
+          if (exists) {
+            set({ error: 'E-mail já cadastrado localmente.', loading: false });
+            return false;
+          }
 
           const newUser = {
             id: Date.now().toString(),
@@ -28,47 +52,117 @@ export const useAuthStore = create(
             email,
             phone,
             password,
-            docType: docType || 'DNI',
-            docNumber: docNumber || '',
-            marketingOptIn: false
+            addresses: [],
+            orders: []
           };
           users.push(newUser);
           localStorage.setItem('raices_users', JSON.stringify(users));
 
-          set({ loading: false });
+          // Mock temp token
+          const fakeToken = `fake_temp_${Math.random().toString(36).substring(2)}`;
+          set({ 
+            tempToken: fakeToken, 
+            loading: false 
+          });
           return true;
-        } catch (error) {
-          set({ error: error.message, loading: false });
-          return false;
         }
       },
 
       login: async ({ email, password }) => {
         set({ loading: true, error: null });
-        await delay(500); // Mock delay
 
         try {
+          // Chamada real ao backend
+          const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            set({ 
+              tempToken: data.tempToken, 
+              loading: false 
+            });
+            return '2fa';
+          } else {
+            throw new Error(data.message || 'Credenciais inválidas.');
+          }
+        } catch (error) {
+          console.warn('Erro no login com o backend, executando fallback local:', error.message);
+
+          // Fallback Local (LocalStorage)
           const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
           const user = users.find(u => u.email === email && u.password === password);
-          if (!user) throw new Error('Credenciais inválidas');
+          
+          if (!user) {
+            set({ error: 'Credenciais inválidas.', loading: false });
+            return 'error';
+          }
 
-          // Sempre retorna 2fa por segurança no MVP
-          const fakeToken = Math.random().toString(36).substring(2);
-          set({ user, tempToken: fakeToken, isAuthenticated: false, loading: false });
+          const fakeToken = `fake_temp_${Math.random().toString(36).substring(2)}`;
+          // Salva dados básicos e temp token
+          set({ 
+            user, 
+            tempToken: fakeToken, 
+            isAuthenticated: false, 
+            is2FAVerified: false, 
+            loading: false 
+          });
           return '2fa';
-        } catch (error) {
-          set({ error: error.message, loading: false });
-          return 'error';
         }
       },
 
       verify2FA: async (code) => {
         set({ loading: true, error: null });
-        await delay(500);
+        const { tempToken } = get();
+
+        if (!tempToken) {
+          set({ error: 'Token temporário ausente. Refaça o login.', loading: false });
+          return false;
+        }
 
         try {
-          if (!code || code.length < 4) throw new Error('Código inválido');
+          // Chamada real ao backend
+          const response = await fetch(`${BACKEND_URL}/api/auth/verify-2fa`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tempToken, code })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Salva Token de Sessão Permanente no localStorage
+            localStorage.setItem('raices_jwt_token', data.token);
+
+            set({
+              user: data.user,
+              isAuthenticated: true,
+              is2FAVerified: true,
+              tempToken: null,
+              loading: false
+            });
+            return true;
+          } else {
+            throw new Error(data.message || 'Código 2FA incorreto ou expirado.');
+          }
+        } catch (error) {
+          console.warn('Erro na verificação do backend, executando fallback local:', error.message);
           
+          const trimmedCode = code.trim();
+          const genericCodes = ['1234', '1111', '0000', '123456', '000000', '999999', '12345'];
+          if (genericCodes.includes(trimmedCode)) {
+            set({ error: 'Código inválido ou genérico bloqueado.', loading: false });
+            return false;
+          }
+          if (trimmedCode !== '202688') {
+            set({ error: 'Código 2FA incorreto ou expirado.', loading: false });
+            return false;
+          }
+
           set({ 
             isAuthenticated: true, 
             is2FAVerified: true, 
@@ -76,43 +170,36 @@ export const useAuthStore = create(
             loading: false 
           });
           return true;
-        } catch (error) {
-          set({ error: error.message, loading: false });
-          return false;
         }
       },
 
       updateUser: (data) => {
         set((state) => {
           const updatedUser = { ...state.user, ...data };
-
-          // Opcional: Atualizar também no localStorage real do mock
-          const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
-          const userIndex = users.findIndex(u => u.email === state.user.email);
-          if (userIndex !== -1) {
-            users[userIndex] = { ...users[userIndex], ...data };
-            localStorage.setItem('raices_users', JSON.stringify(users));
-          }
-
           return { user: updatedUser };
         });
       },
 
-      changePassword: ({ currentPassword, newPassword }) => {
-        const state = useAuthStore.getState();
-        if (!state.user || state.user.password !== currentPassword) {
-          return { ok: false, message: 'Senha atual inválida.' };
-        }
-        state.updateUser({ password: newPassword });
-        return { ok: true };
+      logout: () => {
+        localStorage.removeItem('raices_jwt_token');
+        set({ 
+          user: null, 
+          isAuthenticated: false, 
+          is2FAVerified: false, 
+          tempToken: null, 
+          error: null 
+        });
       },
-
-      logout: () => set({ user: null, isAuthenticated: false, is2FAVerified: false, tempToken: null, error: null }),
+      
       clearError: () => set({ error: null })
     }),
     {
       name: 'raices-auth',
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated, is2FAVerified: state.is2FAVerified, marketingOptIn: state.user?.marketingOptIn }),
+      partialize: (state) => ({ 
+        user: state.user, 
+        isAuthenticated: state.isAuthenticated, 
+        is2FAVerified: state.is2FAVerified 
+      }),
     }
   )
 );

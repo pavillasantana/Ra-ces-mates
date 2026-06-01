@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useModal } from '../components/ModalProvider';
 
 export default function Register() {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuthStore();
+  const { showAlert } = useModal();
   
   const [formData, setFormData] = useState({ 
     name: '', 
@@ -23,7 +25,7 @@ export default function Register() {
     const success = await register(formData);
     
     if (success) {
-      alert('Conta criada com sucesso! Faça seu login.');
+      showAlert('¡Éxito!', 'Conta criada com sucesso! Faça seu login.', 'success');
       navigate('/login');
     }
   };

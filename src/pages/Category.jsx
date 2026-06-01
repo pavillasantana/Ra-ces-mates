@@ -4,6 +4,7 @@ import { featuredProducts } from '../data/products';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { goToTiendanubeCheckout } from '../utils/tiendanube';
+import { useModal } from '../components/ModalProvider';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -19,6 +20,7 @@ const matchesPriceRange = (price, priceRange) => {
 
 export default function Category() {
   const { slug } = useParams();
+  const { showAlert } = useModal();
   const { addToCart } = useCartStore();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,7 +28,7 @@ export default function Category() {
   const [sortBy, setSortBy] = useState('relevance');
 
   const products = useMemo(() => {
-    const base = featuredProducts.filter(p => p.category === slug || (slug === 'ervas' && p.category === 'ervas'));
+    const base = featuredProducts.filter(p => p.category === slug);
     const normalizedQuery = searchTerm.trim().toLowerCase();
 
     const filtered = base.filter((product) => {
@@ -43,7 +45,7 @@ export default function Category() {
 
   const handleBuyNow = (product) => {
     const redirected = goToTiendanubeCheckout(product.tiendanubeProductId, 1);
-    if (!redirected) alert('Produto sem ID da Tiendanube configurado.');
+    if (!redirected) showAlert('Tiendanube', 'Produto sem ID da Tiendanube configurado.', 'error');
   };
 
   return (

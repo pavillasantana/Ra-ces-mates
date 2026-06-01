@@ -4,6 +4,7 @@ import { useCartStore } from './store/cartStore';
 import { useAuthStore } from './store/authStore';
 import { useAppStore } from './store/appStore';
 import { useTranslation } from './hooks/useTranslation';
+import { useModal } from './components/ModalProvider';
 
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
@@ -18,6 +19,7 @@ import Contact from './pages/Contact';
 import Category from './pages/Category';
 import Orders from './pages/Orders';
 import Favorites from './pages/Favorites';
+import Logo from './components/Logo';
 
 import { featuredProducts, collections } from './data/products';
 
@@ -41,6 +43,7 @@ function App() {
   const [isCouponPopupOpen, setIsCouponPopupOpen] = useState(false);
   const { setLang } = useAppStore();
   const { t, lang } = useTranslation();
+  const { showAlert } = useModal();
   const { cart, isCartOpen, toggleCart, removeFromCart, updateQuantity } = useCartStore();
   const { isAuthenticated, is2FAVerified } = useAuthStore();
 
@@ -57,6 +60,50 @@ function App() {
   const qrDiscountTotal = cartTotal * 0.95;
   const cartItemCount = cart.reduce((count, item) => count + item.quantity, 0);
 
+  const getCartRecommendation = () => {
+    if (cart.length === 0) return null;
+    const firstItem = cart[0];
+    const isMate = firstItem.category === 'mates-y-bombillas' || firstItem.tags?.includes('Mate');
+    const isYerba = firstItem.category === 'yerba-mate' || firstItem.tags?.includes('Yerba');
+    const isCafe = firstItem.category === 'cafe-de-especialidad' || firstItem.tags?.includes('Café');
+
+    let recId = 5; // Default: Yerba mate orgânica
+    if (isMate) recId = 10; // Vela sândalo
+    else if (isYerba) recId = 3; // Bombilha alpaca
+    else if (isCafe) recId = 10; // Vela sândalo
+
+    // Evita recomendar algo que já está no carrinho
+    if (cart.some(item => item.id === recId)) {
+      const fallbackRecs = [5, 10, 3, 11, 1].filter(id => !cart.some(item => item.id === id));
+      if (fallbackRecs.length > 0) recId = fallbackRecs[0];
+    }
+
+    return featuredProducts.find(p => p.id === recId);
+  };
+
+  const handleAddCartRec = (recProduct) => {
+    const { addToCart: storeAddToCart } = useCartStore.getState();
+    storeAddToCart(recProduct);
+    
+    // GA4 select_promotion click tracker
+    console.log(`%c📊 [GA4 EVENT DISPATCHED] select_promotion:`, 'color: #18281a; font-weight: bold; background-color: #f4f1eb; padding: 4px 8px; border: 1px solid #18281a; border-radius: 4px;', {
+      promotion_name: 'Cart Sidebar Cross-Sell Recommendation',
+      item_name: recProduct.name,
+      creative_name: 'Sidebar Recommendation Card',
+      location: 'Cart Drawer Sidebar'
+    });
+    if (window.gtag) {
+      window.gtag('event', 'select_promotion', {
+        promotion_name: 'Cart Sidebar Cross-Sell Recommendation',
+        item_name: recProduct.name,
+        creative_name: 'Sidebar Recommendation Card',
+        location: 'Cart Drawer Sidebar'
+      });
+    }
+
+    showAlert('Producto Agregado', `${recProduct.name} se agregó al carrito.`, 'success');
+  };
+
   const handlePagamentoMP = () => {
     toggleCart();
     setIsMPModalOpen(true);
@@ -72,13 +119,25 @@ function App() {
       <div className="app-container">
         {/* Header Global */}
         <header className="site-header">
-          <div className="logo">
-            <Link to="/"><h1>RAÍCES</h1></Link>
+          <div className="logo" style={{ display: 'flex', alignItems: 'center' }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+              <Logo width="150" />
+            </Link>
           </div>
           <nav className="main-nav">
             <ul>
               <li><Link to="/">{t('nav_home')}</Link></li>
-              <li><Link to="/#produtos">{t('nav_products')}</Link></li>
+              <li className="dropdown">
+                <span className="dropdown-toggle" style={{ cursor: 'pointer' }}>
+                  {lang === 'ES' ? 'Productos' : 'Produtos'} <span style={{ fontSize: '0.6rem', marginLeft: '0.2rem' }}>▼</span>
+                </span>
+                <ul className="dropdown-menu">
+                  <li><Link to="/colecciones/mates-y-cuias">Mates & Cuias</Link></li>
+                  <li><Link to="/colecciones/yerba-mate">Yerba Mate</Link></li>
+                  <li><Link to="/colecciones/velas-y-inciensos">{lang === 'ES' ? 'Velas y Inciensos' : 'Velas e Incensos'}</Link></li>
+                  <li><Link to="/colecciones/artesanias">{lang === 'ES' ? 'Artesanías' : 'Artesanatos'}</Link></li>
+                </ul>
+              </li>
               <li><Link to="/contato">{t('nav_contact')}</Link></li>
             </ul>
           </nav>
@@ -124,6 +183,44 @@ function App() {
                   </div>
                 ))}
               </div>
+              {/* Recomendação no Carrinho (Sprint 3) */}
+              {(() => {
+                const rec = getCartRecommendation();
+                if (!rec) return null;
+                return (
+                  <div style={{ padding: '1rem', borderTop: '1px dashed #e0dfdb', borderBottom: '1px dashed #e0dfdb', backgroundColor: '#fdfcfb' }}>
+                    <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-highlight-terracotta)' }}>
+                      {lang === 'ES' ? 'Aprovechá y compralo junto:' : 'Aproveite e compre junto:'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                      <img src={rec.image} alt={rec.name} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #f0efeb' }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: '600', color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {rec.name}
+                        </h4>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--color-highlight-terracotta)', fontWeight: 'bold' }}>
+                          {formatPrice(rec.price)}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => handleAddCartRec(rec)}
+                        style={{
+                          backgroundColor: 'var(--color-primary-green)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        + {t('cross_sell_add')}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="cart-footer">
                 <div className="cart-totals">
                   <div className="total-line">
@@ -135,10 +232,25 @@ function App() {
                     <span>{formatPrice(transferDiscountTotal)}</span>
                   </div>
                 </div>
-                <div className="checkout-options">
-                  <button className="btn btn-mp" onClick={handlePagamentoMP}>{t('btn_mp')}</button>
-                  <Link to="/checkout" className="btn btn-transfer" onClick={toggleCart} style={{ textAlign: 'center', display: 'block' }}>
-                    {t('btn_transfer')}
+                <div className="checkout-options" style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  <Link 
+                    to="/checkout" 
+                    className="btn" 
+                    onClick={toggleCart} 
+                    style={{ 
+                      textAlign: 'center', 
+                      display: 'block', 
+                      width: '100%', 
+                      padding: '1.1rem', 
+                      fontSize: '1.05rem', 
+                      fontWeight: 'bold',
+                      backgroundColor: 'var(--color-accent-green)',
+                      color: 'white',
+                      borderRadius: '8px',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    {t('cart_checkout_btn')}
                   </Link>
                 </div>
               </div>
@@ -151,6 +263,7 @@ function App() {
           <Route path="/" element={<Home heroImage={heroImage} collections={collections} featuredProducts={featuredProducts} />} />
           <Route path="/produto/:id" element={<ProductDetail products={featuredProducts} />} />
           <Route path="/categoria/:slug" element={<Category />} />
+          <Route path="/colecciones/:slug" element={<Category />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/login" element={<Login />} />
@@ -164,10 +277,13 @@ function App() {
         </Routes>
 
         {/* Footer Global */}
-        <footer className="site-footer">
-          <h2>RAÍCES</h2>
-          <p>Mates Premium • Envios para toda Argentina</p>
-          <p>&copy; 2026 Raíces Artesanal Heritage. Todos os direitos reservados.</p>
+        <footer className="site-footer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', padding: '3rem 1rem 2rem', borderTop: '1px solid rgba(28, 28, 24, 0.08)' }}>
+          <Logo width="120" />
+          <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Mates Premium • Envios para toda Argentina</p>
+          <p style={{ margin: 0, fontSize: '0.82rem', color: '#888' }}>&copy; 2026 Raíces Artesanal Heritage. Todos los derechos reservados.</p>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: '#aaa', marginTop: '0.4rem' }}>
+            Desenvolvido por <a href="https://pstec.pavilasantana.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#666', textDecoration: 'none', fontWeight: '600', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#1e3f20'} onMouseOut={(e) => e.target.style.color = '#666'}>PSTec</a>
+          </p>
         </footer>
 
         {/* Botão Flutuante do WhatsApp */}
@@ -206,7 +322,7 @@ function App() {
                     const { clearCart } = useCartStore.getState();
                     clearCart();
                     setIsMPModalOpen(false);
-                    alert('Pagamento simulado com sucesso! Muito obrigado.');
+                    showAlert('¡Gracias!', 'Pagamento simulado com sucesso! Muito obrigado.', 'success');
                   }} 
                   className="btn" 
                   style={{ width: '100%', padding: '0.8rem' }}

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useState, useEffect } from 'react';
+import { useModal } from '../components/ModalProvider';
 
 const PROVINCES = [
   "Ciudad Autónoma de Buenos Aires",
@@ -62,6 +63,7 @@ const getZipByProvince = (provName) => {
 export default function Addresses() {
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
+  const { showAlert } = useModal();
   const [addresses, setAddresses] = useState(() => {
     const saved = JSON.parse(localStorage.getItem('raices-addresses') || '[]');
     if (saved.length === 0) {
@@ -304,7 +306,7 @@ export default function Addresses() {
   const handleAddAddrSubmit = async (e) => {
     e.preventDefault();
     if (!newAddrData.street || !newAddrData.number || !newAddrData.city || !newAddrData.province) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+      showAlert('Dirección', 'Por favor, preencha todos os campos obrigatórios!', 'warning');
       return;
     }
 

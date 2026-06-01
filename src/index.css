@@ -70,6 +70,7 @@ a:hover {
 
 .btn:hover {
   background-color: var(--color-highlight-terracotta);
+  color: #FCF9F3 !important;
   transform: translateY(-2px);
   box-shadow: var(--shadow-subtle);
 }

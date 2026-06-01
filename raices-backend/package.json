@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo 'Sem testes no momento' && exit 0"
+    "test": "echo 'Sem testes no momento' && exit 0",
+    "migrate": "node src/scripts/migrate-users.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
+    "nodemailer": "^8.0.10",
     "speakeasy": "^2.0.0"
   }
 }

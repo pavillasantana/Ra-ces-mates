@@ -7,8 +7,24 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   password: { type: String, required: true },
   twoFactorSecret: { type: String },
-  is2FAEnabled: { type: Boolean, default: false },
-  addresses: [{ street: String, city: String, zip: String }],
+  twoFactorToken: { type: String },
+  twoFactorExpires: { type: Date },
+  is2FAEnabled: { type: Boolean, default: true },
+  addresses: {
+    type: [{
+      street: String,
+      number: String,
+      floor: String,
+      city: String,
+      zip: String,
+      province: String
+    }],
+    default: []
+  },
+  orders: {
+    type: Array,
+    default: []
+  }
 }, { timestamps: true });
 
 userSchema.pre('save', async function() {

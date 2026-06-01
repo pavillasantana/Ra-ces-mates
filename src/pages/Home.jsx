@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 import { goToTiendanubeCheckout } from '../utils/tiendanube';
+import { useModal } from '../components/ModalProvider';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -17,8 +19,10 @@ const matchesPriceRange = (price, priceRange) => {
 };
 
 export default function Home({ heroImage, collections, featuredProducts }) {
+  const { showAlert } = useModal();
   const { addToCart } = useCartStore();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
@@ -41,25 +45,67 @@ export default function Home({ heroImage, collections, featuredProducts }) {
 
   const handleBuyNow = (product) => {
     const redirected = goToTiendanubeCheckout(product.tiendanubeProductId, 1);
-    if (!redirected) alert('Produto sem ID da Tiendanube configurado.');
+    if (!redirected) showAlert('Tiendanube', 'Produto sem ID da Tiendanube configurado.', 'error');
+  };
+
+  const trackGA4Event = (eventName, params) => {
+    console.log(`%c📊 [GA4 EVENT DISPATCHED] ${eventName}:`, 'color: #18281a; font-weight: bold; background-color: #f4f1eb; padding: 4px 8px; border: 1px solid #18281a; border-radius: 4px;', params);
+    if (window.gtag) {
+      window.gtag('event', eventName, params);
+    }
+  };
+
+  const handleSealClick = (sealTitle) => {
+    trackGA4Event('select_promotion', {
+      promotion_name: sealTitle,
+      creative_name: 'Trust Seals Grid',
+      location: 'Homepage Footer/Mid'
+    });
+  };
+
+  const handleCollectionClick = (colTitle) => {
+    trackGA4Event('view_item_list', {
+      item_list_name: 'Collections Grid',
+      category: colTitle
+    });
   };
 
   return (
     <main className="main-content">
+      {/* Hero Section Premium */}
       <section className="hero" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="hero-content" style={{ backgroundColor: 'rgba(252, 249, 243, 0.85)', padding: '3rem', borderRadius: '8px' }}>
-          <span className="badge">Nova Coleção</span>
-          <h2>Artesanal Heritage</h2>
-          <p>Mates pintados à mão que conectam o design contemporâneo à nossa verdadeira essência e tradição sul-americana.</p>
-          <a href="#colecoes" className="btn">Descubra as Cuias</a>
+        <div className="hero-content" style={{ backgroundColor: 'rgba(252, 249, 243, 0.9)', padding: '3.5rem', borderRadius: '12px', maxWidth: '550px', border: '1px solid rgba(156, 108, 80, 0.2)' }}>
+          <span className="badge" style={{ letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.75rem', color: 'var(--color-highlight-terracotta)', fontWeight: 'bold' }}>
+            {t('nav_home') === 'Inicio' ? 'Ritual Diario' : 'Ritual Diário'}
+          </span>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', margin: '0.8rem 0', color: 'var(--color-primary-green)' }}>
+            {t('hero_title')}
+          </h2>
+          <p style={{ fontSize: '1.05rem', color: '#4a4a4a', lineHeight: '1.6', marginBottom: '1.8rem' }}>
+            {t('hero_subtitle')}
+          </p>
+          <a href="#colecoes" className="btn" style={{ padding: '1rem 2rem', fontSize: '1rem', letterSpacing: '1px' }}>
+            {t('hero_cta')}
+          </a>
         </div>
       </section>
 
+
+
+      {/* Sección de Categorías: Explorá Nuestros Rituales */}
       <section id="colecoes" className="collections-section">
-        <h2 className="section-title">Nossas Coleções</h2>
+        <h2 className="section-title">
+          {t('nav_home') === 'Inicio' ? 'Explorá Nuestros Rituales' : 'Explore Nossos Rituais'}
+        </h2>
         <div className="collections-grid">
           {collections.map(col => (
-            <Link key={col.id} to={`/categoria/${col.slug}`} className="collection-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+            <Link 
+              key={col.id} 
+              to={`/colecciones/${col.slug}`} 
+              onClick={() => handleCollectionClick(col.title)}
+              className="collection-card" 
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            >
               <img src={col.image} alt={col.title} />
               <div className="collection-content">
                 <h3>{col.title}</h3>

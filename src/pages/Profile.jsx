@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useState } from 'react';
+import { useModal } from '../components/ModalProvider';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { logout, user, updateUser, changePassword } = useAuthStore();
+  const { showAlert } = useModal();
 
   const [formName, setFormName] = useState(user?.name || '');
   const [formEmail, setFormEmail] = useState(user?.email || '');
@@ -32,19 +34,19 @@ export default function Profile() {
 
     if (currentPassword || newPassword) {
       if (!currentPassword || !newPassword || newPassword.length < 6) {
-        alert('Para trocar senha, preencha senha atual e nova senha (mínimo 6 caracteres).');
+        showAlert('Perfil', 'Para trocar senha, preencha senha atual e nova senha (mínimo 6 caracteres).', 'warning');
         return;
       }
       const result = changePassword({ currentPassword, newPassword });
       if (!result.ok) {
-        alert(result.message);
+        showAlert('Perfil', result.message, 'error');
         return;
       }
       setCurrentPassword('');
       setNewPassword('');
     }
 
-    alert('Alterações salvas!');
+    showAlert('Perfil', 'Alterações salvas!', 'success');
   };
   return (
     <div style={{ display: 'flex', minHeight: '80vh', backgroundColor: 'var(--color-bg-primary)' }}>

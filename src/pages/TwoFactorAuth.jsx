@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function TwoFactorAuth() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { tempToken, verify2FA, loading, error, clearError } = useAuthStore();
   const [code, setCode] = useState('');
 
@@ -29,8 +31,12 @@ export default function TwoFactorAuth() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', backgroundColor: 'var(--color-bg-primary)' }}>
       <div style={{ backgroundColor: '#fff', padding: '3rem', borderRadius: '8px', boxShadow: 'var(--shadow-subtle)', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-        <h2 style={{ marginBottom: '1rem' }}>Autenticação em Dois Fatores</h2>
-        <p style={{ marginBottom: '2rem', color: '#666' }}>Enviamos um código de segurança (App/SMS) para verificar sua identidade.</p>
+        <h2 style={{ marginBottom: '1rem', fontFamily: "'Playfair Display', serif", color: 'var(--color-primary-green)' }}>
+          {t('twofa_title')}
+        </h2>
+        <p style={{ marginBottom: '2rem', color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
+          {t('twofa_subtitle')}
+        </p>
         
         {error && <div style={{ backgroundColor: '#fdecea', color: '#d9534f', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{error}</div>}
 
@@ -38,7 +44,7 @@ export default function TwoFactorAuth() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <input 
               type="text" 
-              placeholder="Digite o código (ex: 123456)" 
+              placeholder="••••••" 
               required 
               value={code} 
               onChange={(e) => setCode(e.target.value)} 
@@ -46,7 +52,7 @@ export default function TwoFactorAuth() {
             />
           </div>
           <button type="submit" className="btn" disabled={loading || code.length < 4} style={{ marginTop: '1rem' }}>
-            {loading ? 'Verificando...' : 'Validar Código'}
+            {loading ? t('login_loading') : t('twofa_btn')}
           </button>
         </form>
       </div>

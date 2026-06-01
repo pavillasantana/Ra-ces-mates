@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useState, useEffect } from 'react';
+import { useModal } from '../components/ModalProvider';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -41,6 +42,7 @@ const formatExpiry = (value) => {
 export default function Payments() {
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
+  const { showAlert } = useModal();
   const [cards, setCards] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingCards, setLoadingCards] = useState(false);
@@ -91,7 +93,7 @@ export default function Payments() {
   const handleAddCardSubmit = async (e) => {
     e.preventDefault();
     if (!newCardData.number || !newCardData.holder || !newCardData.exp || !newCardData.cvv) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+      showAlert('Método de Pago', 'Por favor, preencha todos os campos obrigatórios!', 'warning');
       return;
     }
 
@@ -129,7 +131,7 @@ export default function Payments() {
       setIsModalOpen(false);
       setNewCardData({ number: '', holder: '', exp: '', cvv: '', nickname: '' });
     } catch {
-      alert('Não foi possível salvar o cartão. Tente novamente.');
+      showAlert('Método de Pago', 'Não foi possível salvar o cartão. Tente novamente.', 'error');
     }
   };
 
@@ -142,7 +144,7 @@ export default function Payments() {
       const data = await response.json();
       setCards(data.methods || []);
     } catch {
-      alert('Não foi possível remover o cartão.');
+      showAlert('Método de Pago', 'Não foi possível remover o cartão.', 'error');
     }
   };
 

@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { goToTiendanubeCheckout } from '../utils/tiendanube';
+import { useModal } from '../components/ModalProvider';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
@@ -13,6 +14,7 @@ export default function Favorites() {
   const { logout, user } = useAuthStore();
   const { addToCart } = useCartStore();
   const { favorites, removeFavorite } = useFavoritesStore();
+  const { showAlert } = useModal();
 
   const handleLogout = () => {
     logout();
@@ -22,7 +24,7 @@ export default function Favorites() {
   const handleBuyNow = (product) => {
     const redirected = goToTiendanubeCheckout(product?.tiendanubeProductId, 1);
     if (!redirected) {
-      alert('Este produto ainda não está configurado para compra direta.');
+      showAlert('Tiendanube', 'Este produto ainda não está configurado para compra direta.', 'error');
     }
   };
 
