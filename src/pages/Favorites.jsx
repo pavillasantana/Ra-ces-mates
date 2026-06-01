@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
-import { goToTiendanubeCheckout } from '../utils/tiendanube';
 import { useModal } from '../components/ModalProvider';
 
 const formatPrice = (price) => {
@@ -22,10 +21,8 @@ export default function Favorites() {
   };
 
   const handleBuyNow = (product) => {
-    const redirected = goToTiendanubeCheckout(product?.tiendanubeProductId, 1);
-    if (!redirected) {
-      showAlert('Tiendanube', 'Este produto ainda não está configurado para compra direta.', 'error');
-    }
+    addToCart(product);
+    navigate('/checkout');
   };
 
   return (

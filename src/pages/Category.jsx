@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { featuredProducts } from '../data/products';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
-import { goToTiendanubeCheckout } from '../utils/tiendanube';
 import { useModal } from '../components/ModalProvider';
 
 const formatPrice = (price) => {
@@ -19,6 +18,7 @@ const matchesPriceRange = (price, priceRange) => {
 };
 
 export default function Category() {
+  const navigate = useNavigate();
   const { slug } = useParams();
   const { showAlert } = useModal();
   const { addToCart } = useCartStore();
@@ -44,8 +44,8 @@ export default function Category() {
   }, [slug, searchTerm, priceRange, sortBy]);
 
   const handleBuyNow = (product) => {
-    const redirected = goToTiendanubeCheckout(product.tiendanubeProductId, 1);
-    if (!redirected) showAlert('Tiendanube', 'Produto sem ID da Tiendanube configurado.', 'error');
+    addToCart(product);
+    navigate('/checkout');
   };
 
   return (

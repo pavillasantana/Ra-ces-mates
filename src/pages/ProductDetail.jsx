@@ -1,16 +1,16 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useModal } from '../components/ModalProvider';
-import { goToTiendanubeCheckout } from '../utils/tiendanube';
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
 };
 
 export default function ProductDetail({ products }) {
+  const navigate = useNavigate();
   const { id } = useParams();
   const { addToCart } = useCartStore();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
@@ -20,10 +20,8 @@ export default function ProductDetail({ products }) {
   const product = products.find(p => p.id === parseInt(id));
 
   const handleBuyNow = () => {
-    const redirected = goToTiendanubeCheckout(product?.tiendanubeProductId, 1);
-    if (!redirected) {
-      showAlert('Atenção', 'Este produto ainda não está configurado para compra direta.', 'warning');
-    }
+    addToCart(product);
+    navigate('/checkout');
   };
 
   // Motor de Cross-Selling Dinâmico (Sprint 3)
