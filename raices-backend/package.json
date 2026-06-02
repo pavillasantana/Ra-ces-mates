@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo 'Sem testes no momento' && exit 0",
-    "migrate": "node src/scripts/migrate-users.js"
+    "migrate": "node src/scripts/migrate-users.js",
+    "seed": "node src/scripts/seed-products.js"
   },
   "keywords": [],
   "author": "",
