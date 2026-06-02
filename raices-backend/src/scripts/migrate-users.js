@@ -18,30 +18,19 @@ async function runMigration() {
     await mongoose.connect(MONGO_URI);
     console.log('✅ Conexão estabelecida com sucesso!');
 
-    // Busca e atualiza todos os usuários onde addresses ou orders não existem
-    console.log('⚡ Iniciando migração de usuários com campos vazios (dados fantasmas)...');
-    
-    const result = await User.updateMany(
-      {
-        $or: [
-          { addresses: { $exists: false } },
-          { addresses: null },
-          { orders: { $exists: false } },
-          { orders: null }
-        ]
-      },
-      [
-        {
-          $set: {
-            addresses: { $ifNull: [ "$addresses", [] ] },
-            orders: { $ifNull: [ "$orders", [] ] }
-          }
-        }
-      ]
+    const resAddresses = await User.updateMany(
+      { $or: [ { addresses: { $exists: false } }, { addresses: null } ] },
+      { $set: { addresses: [] } }
+    );
+
+    const resOrders = await User.updateMany(
+      { $or: [ { orders: { $exists: false } }, { orders: null } ] },
+      { $set: { orders: [] } }
     );
 
     console.log(`🎉 Migração concluída!`);
-    console.log(`   - Documentos modificados: ${result.modifiedCount}`);
+    console.log(`   - Endereços atualizados: ${resAddresses.modifiedCount}`);
+    console.log(`   - Pedidos atualizados: ${resOrders.modifiedCount}`);
     
     await mongoose.disconnect();
     console.log('🔌 Desconectado do MongoDB. Processo encerrado com sucesso.');
