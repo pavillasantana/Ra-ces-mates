@@ -44,7 +44,6 @@ export default function Checkout() {
 
   // 4. Estados do Método de Pagamento
   const [paymentMethod, setPaymentMethod] = useState(''); // 'transfer' | 'qr' | 'debit_card' | 'credit_card'
-  const [paymentApplied, setPaymentApplied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successOrder, setSuccessOrder] = useState(false);
 
@@ -79,9 +78,8 @@ export default function Checkout() {
   const couponDiscountAmount = appliedCoupon ? cartSubtotal * appliedCoupon.rate : 0;
   
   // Desconto Condicional da Modalidade de Pagamento
-  // 10% para Transferência/QR/Débito, 5% para Crédito - ativado após clique em "Aplicar"
+  // 10% para Transferência/QR/Débito, 5% para Crédito - ativado automaticamente
   const getModalidadeDiscountRate = () => {
-    if (!paymentApplied) return 0;
     if (paymentMethod === 'credit_card') return 0.05; // 5% crédito
     if (['transfer', 'qr', 'debit_card'].includes(paymentMethod)) return 0.10; // 10% à vista/débito/qr
     return 0;
@@ -103,7 +101,6 @@ export default function Checkout() {
       setZipSearched(false);
       setShippingOptions([]);
       setSelectedShipping(null);
-      setPaymentApplied(false);
     }
   };
 
@@ -124,7 +121,6 @@ export default function Checkout() {
 
     setCardData(prev => ({ ...prev, [name]: formattedValue }));
     setCardToken('');
-    setPaymentApplied(false);
   };
 
   // Barreira Geográfica e Auto-Preenchimento por CP (Argentina)
@@ -146,7 +142,6 @@ export default function Checkout() {
     setIsCalculatingShipping(true);
     setZipSearched(true);
     setSelectedShipping(null);
-    setPaymentApplied(false);
 
     // Extrai a parte numérica de 4 dígitos para localização
     let numericCode = cleanZip;
@@ -215,8 +210,8 @@ export default function Checkout() {
 
     setFormData(prev => ({
       ...prev,
-      rua: prev.rua && prev.rua.trim() !== '' ? prev.rua : '',
-      bairro: prev.bairro && prev.bairro.trim() !== '' ? prev.bairro : '',
+      rua: resolvedRua,
+      bairro: resolvedBairro,
       cidade: resolvedCity,
       provincia: resolvedProvince
     }));
@@ -299,7 +294,6 @@ export default function Checkout() {
   const handleApplyMethod = (method) => {
     setPaymentMethod(method);
     setCardToken('');
-    setPaymentApplied(true);
   };
 
   // Finalização do Pedido (Envio da transação e receipt)
@@ -580,7 +574,6 @@ export default function Checkout() {
                         className={`shipping-choice-card ${selectedShipping?.id === option.id ? 'selected' : ''}`}
                         onClick={() => {
                           setSelectedShipping(option);
-                          setPaymentApplied(false);
                         }}
                       >
                         <input 
@@ -796,7 +789,7 @@ export default function Checkout() {
             </div>
 
             {/* Desconto de Modalidade de Pagamento */}
-            {paymentApplied && paymentDiscountAmount > 0 && (
+            {paymentMethod && paymentDiscountAmount > 0 && (
               <div className="total-line discount-line">
                 <span>Descuento Pago ({paymentMethod === 'credit_card' ? '5%' : '10%'}):</span>
                 <span>- {formatPrice(paymentDiscountAmount)}</span>
@@ -818,7 +811,7 @@ export default function Checkout() {
             type="button" 
             className="btn btn-whatsapp-checkout" 
             onClick={handleSubmitOrder}
-            disabled={isSubmitting || !isDeliverySectionValid || !paymentApplied}
+            disabled={isSubmitting || !isDeliverySectionValid || !paymentMethod}
             style={{ 
               backgroundColor: ['transfer', 'qr'].includes(paymentMethod) ? '#25D366' : 'var(--color-accent-green)',
               color: 'white',
