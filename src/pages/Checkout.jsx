@@ -88,14 +88,13 @@ export default function Checkout() {
   };
   
   const modalidadeDiscountRate = getModalidadeDiscountRate();
-  const baseForPaymentDiscount = cartSubtotal - couponDiscountAmount;
-  const paymentDiscountAmount = baseForPaymentDiscount * modalidadeDiscountRate;
+  const paymentDiscountAmount = cartSubtotal * modalidadeDiscountRate;
   
   // Custo do Frete
   const shippingCost = selectedShipping ? selectedShipping.price : 0;
   
   // Valor Final Matemático Estrito
-  const totalFinal = (cartSubtotal - couponDiscountAmount) - paymentDiscountAmount + shippingCost;
+  const totalFinal = cartSubtotal - couponDiscountAmount - paymentDiscountAmount + shippingCost;
 
   // Mudança de campos básicos
   const handleInputChange = (e) => {
@@ -217,7 +216,7 @@ export default function Checkout() {
     setFormData(prev => ({
       ...prev,
       rua: prev.rua && prev.rua.trim() !== '' ? prev.rua : '',
-      bairro: prev.bairro && prev.bairro.trim() !== '' ? prev.bairro : resolvedBairro,
+      bairro: prev.bairro && prev.bairro.trim() !== '' ? prev.bairro : '',
       cidade: resolvedCity,
       provincia: resolvedProvince
     }));
@@ -243,6 +242,9 @@ export default function Checkout() {
       }
 
       setShippingOptions(rates);
+      if (rates.length > 0) {
+        setSelectedShipping(rates[0]); // Auto-seleciona a primeira opção logística real!
+      }
       setIsCalculatingShipping(false);
     }, 1200);
   };
@@ -320,32 +322,30 @@ export default function Checkout() {
 
       const message = `*NUEVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Dirección:* ${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}, ${formData.cidade} - ${formData.provincia} (${formData.codigoPostal})%0A%0A*Items:*%0A${orderItems}%0A%0A*Envío:* ${selectedShipping.name} (${formatPrice(selectedShipping.price)})%0A*Descuento ${methodLabel}:* -${formatPrice(paymentDiscountAmount)}${couponLine}%0A*Total Final:* ${formatPrice(totalFinal)}%0A%0A_Aguardando comprobante de pago para el Alias: RAICES.MATE_`;
 
-      // Envia os dados para o endpoint de checkout no backend Render/Localhost
-      try {
-        await fetch(`${BACKEND_URL}/api/payments/checkout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            transactionId,
-            email: formData.email,
-            cart,
-            shippingAddress: {
-              name: formData.nome,
-              phone: formData.telefone,
-              street: `${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}`,
-              city: formData.cidade,
-              zip: formData.codigoPostal,
-              province: formData.provincia
-            },
-            shippingMethod: selectedShipping.id,
-            shippingCost: selectedShipping.price,
-            paymentMethod,
-            couponCode: appliedCoupon?.code || null
-          })
-        });
-      } catch (err) {
-        console.warn('Erro ao conectar ao backend para salvar pedido:', err);
-      }
+      // Envia os dados para o endpoint de checkout no backend Render/Localhost (não-bloqueante em background)
+      fetch(`${BACKEND_URL}/api/payments/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId,
+          email: formData.email,
+          cart,
+          shippingAddress: {
+            name: formData.nome,
+            phone: formData.telefone,
+            street: `${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}`,
+            city: formData.cidade,
+            zip: formData.codigoPostal,
+            province: formData.provincia
+          },
+          shippingMethod: selectedShipping.id,
+          shippingCost: selectedShipping.price,
+          paymentMethod,
+          couponCode: appliedCoupon?.code || null
+        })
+      }).catch(err => {
+        console.warn('Erro em background ao salvar pedido no backend:', err);
+      });
 
       window.open(`https://wa.me/5491100000000?text=${message}`, '_blank');
       
@@ -837,7 +837,7 @@ export default function Checkout() {
           </button>
           
           <p className="checkout-disclaimer">
-            * Al confirmar su pedido acepta los términos y condiciones de Raíces Heritage.
+            {t('checkout_terms_disclaimer')}
           </p>
         </div>
       </div>

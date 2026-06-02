@@ -73,6 +73,8 @@ export const translations = {
     checkout_validation_error: 'Por favor, complete todos los campos obligatorios.',
     checkout_success_title: '¡Pedido Realizado!',
     checkout_success_message: 'Su pedido ha sido procesado con éxito. Redirigiendo...',
+    checkout_terms_disclaimer: '* Al confirmar su pedido acepta los términos y condiciones de Raíces Heritage.',
+    
     
     cross_sell_title: 'También te puede interesar',
     cross_sell_subtitle: 'Aprovechá y compralo junto con tu pedido:',
@@ -158,6 +160,8 @@ export const translations = {
     checkout_validation_error: 'Por favor, preencha todos os campos obrigatórios.',
     checkout_success_title: 'Pedido Realizado!',
     checkout_success_message: 'Seu pedido foi processado com sucesso. Redirecionando...',
+    checkout_terms_disclaimer: '* Ao confirmar seu pedido, você aceita os termos e condições da Raíces Heritage.',
+    
     
     cross_sell_title: 'Também pode te interessar',
     cross_sell_subtitle: 'Aproveite e compre junto com o seu pedido:',
