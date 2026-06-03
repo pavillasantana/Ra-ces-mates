@@ -151,71 +151,91 @@ export default function Checkout() {
     let resolvedCity = '';
     let resolvedProvince = '';
     let resolvedBairro = '';
-    let resolvedRua = '';
 
+    // ── CORREÇÃO PROBLEMA 2: Usa endpoint /localidades (não /localidades-censales)
+    // O endpoint /localidades é o correto para busca por código postal (CP)
+    // e retorna o bairro/localidade real, não apenas a localidade censada.
     try {
-      // API pública oficial do governo argentino — não requer chave
       const res = await fetch(
-        `https://apis.datos.gob.ar/georef/api/localidades-censales?cp=${numericCode}&max=1&campos=nombre,provincia.nombre,municipio.nombre`,
-        { signal: AbortSignal.timeout(5000) }
+        `https://apis.datos.gob.ar/georef/api/localidades?cp=${numericCode}&max=5&campos=nombre,provincia.nombre,municipio.nombre`,
+        { signal: AbortSignal.timeout(6000) }
       );
 
       if (res.ok) {
         const data = await res.json();
-        const loc = data?.localidades_censales?.[0];
+        const results = data?.localidades || [];
+        // Prefere o resultado que seja capital/município (nombre === municipio.nombre)
+        // para evitar retornar sub-localidades obscuras como cidade principal
+        const loc = results.find(l => l.municipio?.nombre && l.nombre === l.municipio?.nombre)
+                 || results[0];
+
         if (loc) {
-          resolvedCity = loc.municipio?.nombre || loc.nombre || '';
+          resolvedCity    = loc.municipio?.nombre || loc.nombre || '';
           resolvedProvince = loc.provincia?.nombre || '';
-          resolvedBairro = loc.nombre || '';
-          resolvedRua = ''; // O usuário preenche a rua — a API não retorna rua específica
+          // Usa o nome da localidade como bairro — é o dado mais granular disponível
+          resolvedBairro  = loc.nombre || '';
+          console.log(`[CP Lookup] Sucesso: ${resolvedCity} / ${resolvedBairro} — ${resolvedProvince} (CP: ${numericCode})`);
         }
       }
     } catch (err) {
       console.warn('[CP Lookup] API datos.gob.ar não respondeu, usando fallback local:', err.message);
     }
 
-    // Fallback: se a API não retornou dados, usa mapeamento por faixas numéricas
+    // Fallback por faixas: só ativa se a API não retornou nada
     if (!resolvedCity) {
+      console.warn(`[CP Lookup] API sem resultado para CP ${numericCode}. Usando fallback por faixa numérica.`);
       const num = parseInt(numericCode, 10);
-      if (num >= 1000 && num <= 1499)        { resolvedCity = 'CABA';         resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; resolvedBairro = 'Centro'; }
-      else if (num >= 1500 && num <= 1899)   { resolvedCity = 'Avellaneda';    resolvedProvince = 'Buenos Aires';           resolvedBairro = 'Centro'; }
-      else if (num >= 1900 && num <= 1999)   { resolvedCity = 'La Plata';      resolvedProvince = 'Buenos Aires';           resolvedBairro = 'Centro'; }
-      else if (num >= 2000 && num <= 2499)   { resolvedCity = 'Rosario';       resolvedProvince = 'Santa Fe';              resolvedBairro = 'Centro'; }
-      else if (num >= 3000 && num <= 3299)   { resolvedCity = 'Santa Fe';      resolvedProvince = 'Santa Fe';              resolvedBairro = 'Centro'; }
-      else if (num >= 5000 && num <= 5299)   { resolvedCity = 'Córdoba';       resolvedProvince = 'Córdoba';               resolvedBairro = 'Centro'; }
-      else if (num >= 5500 && num <= 5699)   { resolvedCity = 'Mendoza';       resolvedProvince = 'Mendoza';               resolvedBairro = 'Centro'; }
-      else if (num >= 4000 && num <= 4199)   { resolvedCity = 'San Miguel de Tucumán'; resolvedProvince = 'Tucumán';        resolvedBairro = 'Centro'; }
-      else                                   { resolvedCity = '';              resolvedProvince = '';                      resolvedBairro = ''; }
+      if      (num >= 1000 && num <= 1499) { resolvedCity = 'Buenos Aires (CABA)'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; resolvedBairro = ''; }
+      else if (num >= 1500 && num <= 1899) { resolvedCity = 'Avellaneda';          resolvedProvince = 'Buenos Aires';                   resolvedBairro = ''; }
+      else if (num >= 1900 && num <= 1999) { resolvedCity = 'La Plata';            resolvedProvince = 'Buenos Aires';                   resolvedBairro = ''; }
+      else if (num >= 2000 && num <= 2499) { resolvedCity = 'Rosario';             resolvedProvince = 'Santa Fe';                       resolvedBairro = ''; }
+      else if (num >= 3000 && num <= 3299) { resolvedCity = 'Santa Fe';            resolvedProvince = 'Santa Fe';                       resolvedBairro = ''; }
+      else if (num >= 4000 && num <= 4199) { resolvedCity = 'San Miguel de Tucumán'; resolvedProvince = 'Tucumán';                      resolvedBairro = ''; }
+      else if (num >= 5000 && num <= 5299) { resolvedCity = 'Córdoba';             resolvedProvince = 'Córdoba';                        resolvedBairro = ''; }
+      else if (num >= 5500 && num <= 5699) { resolvedCity = 'Mendoza';             resolvedProvince = 'Mendoza';                        resolvedBairro = ''; }
+      // Se nem o fallback encontrar, deixa em branco para o usuário preencher manualmente
     }
 
     setFormData(prev => ({
       ...prev,
-      rua: resolvedRua,
       bairro: resolvedBairro,
       cidade: resolvedCity,
       provincia: resolvedProvince
     }));
 
-    // Calcular opções de frete com base na província retornada
-    const isLocal = resolvedProvince.toLowerCase().includes('buenos aires') || resolvedProvince.toLowerCase().includes('autónoma');
-
-    const rates = [
-      { id: 'andreani', name: 'Andreani Envío Nacional', time: '3-5 días hábiles', price: 4500 },
-      { id: 'oca', name: 'OCA Envíos a Domicilio', time: '4-6 días hábiles', price: 5200 },
-      { id: 'envios_pack', name: 'Envíos Pack Estándar', time: '2-4 días hábiles', price: 3800 }
+    // ── CORREÇÃO PROBLEMA 3: Busca fretes reais via backend (Tiendanube API)
+    // Se o backend retornar opções reais, usa-as. Se não, usa o fallback hardcoded.
+    const FALLBACK_RATES = [
+      { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles',        price: 4500 },
+      { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles',        price: 5200 },
+      { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles',        price: 3800 },
     ];
-
+    const isLocal = resolvedProvince.toLowerCase().includes('buenos aires') || resolvedProvince.toLowerCase().includes('autónoma');
     if (isLocal) {
-      rates.unshift({
-        id: 'motomensajeria',
-        name: 'Motomensajería Express (CABA/GBA)',
-        time: 'Entrega en 24h hábiles',
-        price: 3500
-      });
+      FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
     }
 
-    setShippingOptions(rates);
-    if (rates.length > 0) setSelectedShipping(rates[0]);
+    let finalRates = FALLBACK_RATES;
+    try {
+      const shippingRes = await fetch(
+        `${BACKEND_URL}/api/payments/shipping-rates?cp=${numericCode}&province=${encodeURIComponent(resolvedProvince)}`,
+        { signal: AbortSignal.timeout(7000) }
+      );
+      if (shippingRes.ok) {
+        const shippingData = await shippingRes.json();
+        if (Array.isArray(shippingData.rates) && shippingData.rates.length > 0) {
+          finalRates = shippingData.rates;
+          console.log(`[Frete] ${finalRates.length} opção(ões) recebida(s) da Tiendanube via backend.`);
+        } else {
+          console.warn('[Frete] Backend retornou lista vazia. Usando fallback local.');
+        }
+      }
+    } catch (shippingErr) {
+      console.warn('[Frete] Backend de fretes indisponível. Usando fallback local:', shippingErr.message);
+    }
+
+    setShippingOptions(finalRates);
+    if (finalRates.length > 0) setSelectedShipping(finalRates[0]);
     setIsCalculatingShipping(false);
   };
 
@@ -291,6 +311,7 @@ export default function Checkout() {
 
       const message = `*NUEVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Dirección:* ${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}, ${formData.cidade} - ${formData.provincia} (${formData.codigoPostal})%0A%0A*Items:*%0A${orderItems}%0A%0A*Envío:* ${selectedShipping.name} (${formatPrice(selectedShipping.price)})%0A*Descuento ${methodLabel}:* -${formatPrice(paymentDiscountAmount)}${couponLine}%0A*Total Final:* ${formatPrice(totalFinal)}%0A%0A_Aguardando comprobante de pago para el Alias: RAICES.MATE_`;
 
+      // ── CORREÇÃO PROBLEMA 4 + 6: BACKEND_URL dinâmica + number enviado separado
       // Envia os dados para o endpoint de checkout no backend Render/Localhost (não-bloqueante em background)
       fetch(`${BACKEND_URL}/api/payments/checkout`, {
         method: 'POST',
@@ -300,15 +321,18 @@ export default function Checkout() {
           email: formData.email,
           cart,
           shippingAddress: {
-            name: formData.nome,
-            phone: formData.telefone,
-            street: `${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}`,
-            city: formData.cidade,
-            zip: formData.codigoPostal,
-            province: formData.provincia
+            name:       formData.nome,
+            phone:      formData.telefone,
+            street:     formData.rua,
+            number:     formData.numero,
+            floor:      formData.complemento || '',
+            locality:   formData.bairro,
+            city:       formData.cidade,
+            zip:        formData.codigoPostal,
+            province:   formData.provincia
           },
           shippingMethod: selectedShipping.id,
-          shippingCost: selectedShipping.price,
+          shippingCost:   selectedShipping.price,
           paymentMethod,
           couponCode: appliedCoupon?.code || null
         })
@@ -344,6 +368,7 @@ export default function Checkout() {
         return;
       }
 
+      // ── CORREÇÃO PROBLEMA 4 + 6: BACKEND_URL dinâmica + number enviado separado
       // Registra o pedido no backend (não-bloqueante)
       fetch(`${BACKEND_URL}/api/payments/checkout`, {
         method: 'POST',
@@ -353,15 +378,18 @@ export default function Checkout() {
           email: formData.email,
           cart,
           shippingAddress: {
-            name: formData.nome,
-            phone: formData.telefone,
-            street: `${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}`,
-            city: formData.cidade,
-            zip: formData.codigoPostal,
-            province: formData.provincia
+            name:       formData.nome,
+            phone:      formData.telefone,
+            street:     formData.rua,
+            number:     formData.numero,
+            floor:      formData.complemento || '',
+            locality:   formData.bairro,
+            city:       formData.cidade,
+            zip:        formData.codigoPostal,
+            province:   formData.provincia
           },
           shippingMethod: selectedShipping.id,
-          shippingCost: selectedShipping.price,
+          shippingCost:   selectedShipping.price,
           paymentMethod,
           couponCode: appliedCoupon?.code || null
         })

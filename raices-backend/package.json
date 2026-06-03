@@ -5,6 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
     "test": "echo 'Sem testes no momento' && exit 0",
     "migrate": "node src/scripts/migrate-users.js",
     "seed": "node src/scripts/seed-products.js"

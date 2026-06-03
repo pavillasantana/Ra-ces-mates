@@ -25,8 +25,75 @@ const DISCOUNT_RATES = {
   credit_card: 0.05     // Cartão de Crédito (5%)
 };
 
+// ──────────────────────────────────────────────────────────────────────────────
+// 0. Endpoint de Fretes (Tiendanube Shipping Carriers API)
+// Chamado pelo frontend ao buscar o CEP — retorna as opções reais de envio
+// da loja na Tiendanube. Se o token não estiver disponível, retorna fallback.
+// ──────────────────────────────────────────────────────────────────────────────
+router.get('/shipping-rates', async (req, res) => {
+  const { cp = '', province = '' } = req.query;
+  const { accessToken, storeId } = getTiendanubeCredentials();
+
+  // Fallback inteligente por região — ativo quando não há token OAuth ainda
+  const isLocal = province.toLowerCase().includes('buenos aires') || province.toLowerCase().includes('autónoma');
+  const FALLBACK_RATES = [
+    { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles',  price: 4500 },
+    { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles',  price: 5200 },
+    { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles',  price: 3800 }
+  ];
+  if (isLocal) {
+    FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
+  }
+
+  if (!accessToken) {
+    console.warn('[Shipping Rates] access_token ausente. Retornando fallback local.');
+    return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+  }
+
+  try {
+    // Busca as transportadoras cadastradas na loja da Tiendanube
+    const tnRes = await fetch(`https://api.tiendanube.com/v1/${storeId}/shipping_carriers`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'RaicesApp (pavilla.santana@yahoo.com)'
+      },
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (!tnRes.ok) {
+      const errBody = await tnRes.text();
+      console.warn(`[Shipping Rates] Falha na API Tiendanube (${tnRes.status}): ${errBody}. Usando fallback.`);
+      return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+    }
+
+    const carriers = await tnRes.json();
+
+    // Mapeia as transportadoras para o formato esperado pelo frontend
+    const rates = (Array.isArray(carriers) ? carriers : []).map(carrier => ({
+      id:    String(carrier.id),
+      name:  carrier.name || 'Envío',
+      time:  carrier.delivery_time ? `${carrier.delivery_time} días hábiles` : 'Consultar plazo',
+      price: parseFloat(carrier.price || carrier.base_price || 0)
+    })).filter(r => !isNaN(r.price));
+
+    if (rates.length === 0) {
+      console.warn('[Shipping Rates] Tiendanube retornou 0 transportadoras. Usando fallback.');
+      return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+    }
+
+    console.log(`[Shipping Rates] ${rates.length} transportadora(s) retornada(s) da Tiendanube para CP: ${cp}`);
+    return res.json({ source: 'tiendanube', rates });
+
+  } catch (err) {
+    console.error('[Shipping Rates] Exceção ao buscar fretes na Tiendanube:', err.message);
+    return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+  }
+});
+
 // 1. Motor de Validação de Cupons (Endpoint público)
 router.post('/validate-coupon', (req, res) => {
+
   const { couponCode, email } = req.body;
 
   if (!couponCode || !email) {
