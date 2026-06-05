@@ -43,27 +43,25 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Gera token de 6 dígitos para verificação 2FA
-    const code = generate2FACode();
-    user.twoFactorToken = code;
-    user.twoFactorExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de validade
-    await user.save();
-
-    // Dispara e-mail de 2FA
-    await send2FATokenEmail(email, name, code);
-
-    // Gera token temporário JWT
-    const tempToken = jwt.sign(
-      { email, step: '2fa-pending' }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '5m' }
+    // Gera JWT permanente diretamente (sem 2FA)
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
     );
 
-    return res.status(201).json({ 
-      requires2FA: true, 
-      tempToken, 
-      email,
-      message: 'Usuário registrado! Insira o código 2FA enviado ao seu e-mail para ativar a sessão.' 
+    return res.status(201).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        addresses: [],
+        orders: []
+      },
+      message: 'Usuário registrado com sucesso!'
     });
 
   } catch (err) {
@@ -93,27 +91,25 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciais inválidas. Verifique e-mail e senha.' });
     }
 
-    // Gera token 2FA de 6 dígitos
-    const code = generate2FACode();
-    user.twoFactorToken = code;
-    user.twoFactorExpires = new Date(Date.now() + 5 * 60 * 1000); // Validade de 5 minutos
-    await user.save();
-
-    // Envia o e-mail de 2FA
-    await send2FATokenEmail(email, user.name, code);
-
-    // Token temporário
-    const tempToken = jwt.sign(
-      { email, step: '2fa-pending' }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '5m' }
+    // Gera JWT permanente diretamente (sem 2FA)
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
     );
 
-    return res.json({ 
-      requires2FA: true, 
-      tempToken, 
-      email,
-      message: 'Código de verificação enviado! Verifique seu e-mail.' 
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        addresses: user.addresses || [],
+        orders: user.orders || []
+      },
+      message: 'Login realizado com sucesso!'
     });
 
   } catch (err) {

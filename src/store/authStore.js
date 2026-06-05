@@ -26,10 +26,14 @@ export const useAuthStore = create(
 
           const data = await response.json();
 
-          if (response.ok) {
-            set({ 
-              tempToken: data.tempToken, 
-              loading: false 
+          if (response.ok && data.success) {
+            localStorage.setItem('raices_jwt_token', data.token);
+            set({
+              user: data.user,
+              isAuthenticated: true,
+              is2FAVerified: true,
+              tempToken: null,
+              loading: false
             });
             return true;
           } else {
@@ -81,12 +85,16 @@ export const useAuthStore = create(
 
           const data = await response.json();
 
-          if (response.ok) {
-            set({ 
-              tempToken: data.tempToken, 
-              loading: false 
+          if (response.ok && data.success) {
+            localStorage.setItem('raices_jwt_token', data.token);
+            set({
+              user: data.user,
+              isAuthenticated: true,
+              is2FAVerified: true,
+              tempToken: null,
+              loading: false
             });
-            return '2fa';
+            return 'success';
           } else {
             throw new Error(data.message || 'Credenciais inválidas.');
           }
