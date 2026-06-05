@@ -1,7 +1,14 @@
 import { Resend } from 'resend';
 
-// Inicializa o cliente Resend com a API Key do ambiente
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Cliente Resend criado de forma lazy (apenas quando necessário)
+// para evitar crash no startup caso RESEND_API_KEY ainda não esteja configurada
+let _resendClient = null;
+function getResendClient() {
+  if (!_resendClient) {
+    _resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resendClient;
+}
 
 export async function send2FATokenEmail(email, userName, token) {
   // Se não há API Key configurada, loga o código no console (modo de desenvolvimento)
@@ -46,7 +53,7 @@ export async function send2FATokenEmail(email, userName, token) {
   try {
     const fromAddress = process.env.RESEND_FROM || 'Raíces Heritage <onboarding@resend.dev>';
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: fromAddress,
       to: email,
       subject: `${token} é o seu código de verificação Raíces`,
