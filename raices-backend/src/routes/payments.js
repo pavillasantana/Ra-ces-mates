@@ -7,6 +7,7 @@ import {
   exchangeCodeForToken,
   submitOrderToTiendanube
 } from '../utils/tiendanube.js';
+import { calculateShippingRates } from '../utils/shippingProviders.js';
 
 const router = express.Router();
 
@@ -30,64 +31,38 @@ const DISCOUNT_RATES = {
 // Chamado pelo frontend ao buscar o CEP — retorna as opções reais de envio
 // da loja na Tiendanube. Se o token não estiver disponível, retorna fallback.
 // ──────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 0. Endpoint de Fretes — Multi-Provider (OCA, Andreani, Correo Argentino, Moto)
+// Agrega resultados de todas as transportadoras ativas em paralelo.
+// Usa API real quando credenciais estão configuradas, mock realista caso contrário.
+// ─────────────────────────────────────────────────────────────────────────────
 router.get('/shipping-rates', async (req, res) => {
-  const { cp = '', province = '' } = req.query;
-  const { accessToken, storeId } = getTiendanubeCredentials();
+  const { cp = '', province = '', weight = '0.5' } = req.query;
 
-  // Fallback inteligente por região — ativo quando não há token OAuth ainda
-  const isLocal = province.toLowerCase().includes('buenos aires') || province.toLowerCase().includes('autónoma');
-  const FALLBACK_RATES = [
-    { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles',  price: 4500 },
-    { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles',  price: 5200 },
-    { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles',  price: 3800 }
-  ];
-  if (isLocal) {
-    FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
-  }
-
-  if (!accessToken) {
-    console.warn('[Shipping Rates] access_token ausente. Retornando fallback local.');
-    return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+  if (!cp) {
+    return res.status(400).json({ message: 'Parâmetro cp (código postal) é obrigatório.' });
   }
 
   try {
-    // Busca as transportadoras cadastradas na loja da Tiendanube
-    const tnRes = await fetch(`https://api.tiendanube.com/v1/${storeId}/shipping_carriers`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'RaicesApp (pavilla.santana@yahoo.com)'
-      },
-      signal: AbortSignal.timeout(8000)
+    const rates = await calculateShippingRates({
+      cp,
+      province,
+      weightKg: parseFloat(weight) || 0.5,
     });
 
-    if (!tnRes.ok) {
-      const errBody = await tnRes.text();
-      console.warn(`[Shipping Rates] Falha na API Tiendanube (${tnRes.status}): ${errBody}. Usando fallback.`);
-      return res.json({ source: 'fallback', rates: FALLBACK_RATES });
-    }
-
-    const carriers = await tnRes.json();
-
-    // Mapeia as transportadoras para o formato esperado pelo frontend
-    const rates = (Array.isArray(carriers) ? carriers : []).map(carrier => ({
-      id:    String(carrier.id),
-      name:  carrier.name || 'Envío',
-      time:  carrier.delivery_time ? `${carrier.delivery_time} días hábiles` : 'Consultar plazo',
-      price: parseFloat(carrier.price || carrier.base_price || 0)
-    })).filter(r => !isNaN(r.price));
-
     if (rates.length === 0) {
-      console.warn('[Shipping Rates] Tiendanube retornou 0 transportadoras. Usando fallback.');
-      return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+      console.warn(`[Shipping Rates] Nenhuma transportadora retornou para CP ${cp}.`);
+      return res.json({ source: 'empty', rates: [] });
     }
 
-    console.log(`[Shipping Rates] ${rates.length} transportadora(s) retornada(s) da Tiendanube para CP: ${cp}`);
-    return res.json({ source: 'tiendanube', rates });
+    // Ordena por preço crescente (menor frete primeiro)
+    rates.sort((a, b) => a.price - b.price);
+
+    return res.json({ source: 'multi_provider', rates });
 
   } catch (err) {
-    console.error('[Shipping Rates] Exceção ao buscar fretes na Tiendanube:', err.message);
-    return res.json({ source: 'fallback', rates: FALLBACK_RATES });
+    console.error('[Shipping Rates] Erro crítico no aggregator:', err.message);
+    return res.status(500).json({ message: 'Erro ao calcular fretes.', rates: [] });
   }
 });
 
