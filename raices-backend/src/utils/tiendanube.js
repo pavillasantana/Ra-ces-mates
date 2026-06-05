@@ -20,7 +20,7 @@ export const getTiendanubeCredentials = () => {
   // Fusão com variáveis de ambiente injetadas
   const appId = process.env.NUVEMSHOP_APP_ID || '33330';
   const clientSecret = process.env.NUVEMSHOP_CLIENT_SECRET || '';
-  const storeId = saved.store_id || process.env.TIENDANUBE_STORE_ID || '7796788';
+  const storeId = saved.store_id || process.env.TIENDANUBE_STORE_ID || process.env.NUVEMSHOP_STORE_ID || '8078753';
   const accessToken = saved.access_token || process.env.NUVEMSHOP_ACCESS_TOKEN || process.env.TIENDANUBE_ACCESS_TOKEN || '';
 
   return {
@@ -36,6 +36,13 @@ export const saveTiendanubeCredentials = (credentials) => {
   try {
     fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(credentials, null, 2), 'utf8');
     console.log('Credenciais da Tiendanube salvas com sucesso em:', CREDENTIALS_FILE);
+    // Exibe o token de forma destacada nos logs do Render para o administrador salvá-lo como variável de ambiente
+    console.log('\n============================================================');
+    console.log('  ATENÇÃO: SALVE ESTE TOKEN NO RENDER COMO VARIÁVEL DE AMBIENTE');
+    console.log('  Nome: NUVEMSHOP_ACCESS_TOKEN');
+    console.log(`  Valor: ${credentials.access_token}`);
+    console.log(`  Store ID: ${credentials.store_id}  (salve como NUVEMSHOP_STORE_ID)`);
+    console.log('============================================================\n');
     return true;
   } catch (err) {
     console.error('Erro ao salvar credenciais da Tiendanube:', err.message);

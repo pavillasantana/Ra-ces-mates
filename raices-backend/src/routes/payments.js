@@ -481,6 +481,16 @@ router.get('/tiendanube/callback', async (req, res) => {
             Tienda ID conectada: <span>#${creds.store_id}</span>
           </div>
 
+          <div style="background:#0d1f14;border:1px solid rgba(197,160,89,0.4);border-radius:8px;padding:16px;margin-bottom:24px;text-align:left;font-size:13px;">
+            <p style="color:#c5a059;font-weight:700;margin:0 0 10px 0;font-size:14px;">⚠️ IMPORTANTE: Salve no Render agora</p>
+            <p style="color:#a4b3a9;margin:0 0 6px 0;">Copie estas variáveis para o painel do Render → Environment:</p>
+            <div style="background:#060f09;padding:10px;border-radius:6px;word-break:break-all;font-family:monospace;color:#5ba370;font-size:12px;line-height:1.8;">
+              NUVEMSHOP_ACCESS_TOKEN = ${creds.access_token}<br>
+              NUVEMSHOP_STORE_ID = ${creds.store_id}
+            </div>
+            <p style="color:#6b7f71;margin:8px 0 0 0;font-size:11px;">⚡ Depois de salvar, clique em "Save" no Render e aguarde o redeploy automático.</p>
+          </div>
+
           <a href="${process.env.CLIENT_URL || 'https://raicesoficial.online'}" class="btn">Volver al Sitio</a>
         </div>
       </body>

@@ -152,48 +152,74 @@ export default function Checkout() {
     let resolvedProvince = '';
     let resolvedBairro = '';
 
-    // ── CORREÇÃO PROBLEMA 2: Usa endpoint /localidades (não /localidades-censales)
-    // O endpoint /localidades é o correto para busca por código postal (CP)
-    // e retorna o bairro/localidade real, não apenas a localidade censada.
+    // ── API PRIMÁRIA: Zippopotam.us — Cobertura confiável para CEPs argentinos de 4 dígitos
     try {
       const res = await fetch(
-        `https://apis.datos.gob.ar/georef/api/localidades?cp=${numericCode}&max=5&campos=nombre,provincia.nombre,municipio.nombre`,
-        { signal: AbortSignal.timeout(6000) }
+        `https://api.zippopotam.us/ar/${numericCode}`,
+        { signal: AbortSignal.timeout(5000) }
       );
-
       if (res.ok) {
         const data = await res.json();
-        const results = data?.localidades || [];
-        // Prefere o resultado que seja capital/município (nombre === municipio.nombre)
-        // para evitar retornar sub-localidades obscuras como cidade principal
-        const loc = results.find(l => l.municipio?.nombre && l.nombre === l.municipio?.nombre)
-                 || results[0];
-
-        if (loc) {
-          resolvedCity    = loc.municipio?.nombre || loc.nombre || '';
-          resolvedProvince = loc.provincia?.nombre || '';
-          // Usa o nome da localidade como bairro — é o dado mais granular disponível
-          resolvedBairro  = loc.nombre || '';
-          console.log(`[CP Lookup] Sucesso: ${resolvedCity} / ${resolvedBairro} — ${resolvedProvince} (CP: ${numericCode})`);
+        const place = data?.places?.[0];
+        if (place) {
+          resolvedCity     = place['place name'] || '';
+          resolvedProvince = place['state'] || '';
+          // Normaliza o nome da província para o padrão argentino oficial
+          if (resolvedProvince.toLowerCase().includes('ciudad de buenos aires')) {
+            resolvedProvince = 'Ciudad Autónoma de Buenos Aires';
+          }
+          console.log(`[CP Lookup] Zippopotam: ${resolvedCity} — ${resolvedProvince} (CP: ${numericCode})`);
         }
       }
     } catch (err) {
-      console.warn('[CP Lookup] API datos.gob.ar não respondeu, usando fallback local:', err.message);
+      console.warn('[CP Lookup] Zippopotam falhou, tentando datos.gob.ar:', err.message);
     }
 
-    // Fallback por faixas: só ativa se a API não retornou nada
+    // ── API SECUNDÁRIA: datos.gob.ar — Melhor para localidades menores
     if (!resolvedCity) {
-      console.warn(`[CP Lookup] API sem resultado para CP ${numericCode}. Usando fallback por faixa numérica.`);
+      try {
+        const res = await fetch(
+          `https://apis.datos.gob.ar/georef/api/localidades?cp=${numericCode}&max=5&campos=nombre,provincia.nombre,municipio.nombre`,
+          { signal: AbortSignal.timeout(6000) }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const results = data?.localidades || [];
+          const loc = results.find(l => l.municipio?.nombre && l.nombre === l.municipio?.nombre) || results[0];
+          if (loc) {
+            resolvedCity     = loc.municipio?.nombre || loc.nombre || '';
+            resolvedProvince = loc.provincia?.nombre || '';
+            resolvedBairro   = loc.nombre || '';
+            console.log(`[CP Lookup] datos.gob.ar: ${resolvedCity} / ${resolvedBairro} — ${resolvedProvince}`);
+          }
+        }
+      } catch (err) {
+        console.warn('[CP Lookup] datos.gob.ar falhou, usando fallback por faixa:', err.message);
+      }
+    }
+
+    // ── FALLBACK FINAL: Tabela por faixa numérica — garante preenchimento mínimo
+    if (!resolvedCity) {
+      console.warn(`[CP Lookup] Nenhuma API respondeu para CP ${numericCode}. Usando fallback por faixa.`);
       const num = parseInt(numericCode, 10);
-      if      (num >= 1000 && num <= 1499) { resolvedCity = 'Buenos Aires (CABA)'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; resolvedBairro = ''; }
-      else if (num >= 1500 && num <= 1899) { resolvedCity = 'Avellaneda';          resolvedProvince = 'Buenos Aires';                   resolvedBairro = ''; }
-      else if (num >= 1900 && num <= 1999) { resolvedCity = 'La Plata';            resolvedProvince = 'Buenos Aires';                   resolvedBairro = ''; }
-      else if (num >= 2000 && num <= 2499) { resolvedCity = 'Rosario';             resolvedProvince = 'Santa Fe';                       resolvedBairro = ''; }
-      else if (num >= 3000 && num <= 3299) { resolvedCity = 'Santa Fe';            resolvedProvince = 'Santa Fe';                       resolvedBairro = ''; }
-      else if (num >= 4000 && num <= 4199) { resolvedCity = 'San Miguel de Tucumán'; resolvedProvince = 'Tucumán';                      resolvedBairro = ''; }
-      else if (num >= 5000 && num <= 5299) { resolvedCity = 'Córdoba';             resolvedProvince = 'Córdoba';                        resolvedBairro = ''; }
-      else if (num >= 5500 && num <= 5699) { resolvedCity = 'Mendoza';             resolvedProvince = 'Mendoza';                        resolvedBairro = ''; }
-      // Se nem o fallback encontrar, deixa em branco para o usuário preencher manualmente
+      if      (num >= 1000 && num <= 1499) { resolvedCity = 'Buenos Aires';         resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
+      else if (num >= 1500 && num <= 1899) { resolvedCity = 'Avellaneda';           resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 1900 && num <= 1999) { resolvedCity = 'La Plata';             resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 2000 && num <= 2499) { resolvedCity = 'Rosario';              resolvedProvince = 'Santa Fe'; }
+      else if (num >= 3000 && num <= 3299) { resolvedCity = 'Santa Fe';             resolvedProvince = 'Santa Fe'; }
+      else if (num >= 4000 && num <= 4199) { resolvedCity = 'San Miguel de Tucumán'; resolvedProvince = 'Tucumán'; }
+      else if (num >= 5000 && num <= 5299) { resolvedCity = 'Córdoba';              resolvedProvince = 'Córdoba'; }
+      else if (num >= 5500 && num <= 5699) { resolvedCity = 'Mendoza';              resolvedProvince = 'Mendoza'; }
+      else if (num >= 6000 && num <= 6499) { resolvedCity = 'Mar del Plata';        resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 7000 && num <= 7999) { resolvedCity = 'Bahía Blanca';         resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 8000 && num <= 8499) { resolvedCity = 'Neuquén';              resolvedProvince = 'Neuquén'; }
+      else if (num >= 9000 && num <= 9499) { resolvedCity = 'Comodoro Rivadavia';   resolvedProvince = 'Chubut'; }
+    }
+
+    // Se o bairro ainda estiver vazio (situação comum em CABA com CEP de 4 dígitos),
+    // usa a cidade como valor inicial para o usuário confirmar/corrigir
+    if (!resolvedBairro && resolvedCity) {
+      resolvedBairro = resolvedCity;
     }
 
     setFormData(prev => ({
@@ -536,14 +562,14 @@ export default function Checkout() {
               </div>
               <div className="form-group">
                 <label>{t('checkout_city')} *</label>
-                <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required disabled />
+                <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label>{t('checkout_province')} *</label>
-                <input type="text" name="provincia" value={formData.provincia} onChange={handleInputChange} required disabled />
+                <input type="text" name="provincia" value={formData.provincia} onChange={handleInputChange} required />
               </div>
             </div>
 
