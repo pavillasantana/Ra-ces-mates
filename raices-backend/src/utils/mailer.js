@@ -8,12 +8,14 @@ async function createTransporter() {
   const pass = process.env.SMTP_PASS;
 
   // Se existirem credenciais no .env, utiliza
+  // NOTA: Remove espaços do App Password — o Google gera com espaços (ex: "abcd efgh ijkl mnop")
+  // mas o SMTP exige sem espaços ("abcdefghijklmnop")
   if (host && user && pass) {
     return nodemailer.createTransport({
       host,
       port: parseInt(port, 10),
-      secure: port == 465, // true para 465, false para outros
-      auth: { user, pass }
+      secure: port == 465,
+      auth: { user, pass: pass.replace(/\s/g, '') }
     });
   }
 
