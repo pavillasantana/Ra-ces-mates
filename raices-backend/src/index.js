@@ -9,10 +9,25 @@ import paymentsRoutes from './routes/payments.js'; // Nota: Como usaremos o Link
 dotenv.config();
 const app = express();
 
-// Configuração do CORS aceitando a URL da Vercel (Produção) ou Localhost (Desenvolvimento)
-app.use(cors({ 
-  origin: process.env.CLIENT_URL || 'http://localhost:5173', 
-  credentials: true 
+// CORS — permite Vercel (qualquer subdomínio), produção e localhost
+const ALLOWED_ORIGINS = [
+  process.env.CLIENT_URL,
+  'https://raicesoficial.online',
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (Render health checks, OAuth redirects)
+    if (!origin) return callback(null, true);
+    // Permite a origin exata ou qualquer subdomínio .vercel.app
+    const allowed = ALLOWED_ORIGINS.some(o => origin === o) || origin.endsWith('.vercel.app');
+    if (allowed) return callback(null, true);
+    console.warn(`[CORS] Origem bloqueada: ${origin}`);
+    return callback(new Error('CORS: origem não permitida'));
+  },
+  credentials: true
 }));
 
 app.use(express.json());
@@ -21,43 +36,6 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running smoothly' });
 });
-
-// ── DIAGNÓSTICO TEMPORÁRIO — remover após confirmar o Gmail funciona
-app.get('/api/test-email', async (req, res) => {
-  const nodemailer = (await import('nodemailer')).default;
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-
-  if (!SMTP_USER || !SMTP_PASS) {
-    return res.status(500).json({ 
-      ok: false, 
-      error: 'SMTP_USER ou SMTP_PASS não configurados no Render',
-      vars: { SMTP_HOST: !!SMTP_HOST, SMTP_PORT: !!SMTP_PORT, SMTP_USER: !!SMTP_USER, SMTP_PASS: !!SMTP_PASS }
-    });
-  }
-
-  try {
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(SMTP_PORT || '587', 10),
-      secure: (SMTP_PORT || '587') === '465',
-      auth: { user: SMTP_USER, pass: SMTP_PASS.replace(/\s/g, '') }
-    });
-
-    await transporter.verify();
-    
-    await transporter.sendMail({
-      from: `"Raíces Test" <${SMTP_USER}>`,
-      to: SMTP_USER,
-      subject: '✅ Raíces SMTP Test',
-      text: 'SMTP Gmail funcionando corretamente no Render!'
-    });
-
-    return res.json({ ok: true, message: `E-mail de teste enviado para ${SMTP_USER}`, smtp_user: SMTP_USER });
-  } catch (err) {
-    return res.status(500).json({ ok: false, error: err.message, code: err.code });
-  }
-});
-
 
 // Rotas da API
 app.use('/api/auth', authRoutes);

@@ -7,7 +7,6 @@ import {
   exchangeCodeForToken,
   submitOrderToTiendanube
 } from '../utils/tiendanube.js';
-import { calculateShippingRates } from '../utils/shippingProviders.js';
 
 const router = express.Router();
 
@@ -26,43 +25,97 @@ const DISCOUNT_RATES = {
   credit_card: 0.05     // Cartão de Crédito (5%)
 };
 
-// ──────────────────────────────────────────────────────────────────────────────
-// 0. Endpoint de Fretes (Tiendanube Shipping Carriers API)
-// Chamado pelo frontend ao buscar o CEP — retorna as opções reais de envio
-// da loja na Tiendanube. Se o token não estiver disponível, retorna fallback.
-// ──────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
-// 0. Endpoint de Fretes — Multi-Provider (OCA, Andreani, Correo Argentino, Moto)
-// Agrega resultados de todas as transportadoras ativas em paralelo.
-// Usa API real quando credenciais estão configuradas, mock realista caso contrário.
+// 0. Endpoint de Fretes — Via Tiendanube (Envío Nube)
+// Frontend → nosso backend → POST Tiendanube /v1/{store_id}/shipping_rates
+// Retorna as opções reais ativas na loja (Andreani via Envío Nube, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/shipping-rates', async (req, res) => {
-  const { cp = '', province = '', weight = '0.5' } = req.query;
+router.post('/shipping-rates', async (req, res) => {
+  const { cp, products = [], currency = 'ARS' } = req.body;
 
   if (!cp) {
-    return res.status(400).json({ message: 'Parâmetro cp (código postal) é obrigatório.' });
+    return res.status(400).json({ message: 'Código postal (cp) é obrigatório.' });
   }
 
+  const { accessToken, storeId } = getTiendanubeCredentials();
+
+  if (!accessToken) {
+    console.error('[Fretes] NUVEMSHOP_ACCESS_TOKEN não configurado. Complete o OAuth em /api/payments/tiendanube/authorize');
+    return res.status(503).json({
+      message: 'Gateway logístico não autorizado. Configure NUVEMSHOP_ACCESS_TOKEN no Render.',
+      rates: []
+    });
+  }
+
+  // Monta os itens no formato da Tiendanube
+  const tnProducts = products.length > 0
+    ? products.map(p => ({
+        variant_id:    p.variant_id || p.id || null,
+        quantity:      parseInt(p.quantity, 10) || 1,
+        free_shipping: false,
+        weight: String(p.weight   || '0.500'),
+        dimensions: {
+          width:  String(p.width  || '10.00'),
+          height: String(p.height || '10.00'),
+          depth:  String(p.depth  || '10.00')
+        }
+      }))
+    : [{ variant_id: null, quantity: 1, free_shipping: false, weight: '0.500',
+         dimensions: { width: '10.00', height: '10.00', depth: '10.00' } }];
+
+  const requestBody = {
+    origin_zip_code:      process.env.STORE_ORIGIN_CP || '1000',
+    destination_zip_code: String(cp),
+    products: tnProducts,
+    currency
+  };
+
+  console.log(`[Fretes] POST /v1/${storeId}/shipping_rates | destino: ${cp} | itens: ${tnProducts.length}`);
+
   try {
-    const rates = await calculateShippingRates({
-      cp,
-      province,
-      weightKg: parseFloat(weight) || 0.5,
+    const tnRes = await fetch(`https://api.tiendanube.com/v1/${storeId}/shipping_rates`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type':  'application/json',
+        'User-Agent':    'RaicesApp/1.0 (pavilla.santana@yahoo.com)'
+      },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(12000)
     });
 
-    if (rates.length === 0) {
-      console.warn(`[Shipping Rates] Nenhuma transportadora retornou para CP ${cp}.`);
-      return res.json({ source: 'empty', rates: [] });
+    const rawBody = await tnRes.text();
+
+    if (!tnRes.ok) {
+      console.error(`[Fretes] Tiendanube ${tnRes.status}: ${rawBody}`);
+      return res.status(tnRes.status).json({
+        message: `Erro na API Tiendanube (${tnRes.status}). Verifique se o Envío Nube está ativo.`,
+        detail: rawBody,
+        rates: []
+      });
     }
 
-    // Ordena por preço crescente (menor frete primeiro)
-    rates.sort((a, b) => a.price - b.price);
+    let data;
+    try { data = JSON.parse(rawBody); } catch { data = []; }
 
-    return res.json({ source: 'multi_provider', rates });
+    // Normaliza para o formato do frontend
+    const options = Array.isArray(data) ? data : (data.shipping_rates || data.options || []);
+    const rates = options.map(opt => ({
+      id:   String(opt.id || opt.code || opt.carrier_id || Math.random().toString(36).slice(2)),
+      name: opt.name || opt.carrier_name || opt.description || 'Envío',
+      time: opt.estimated_delivery_time
+              ? `${opt.estimated_delivery_time.days_min ?? opt.estimated_delivery_time.min ?? '?'}-${opt.estimated_delivery_time.days_max ?? opt.estimated_delivery_time.max ?? '?'} días hábiles`
+              : (opt.delivery_time || 'Consultar plazo'),
+      price:  Math.round(parseFloat(opt.price || opt.cost || opt.amount || 0)),
+      source: 'tiendanube'
+    })).filter(r => !isNaN(r.price));
+
+    console.log(`[Fretes] ${rates.length} opção(ões) da Tiendanube para CP ${cp}.`);
+    return res.json({ source: 'tiendanube', rates });
 
   } catch (err) {
-    console.error('[Shipping Rates] Erro crítico no aggregator:', err.message);
-    return res.status(500).json({ message: 'Erro ao calcular fretes.', rates: [] });
+    console.error('[Fretes] Exceção ao chamar Tiendanube:', err.message);
+    return res.status(500).json({ message: 'Erro interno ao calcular fretes.', rates: [] });
   }
 });
 

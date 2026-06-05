@@ -241,23 +241,43 @@ export default function Checkout() {
       FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
     }
 
-    let finalRates = FALLBACK_RATES;
+    let finalRates = [];
     try {
       const shippingRes = await fetch(
-        `${BACKEND_URL}/api/payments/shipping-rates?cp=${numericCode}&province=${encodeURIComponent(resolvedProvince)}`,
-        { signal: AbortSignal.timeout(7000) }
+        `${BACKEND_URL}/api/payments/shipping-rates`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cp: numericCode,
+            currency: 'ARS',
+            products: (cart || []).map(item => ({
+              variant_id:    item.tiendanubeVariantId || item.id || null,
+              id:            item.id,
+              quantity:      item.quantity || 1,
+              weight:        String(item.weight || '0.500'),
+              width:         String(item.width  || '10.00'),
+              height:        String(item.height || '10.00'),
+              depth:         String(item.depth  || '10.00'),
+            }))
+          }),
+          signal: AbortSignal.timeout(12000)
+        }
       );
       if (shippingRes.ok) {
         const shippingData = await shippingRes.json();
         if (Array.isArray(shippingData.rates) && shippingData.rates.length > 0) {
           finalRates = shippingData.rates;
-          console.log(`[Frete] ${finalRates.length} opção(ões) recebida(s) da Tiendanube via backend.`);
+          console.log(`[Frete] ${finalRates.length} opção(ões) recebida(s) da Tiendanube.`);
         } else {
-          console.warn('[Frete] Backend retornou lista vazia. Usando fallback local.');
+          console.warn('[Frete] Tiendanube retornou lista vazia. Verifique o Envío Nube na loja.');
         }
+      } else {
+        const errData = await shippingRes.json().catch(() => ({}));
+        console.warn('[Frete] Backend retornou erro:', errData.message);
       }
     } catch (shippingErr) {
-      console.warn('[Frete] Backend de fretes indisponível. Usando fallback local:', shippingErr.message);
+      console.warn('[Frete] Backend indisponível:', shippingErr.message);
     }
 
     setShippingOptions(finalRates);
