@@ -31,11 +31,17 @@ export default function Checkout() {
     provincia: ''
   });
 
-  // 2. Estados Logísticos (Tiendanube API Simulation)
+  // 2. Estados Logísticos
   const [shippingOptions, setShippingOptions] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(null);
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [zipSearched, setZipSearched] = useState(false);
+
+  // 2b. Multi-localidade: quando um CP cobre vários bairros/cidades
+  // availableLocalities = [{city, province, bairro, label}]
+  // isMultipleZone = true → mostra dropdown para o usuário escolher
+  const [availableLocalities, setAvailableLocalities] = useState([]);
+  const [isMultipleZone, setIsMultipleZone] = useState(false);
 
   // 3. Estados de Cupons e Descontos
   const [couponInput, setCouponInput] = useState('');
@@ -101,6 +107,22 @@ export default function Checkout() {
       setZipSearched(false);
       setShippingOptions([]);
       setSelectedShipping(null);
+      setAvailableLocalities([]);
+      setIsMultipleZone(false);
+    }
+  };
+
+  // Quando o usuário seleciona uma localidade no dropdown (CP multi-zona)
+  const handleLocalitySelect = (e) => {
+    const idx = parseInt(e.target.value, 10);
+    const loc = availableLocalities[idx];
+    if (loc) {
+      setFormData(prev => ({
+        ...prev,
+        cidade:   loc.city,
+        provincia: loc.province,
+        bairro:   loc.bairro,
+      }));
     }
   };
 
@@ -197,6 +219,14 @@ export default function Checkout() {
     1429:'Núñez',       1430:'Núñez',
   };
 
+  // ─── LOOKUP DE CEP: Arquitetura Multi-Localidade ────────────────────────────
+  // Fluxo:
+  //   1. Nominatim (limit=5) → detecta se o CP cobre múltiplas localidades
+  //   2. Se múltiplas → isMultipleZone=true, mostra dropdown ao usuário
+  //   3. Se única → preenche automaticamente
+  //   4. Tabela CABA local → enriquece o bairro (Nominatim não tem suburb na CABA)
+  //   5. Tabela GBA/Interior → fallback mínimo quando APIs falham
+  // ─────────────────────────────────────────────────────────────────────────────
   const handlePostalCodeLookup = async () => {
     const cleanZip = formData.codigoPostal.trim().toUpperCase();
     if (!cleanZip) {
@@ -204,32 +234,97 @@ export default function Checkout() {
       return;
     }
 
-    // Aceita 4 dígitos ou formato CPA alfanumérico (ex: C1043DFG)
     const isValidZip = /^(?:[A-HJ-NP-Z]?\d{4}[A-Z]{3}|\d{4})$/i.test(cleanZip);
     if (!isValidZip) {
-      showAlert('Código Postal Inválido', 'El formato debe ser numérico de 4 dígitos (Ej: 1043) o CPA alfanumérico (Ej: C1043DFG).', 'error');
+      showAlert('Código Postal Inválido', 'El formato debe ser numérico de 4 dígitos (Ej: 1081) o CPA alfanumérico (Ej: C1043DFG).', 'error');
       return;
     }
 
     setIsCalculatingShipping(true);
     setZipSearched(true);
     setSelectedShipping(null);
+    setAvailableLocalities([]);
+    setIsMultipleZone(false);
 
-    // Extrai a parte numérica de 4 dígitos do CPA se necessário
     let numericCode = cleanZip;
     const cpaMatch = cleanZip.match(/^[A-Z](\d{4})[A-Z]{3}$/i);
     if (cpaMatch) numericCode = cpaMatch[1];
+    const numInt = parseInt(numericCode, 10);
+
+    // ─── NORMALIZAÇÃO DE PROVÍNCIA ──────────────────────────────────────────────
+    const normalizeProvince = (raw) => {
+      if (!raw) return raw;
+      const p = raw.toLowerCase();
+      if (p.includes('autonomous city') || p.includes('ciudad autónoma') ||
+          p.includes('ciudad de buenos aires') || p === 'c') {
+        return 'Ciudad Autónoma de Buenos Aires';
+      }
+      if (p === 'buenos aires') return 'Buenos Aires';
+      return raw;
+    };
+
+    // ─── TABELA GBA/INTERIOR — faixas corrigidas ───────────────────────────────
+    // ERRO ANTERIOR: 1500–1899 todo para Avellaneda (ERRADO).
+    // Avellaneda é apenas faixa 1870–1879. A região 1600–1699 é San Martín.
+    const GBA_INTERIOR_TABLE = [
+      { min:1500, max:1569, city:'Morón',                   province:'Buenos Aires' },
+      { min:1570, max:1599, city:'Merlo',                   province:'Buenos Aires' },
+      { min:1600, max:1617, city:'Vicente López',            province:'Buenos Aires' },
+      { min:1618, max:1663, city:'General San Martín',       province:'Buenos Aires' },
+      { min:1664, max:1699, city:'Tres de Febrero',         province:'Buenos Aires' },
+      { min:1700, max:1749, city:'Morón',                   province:'Buenos Aires' },
+      { min:1750, max:1769, city:'Ituzaingó',               province:'Buenos Aires' },
+      { min:1770, max:1799, city:'La Matanza',              province:'Buenos Aires' },
+      { min:1800, max:1849, city:'Tigre',                   province:'Buenos Aires' },
+      { min:1850, max:1869, city:'San Isidro',              province:'Buenos Aires' },
+      { min:1870, max:1879, city:'Avellaneda',              province:'Buenos Aires' },
+      { min:1880, max:1889, city:'Quilmes',                 province:'Buenos Aires' },
+      { min:1890, max:1899, city:'Berazategui',             province:'Buenos Aires' },
+      { min:1900, max:1999, city:'La Plata',                province:'Buenos Aires' },
+      { min:2000, max:2199, city:'Rosario',                 province:'Santa Fe'     },
+      { min:2200, max:2399, city:'Rafaela',                 province:'Santa Fe'     },
+      { min:2400, max:2499, city:'Santiago del Estero',     province:'Santiago del Estero' },
+      { min:2600, max:2799, city:'Santa Rosa',              province:'La Pampa'     },
+      { min:2900, max:2999, city:'Bahía Blanca',            province:'Buenos Aires' },
+      { min:3000, max:3299, city:'Santa Fe',                province:'Santa Fe'     },
+      { min:3300, max:3499, city:'Paraná',                  province:'Entre Ríos'   },
+      { min:3500, max:3599, city:'Resistencia',             province:'Chaco'        },
+      { min:3600, max:3699, city:'Formosa',                 province:'Formosa'      },
+      { min:3700, max:3799, city:'Posadas',                 province:'Misiones'     },
+      { min:4000, max:4199, city:'San Miguel de Tucumán',   province:'Tucumán'      },
+      { min:4200, max:4299, city:'Santiago del Estero',     province:'Santiago del Estero' },
+      { min:4400, max:4499, city:'Salta',                   province:'Salta'        },
+      { min:4600, max:4699, city:'San Salvador de Jujuy',   province:'Jujuy'        },
+      { min:4700, max:4799, city:'Catamarca',               province:'Catamarca'    },
+      { min:5000, max:5299, city:'Córdoba',                 province:'Córdoba'      },
+      { min:5400, max:5499, city:'San Juan',                province:'San Juan'     },
+      { min:5500, max:5699, city:'Mendoza',                 province:'Mendoza'      },
+      { min:5700, max:5799, city:'San Luis',                province:'San Luis'     },
+      { min:6000, max:6099, city:'Mar del Plata',           province:'Buenos Aires' },
+      { min:6100, max:6499, city:'Azul',                    province:'Buenos Aires' },
+      { min:6500, max:6599, city:'Santa Rosa',              province:'La Pampa'     },
+      { min:7000, max:7099, city:'Tandil',                  province:'Buenos Aires' },
+      { min:7100, max:7499, city:'Bahía Blanca',            province:'Buenos Aires' },
+      { min:7500, max:7599, city:'Necochea',                province:'Buenos Aires' },
+      { min:8000, max:8199, city:'Neuquén',                 province:'Neuquén'      },
+      { min:8200, max:8399, city:'Bariloche',               province:'Río Negro'    },
+      { min:8400, max:8599, city:'Viedma',                  province:'Río Negro'    },
+      { min:9000, max:9099, city:'Comodoro Rivadavia',      province:'Chubut'       },
+      { min:9100, max:9299, city:'Trelew',                  province:'Chubut'       },
+      { min:9300, max:9399, city:'Puerto Madryn',           province:'Chubut'       },
+      { min:9400, max:9499, city:'Río Gallegos',            province:'Santa Cruz'   },
+      { min:9410, max:9499, city:'Ushuaia',                 province:'Tierra del Fuego' },
+    ];
 
     let resolvedCity     = '';
     let resolvedProvince = '';
     let resolvedBairro   = '';
+    let allLocalities    = []; // para multi-zona
 
-    // ── API PRIMÁRIA: OpenStreetMap Nominatim
-    // Cobertura confirmada para toda Argentina, incluindo CABA (1000–1499).
-    // Retorna campo 'suburb' com o nome do bairro quando disponível.
+    // ── PASSO 1: Nominatim com limit=5 para detectar multi-localidade ────────────
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?postalcode=${numericCode}&country=AR&format=json&addressdetails=1&limit=1`,
+        `https://nominatim.openstreetmap.org/search?postalcode=${numericCode}&country=AR&format=json&addressdetails=1&limit=5`,
         {
           signal: AbortSignal.timeout(6000),
           headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' }
@@ -237,43 +332,50 @@ export default function Checkout() {
       );
       if (res.ok) {
         const data = await res.json();
-        const result = Array.isArray(data) && data.length > 0 ? data[0] : null;
-        if (result?.address) {
-          const addr = result.address;
-          // Bairro: prioridade suburb → neighbourhood → quarter (state_district apenas como último recurso)
-          // state_district = 'Comuna X' que não é um bairro real — evitamos usar diretamente
-          resolvedBairro   = addr.suburb || addr.neighbourhood || addr.quarter || '';
-          // Cidade: prioridade city → town → municipality → county
-          resolvedCity     = addr.city || addr.town || addr.municipality || addr.county || '';
-          // Província
-          resolvedProvince = addr.state || '';
-          console.log(`[CP Lookup] Nominatim: Bairro="${resolvedBairro}" Cidade="${resolvedCity}" Prov="${resolvedProvince}" (CP: ${numericCode})`);
+        if (Array.isArray(data) && data.length > 0) {
+          // Deduplica por combinação cidade+bairro
+          const seen = new Set();
+          data.forEach(item => {
+            const addr = item.address || {};
+            const city   = addr.city || addr.town || addr.municipality || addr.county || '';
+            const bairro = addr.suburb || addr.neighbourhood || addr.quarter || '';
+            const prov   = normalizeProvince(addr.state || '');
+            const key    = `${city}|${bairro}`;
+            if (city && !seen.has(key)) {
+              seen.add(key);
+              allLocalities.push({ city, province: prov, bairro, label: bairro ? `${bairro} — ${city}` : city });
+            }
+          });
+
+          if (allLocalities.length === 1) {
+            // CP unívoco → preenche direto
+            resolvedCity     = allLocalities[0].city;
+            resolvedProvince = allLocalities[0].province;
+            resolvedBairro   = allLocalities[0].bairro;
+          } else if (allLocalities.length > 1) {
+            // CP multi-zona → vai mostrar dropdown
+            resolvedCity     = allLocalities[0].city;
+            resolvedProvince = allLocalities[0].province;
+            resolvedBairro   = allLocalities[0].bairro;
+            console.log(`[CP Lookup] Multi-zona detectado: ${allLocalities.length} localidades para CP ${numericCode}`);
+          }
         }
       }
     } catch (err) {
       console.warn('[CP Lookup] Nominatim falhou:', err.message);
     }
 
-    // ── API SECUNDÁRIA: Zippopotam.us — Boa cobertura para interior (Rosario, Córdoba, etc.)
-    // NOTA: Cobertura ZERO para CABA (1000–1499) — confirmado em testes extensivos.
+    // ── PASSO 2: Zippopotam — interior (Rosario, Córdoba, etc.) ─────────────────
     if (!resolvedCity) {
       try {
-        const res = await fetch(
-          `https://api.zippopotam.us/ar/${numericCode}`,
-          { signal: AbortSignal.timeout(5000) }
-        );
+        const res = await fetch(`https://api.zippopotam.us/ar/${numericCode}`, { signal: AbortSignal.timeout(5000) });
         if (res.ok) {
           const data = await res.json();
-          // Zippopotam retorna {} (objeto vazio sem a chave 'places') quando não encontra
           const places = data?.places;
           if (places && places.length > 0) {
-            const place = places[0];
-            resolvedCity     = place['place name'] || '';
-            resolvedProvince = place['state']      || '';
-            // Zippopotam não retorna bairro — campo fica vazio para o usuário preencher
-            console.log(`[CP Lookup] Zippopotam: Cidade="${resolvedCity}" Prov="${resolvedProvince}" (CP: ${numericCode})`);
-          } else {
-            console.warn(`[CP Lookup] Zippopotam: sem dados para CP ${numericCode} (cobertura limitada)`);
+            resolvedCity     = places[0]['place name'] || '';
+            resolvedProvince = normalizeProvince(places[0]['state'] || '');
+            console.log(`[CP Lookup] Zippopotam: ${resolvedCity} / ${resolvedProvince}`);
           }
         }
       } catch (err) {
@@ -281,76 +383,66 @@ export default function Checkout() {
       }
     }
 
-    // ── FALLBACK FINAL: Tabela interna por faixa numérica
-    // Garante preenchimento mínimo de cidade e província quando todas as APIs falham.
-    // BAIRRO é intencionalmente deixado vazio — o usuário deve preenchê-lo.
-    if (!resolvedCity) {
-      console.warn(`[CP Lookup] Todas as APIs falharam para CP ${numericCode}. Usando tabela de fallback.`);
-      const num = parseInt(numericCode, 10);
-      if      (num >= 1000 && num <= 1099) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
-      else if (num >= 1100 && num <= 1199) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
-      else if (num >= 1200 && num <= 1299) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
-      else if (num >= 1300 && num <= 1399) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
-      else if (num >= 1400 && num <= 1499) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
-      else if (num >= 1500 && num <= 1899) { resolvedCity = 'Avellaneda';   resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 1900 && num <= 1999) { resolvedCity = 'La Plata';     resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 2000 && num <= 2499) { resolvedCity = 'Rosario';      resolvedProvince = 'Santa Fe'; }
-      else if (num >= 3000 && num <= 3299) { resolvedCity = 'Santa Fe';     resolvedProvince = 'Santa Fe'; }
-      else if (num >= 4000 && num <= 4199) { resolvedCity = 'San Miguel de Tucumán'; resolvedProvince = 'Tucumán'; }
-      else if (num >= 5000 && num <= 5299) { resolvedCity = 'Córdoba';      resolvedProvince = 'Córdoba'; }
-      else if (num >= 5500 && num <= 5699) { resolvedCity = 'Mendoza';      resolvedProvince = 'Mendoza'; }
-      else if (num >= 6000 && num <= 6499) { resolvedCity = 'Mar del Plata'; resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 7000 && num <= 7999) { resolvedCity = 'Bahía Blanca'; resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 8000 && num <= 8499) { resolvedCity = 'Neuquén';      resolvedProvince = 'Neuquén'; }
-      else if (num >= 9000 && num <= 9499) { resolvedCity = 'Comodoro Rivadavia'; resolvedProvince = 'Chubut'; }
-    }
-
-    // ── NORMALIZAÇÃO FINAL DA PROVÍNCIA ────────────────────────────────────────
-    // Unifica variações de nome retornadas pelas APIs para o padrão argentino oficial.
-    // Nominatim pode retornar nomes em inglês (ex: "Autonomous City of Buenos Aires").
-    if (resolvedProvince) {
-      const pLower = resolvedProvince.toLowerCase();
-      if (
-        pLower.includes('ciudad de buenos aires') ||
-        pLower.includes('ciudad autónoma') ||
-        pLower.includes('autonomous city of buenos aires') || // Nominatim em inglês
-        pLower === 'c'
-      ) {
-        resolvedProvince = 'Ciudad Autónoma de Buenos Aires';
-      }
-    }
-
-    // ── BAIRRO: NUNCA copiar cidade como bairro ─────────────────────────────────
-    // Se nenhuma API retornou o bairro, deixar vazio com placeholder indicativo.
-    // Isso informa o usuário que ele precisa preencher, ao invés de dar dado errado.
-    // (Bug anterior: copiava resolvedCity → resolvedBairro, exibindo 'Buenos Aires' como bairro)
-
-    // Atualiza os campos do formulário
-    // Se Nominatim ou Zippopotam retornaram bairro real, usa. Caso contrário deixa vazio.
-    // ── TABELA LOCAL CABA → enriquece o bairro quando API não retorna ──────────
-    // Consulta a tabela primeiro; se Nominatim já retornou suburb real, mantém o da API.
-    const numInt = parseInt(numericCode, 10);
+    // ── PASSO 3: CABA — tabela local (Nominatim não tem suburb para CABA) ────────
     if (!resolvedBairro && CABA_BARRIO_TABLE[numInt]) {
       resolvedBairro = CABA_BARRIO_TABLE[numInt];
       console.log(`[CP Lookup] Tabela CABA: Bairro="${resolvedBairro}" para CP ${numericCode}`);
     }
 
-    setFormData(prev => ({
-      ...prev,
-      bairro:   resolvedBairro,
-      cidade:   resolvedCity,
-      provincia: resolvedProvince
-    }));
+    // ── PASSO 4: GBA/Interior — fallback numérico corrigido ─────────────────────
+    if (!resolvedCity) {
+      // CABA (1000–1499)
+      if (numInt >= 1000 && numInt <= 1499) {
+        resolvedCity     = 'Buenos Aires';
+        resolvedProvince = 'Ciudad Autónoma de Buenos Aires';
+      } else {
+        const match = GBA_INTERIOR_TABLE.find(r => numInt >= r.min && numInt <= r.max);
+        if (match) {
+          resolvedCity     = match.city;
+          resolvedProvince = match.province;
+          console.log(`[CP Lookup] Tabela GBA/Interior: ${resolvedCity} / ${resolvedProvince} para CP ${numericCode}`);
+        }
+      }
+    }
 
-    // ── CORREÇÃO PROBLEMA 3: Busca fretes reais via backend (Tiendanube API)
-    // Se o backend retornar opções reais, usa-as. Se não, usa o fallback hardcoded.
+    resolvedProvince = normalizeProvince(resolvedProvince);
+
+    // ── PASSO 5: Atualiza UI — single ou multi-zona ──────────────────────────────
+    if (allLocalities.length > 1) {
+      // Enriquece cada opção com barrio da tabela CABA se necessário
+      const enriched = allLocalities.map(loc => ({
+        ...loc,
+        bairro: loc.bairro || CABA_BARRIO_TABLE[numInt] || '',
+        label:  loc.bairro ? `${loc.bairro} — ${loc.city}` : loc.city,
+      }));
+      setAvailableLocalities(enriched);
+      setIsMultipleZone(true);
+      // Preenche com a primeira opção como padrão
+      setFormData(prev => ({
+        ...prev,
+        bairro:   enriched[0].bairro,
+        cidade:   enriched[0].city,
+        provincia: enriched[0].province,
+      }));
+    } else {
+      setIsMultipleZone(false);
+      setAvailableLocalities([]);
+      setFormData(prev => ({
+        ...prev,
+        bairro:   resolvedBairro,
+        cidade:   resolvedCity,
+        provincia: resolvedProvince,
+      }));
+    }
+
+    // ── PASSO 6: Frete ───────────────────────────────────────────────────────────
     const FALLBACK_RATES = [
-      { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles',        price: 4500 },
-      { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles',        price: 5200 },
-      { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles',        price: 3800 },
+      { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles', price: 4500 },
+      { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles', price: 5200 },
+      { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles', price: 3800 },
     ];
-    const isLocal = resolvedProvince.toLowerCase().includes('buenos aires') || resolvedProvince.toLowerCase().includes('autónoma');
-    if (isLocal) {
+    const isCABAorGBA = resolvedProvince.toLowerCase().includes('buenos aires') || resolvedProvince.toLowerCase().includes('autónoma');
+    if (isCABAorGBA) {
       FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
     }
 
@@ -365,13 +457,12 @@ export default function Checkout() {
             cp: numericCode,
             currency: 'ARS',
             products: (cart || []).map(item => ({
-              variant_id:    item.tiendanubeVariantId || item.id || null,
-              id:            item.id,
-              quantity:      item.quantity || 1,
-              weight:        String(item.weight || '0.500'),
-              width:         String(item.width  || '10.00'),
-              height:        String(item.height || '10.00'),
-              depth:         String(item.depth  || '10.00'),
+              variant_id: item.tiendanubeVariantId || item.id || null,
+              id: item.id, quantity: item.quantity || 1,
+              weight: String(item.weight || '0.500'),
+              width:  String(item.width  || '10.00'),
+              height: String(item.height || '10.00'),
+              depth:  String(item.depth  || '10.00'),
             }))
           }),
           signal: AbortSignal.timeout(12000)
@@ -383,31 +474,21 @@ export default function Checkout() {
           finalRates = shippingData.rates;
           console.log(`[Frete] ${finalRates.length} opção(ões) recebida(s) da Tiendanube.`);
         } else {
-          console.warn('[Frete] Tiendanube retornou lista vazia. Verifique o Envío Nube na loja.');
+          console.warn('[Frete] Tiendanube retornou lista vazia. Usando fallback.');
         }
-      } else {
-        const errData = await shippingRes.json().catch(() => ({}));
-        console.warn('[Frete] Backend retornou erro:', errData.message);
       }
     } catch (shippingErr) {
       console.warn('[Frete] Backend indisponível:', shippingErr.message);
     }
 
-    // ── BUG CRÍTICO CORRIGIDO: FALLBACK_RATES nunca era aplicado ────────────────
-    // Se a Tiendanube não retornou opções (token não configurado ou loja sem frete ativo),
-    // usa as opções de fallback para que selectedShipping nunca fique null.
-    // Isso desbloqueava o pagamento: isDeliverySectionValid exige selectedShipping !== null.
-    if (finalRates.length === 0) {
-      console.warn('[Frete] Nenhuma opção da Tiendanube. Usando tarifas de referência.');
-      finalRates = FALLBACK_RATES;
-    }
-
+    if (finalRates.length === 0) finalRates = FALLBACK_RATES;
     setShippingOptions(finalRates);
-    setSelectedShipping(finalRates[0]);  // sempre seleciona a primeira opção automaticamente
+    setSelectedShipping(finalRates[0]);
     setIsCalculatingShipping(false);
   };
 
   // Motor de cupons com validação no backend Render/Local e trava de duplicidade
+
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
 
@@ -702,11 +783,46 @@ export default function Checkout() {
                   </button>
                 </div>
               </div>
+
+              {/* Ciudad: dropdown se CP multi-zona, input se unívoco */}
               <div className="form-group">
-                <label>{t('checkout_city')} *</label>
-                <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required />
+                <label>
+                  {t('checkout_city')} *
+                  {isMultipleZone && (
+                    <span style={{ fontSize: '0.75rem', color: '#8B5E3C', fontWeight: 400, marginLeft: '0.5rem' }}>
+                      — seleccione su localidad
+                    </span>
+                  )}
+                </label>
+                {isMultipleZone ? (
+                  <select
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1rem' }}
+                    onChange={handleLocalitySelect}
+                    defaultValue={0}
+                  >
+                    {availableLocalities.map((loc, idx) => (
+                      <option key={idx} value={idx}>{loc.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required />
+                )}
               </div>
             </div>
+
+            {/* Banner informativo para CP multi-zona */}
+            {isMultipleZone && (
+              <div style={{
+                background: '#FFF8F0', border: '1px solid #E8C99A', borderRadius: '8px',
+                padding: '0.75rem 1rem', marginBottom: '0.75rem', fontSize: '0.85rem', color: '#7A5230',
+                display: 'flex', alignItems: 'flex-start', gap: '0.5rem'
+              }}>
+                <span style={{ fontSize: '1.1rem' }}>ℹ️</span>
+                <span>
+                  <strong>Su código postal cubre varias zonas.</strong> Seleccione la localidad correcta en el campo "Ciudad" para asegurar una entrega precisa.
+                </span>
+              </div>
+            )}
 
             <div className="form-row">
               <div className="form-group" style={{ gridColumn: 'span 2' }}>
@@ -717,8 +833,13 @@ export default function Checkout() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Calle / Avenida *</label>
-                <input type="text" name="rua" placeholder="Ej: Av. del Libertador" value={formData.rua} onChange={handleInputChange} required />
+                <label>
+                  Calle / Avenida *
+                  <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 400, marginLeft: '0.5rem' }}>
+                    (ingrese manualmente)
+                  </span>
+                </label>
+                <input type="text" name="rua" placeholder="Ej: Av. Corrientes" value={formData.rua} onChange={handleInputChange} required />
               </div>
               <div className="form-group">
                 <label>Número *</label>
@@ -733,9 +854,21 @@ export default function Checkout() {
               </div>
               <div className="form-group">
                 <label>Barrio / Zona *</label>
-                <input type="text" name="bairro" placeholder="Ej: Palermo" value={formData.bairro} onChange={handleInputChange} required />
+                {isMultipleZone ? (
+                  <input
+                    type="text"
+                    name="bairro"
+                    value={formData.bairro}
+                    onChange={handleInputChange}
+                    placeholder="Confirme o edite su barrio"
+                    required
+                  />
+                ) : (
+                  <input type="text" name="bairro" placeholder="Ej: Palermo" value={formData.bairro} onChange={handleInputChange} required />
+                )}
               </div>
             </div>
+
 
             {/* Opções de Frete (Tiendanube API integration) */}
             {zipSearched && (
