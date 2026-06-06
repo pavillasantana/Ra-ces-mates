@@ -226,8 +226,10 @@ export default function Checkout() {
     setStreetSuggestions([]);
     setShowStreetDropdown(false);
   // CABA_BARRIO_TABLE é const do escopo do componente — sem dependência externa
+  // normalizeProvince é pura/estável (deps=[]) — seguro usar [] aqui
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalizeProvince]);
+  }, []);
+
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
