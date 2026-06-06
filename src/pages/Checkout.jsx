@@ -11,6 +11,17 @@ const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
 };
 
+const normalizeProvince = (raw) => {
+  if (!raw) return raw;
+  const p = raw.toLowerCase();
+  if (p.includes('autonomous city') || p.includes('ciudad autónoma') ||
+      p.includes('ciudad de buenos aires') || p === 'c') {
+    return 'Ciudad Autónoma de Buenos Aires';
+  }
+  if (p === 'buenos aires') return 'Buenos Aires';
+  return raw;
+};
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, clearCart } = useCartStore();
@@ -117,8 +128,6 @@ export default function Checkout() {
       setSelectedShipping(null);
       setAvailableBarrios([]);
       setIsMultipleZone(false);
-      setStreetSuggestions([]);
-      setShowStreetDropdown(false);
     }
   };
 
@@ -202,7 +211,7 @@ export default function Checkout() {
     setCpSuggestions([]);
     setShowCpDropdown(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalizeProvince]);
+  }, []);
 
   // Fecha dropdown CP ao clicar fora
   useEffect(() => {
@@ -402,19 +411,6 @@ export default function Checkout() {
     1470:'Villa Soldati',1471:'Villa Soldati',
   };
 
-
-  // ─── NORMALIZAÇÃO DE PROVÍNCIA (escopo do componente) ──────────────────
-  // Centralizada aqui para ser usada tanto no lookup quanto no autocomplete de rua.
-  const normalizeProvince = useCallback((raw) => {
-    if (!raw) return raw;
-    const p = raw.toLowerCase();
-    if (p.includes('autonomous city') || p.includes('ciudad autónoma') ||
-        p.includes('ciudad de buenos aires') || p === 'c') {
-      return 'Ciudad Autónoma de Buenos Aires';
-    }
-    if (p === 'buenos aires') return 'Buenos Aires';
-    return raw;
-  }, []);
 
   // ─── LOOKUP DE CEP: Arquitetura Multi-Localidade ────────────────────────────
   // Fluxo:

@@ -5,11 +5,11 @@ export default function Logo({ className = '', width = '200', height = 'auto' })
     <div className={`logo-wrapper ${className}`} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
       <svg 
         width={width} 
-        height={height} 
+        height={height === 'auto' ? undefined : height} 
         viewBox="0 0 400 200" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
-        style={{ maxWidth: '100%' }}
+        style={{ maxWidth: '100%', height: height === 'auto' ? 'auto' : undefined }}
       >
         {/* Outer Concentric Oval */}
         <ellipse cx="200" cy="100" rx="190" ry="90" stroke="var(--color-accent-green)" strokeWidth="1.5" />
