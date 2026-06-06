@@ -167,6 +167,7 @@ export default function Checkout() {
               suburb:   addr.suburb || addr.neighbourhood || addr.quarter || '',
               city:     addr.city || addr.town || addr.municipality || addr.county || '',
               province: addr.state || '',
+              postcode: addr.postcode || '',   // ← captura CP para autopreenchimento
               display:  `${road}${addr.suburb ? ' — ' + addr.suburb : ''}`,
             });
             return acc;
@@ -183,18 +184,50 @@ export default function Checkout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.codigoPostal]);
 
-  // Usuário selecionou uma sugestão de rua → preenche campos correlatos
+  // Usuário selecionou uma sugestão de rua → preenche TODOS os campos de endereço
+  // incluindo Código Postal, Barrio (com check multi-zona CABA), Ciudad e Provincia.
   const handleStreetSelect = useCallback((suggestion) => {
+    const rawCp    = suggestion.postcode || '';
+    // Nominatim pode retornar CPA completo (C1074AAZ) — extrai apenas os 4 dígitos numéricos
+    const cpClean  = rawCp.replace(/[^\d]/g, '').slice(0, 4);
+    const cpFinal  = cpClean || rawCp;   // mantém o original se não extraiu dígitos
+    const numCp    = parseInt(cpClean, 10);
+
+    // Verifica CABA_BARRIO_TABLE com o CP detectado para ativar dropdown multi-zona
+    const cabaEntry = !isNaN(numCp) ? CABA_BARRIO_TABLE[numCp] : undefined;
+    const isMulti   = Array.isArray(cabaEntry);
+    const autoBarrio = isMulti
+      ? cabaEntry[0]                                          // pré-seleciona primeiro item
+      : (typeof cabaEntry === 'string' ? cabaEntry : suggestion.suburb || '');
+
     setFormData(prev => ({
       ...prev,
-      rua:      suggestion.road,
-      bairro:   suggestion.suburb  || prev.bairro,
-      cidade:   suggestion.city    || prev.cidade,
-      provincia: suggestion.province ? normalizeProvince(suggestion.province) : prev.provincia,
+      rua:         suggestion.road,
+      bairro:      autoBarrio || suggestion.suburb || prev.bairro,
+      cidade:      suggestion.city     || prev.cidade,
+      provincia:   suggestion.province
+                     ? normalizeProvince(suggestion.province)
+                     : prev.provincia,
+      codigoPostal: cpFinal || prev.codigoPostal,
     }));
+
+    // Ativa estado de zona múltipla se o CP cobrir mais de um bairro em CABA
+    if (isMulti) {
+      setAvailableBarrios(cabaEntry);
+      setIsMultipleZone(true);
+    } else {
+      setAvailableBarrios([]);
+      setIsMultipleZone(false);
+    }
+
+    // Marca o CP como pesquisado para exibir seção de frete
+    if (cpFinal) setZipSearched(true);
+
     setStreetSuggestions([]);
     setShowStreetDropdown(false);
-  }, []);
+  // CABA_BARRIO_TABLE é const do escopo do componente — sem dependência externa
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [normalizeProvince]);
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
@@ -953,11 +986,18 @@ export default function Checkout() {
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
                         <strong style={{ color: '#3D2B1F' }}>{sug.road}</strong>
-                        {sug.suburb && (
-                          <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
-                            {sug.suburb}{sug.city ? ` — ${sug.city}` : ''}
-                          </span>
-                        )}
+                        <span style={{ fontSize: '0.78rem', color: '#8B6B4A', display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          {sug.suburb && <span>{sug.suburb}{sug.city ? ` — ${sug.city}` : ''}</span>}
+                          {sug.postcode && (
+                            <span style={{
+                              background: '#E8C99A', color: '#5A3A1A', borderRadius: '4px',
+                              padding: '0 5px', fontSize: '0.72rem', fontWeight: 600
+                            }}>
+                              CP {sug.postcode.replace(/[^\d]/g, '').slice(0, 4) || sug.postcode}
+                            </span>
+                          )}
+                        </span>
+
                       </li>
                     ))}
                   </ul>
