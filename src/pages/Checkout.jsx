@@ -245,6 +245,97 @@ export default function Checkout() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // ─── useEffect: GEOCODIFICAÇÃO REVERSA AUTOMÁTICA ─────────────────────────────
+  // Quando rua + numero estiverem preenchidos → busca automática no Nominatim
+  // sem precisar clicar em nenhum dropdown. Preenche CP, barrio, cidade, provincia.
+  const resolveDebounceRef = useRef(null);
+  const [isResolvingAddress, setIsResolvingAddress] = useState(false);
+  const [addressResolved, setAddressResolved] = useState(false);
+
+  useEffect(() => {
+    const { rua, numero } = formData;
+
+    // Detecta se o usuário digitou número junto na rua (ex: "Sarandi 31")
+    // Extrai número do final ou início da string
+    const trailingNum = rua.trim().match(/\s+(\d+)\s*$/);
+    const effectiveStreet = trailingNum
+      ? rua.trim().slice(0, rua.trim().lastIndexOf(trailingNum[1])).trim()
+      : rua.trim();
+    const effectiveNumber = numero.trim() || (trailingNum ? trailingNum[1] : '');
+
+    // Só resolve se tiver nome de rua válido + número
+    if (effectiveStreet.length < 3 || !effectiveNumber) return;
+
+    clearTimeout(resolveDebounceRef.current);
+    resolveDebounceRef.current = setTimeout(async () => {
+      setIsResolvingAddress(true);
+      try {
+        // Monta query completa com número para geocodificação precisa
+        const query = `${effectiveStreet} ${effectiveNumber}, Argentina`;
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=AR&format=json&addressdetails=1&limit=1`;
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' },
+          signal: AbortSignal.timeout(6000)
+        });
+        if (!res.ok) throw new Error('nominatim_error');
+        const data = await res.json();
+        const result = data[0];
+        if (!result?.address) throw new Error('no_result');
+
+        const addr = result.address;
+        const rawCp   = addr.postcode || '';
+        const cpClean = rawCp.replace(/[^\d]/g, '').slice(0, 4);
+        const cpFinal = cpClean || rawCp;
+        const numCp   = parseInt(cpClean, 10);
+
+        // Verifica CABA_BARRIO_TABLE para multi-zona
+        const cabaEntry  = !isNaN(numCp) ? CABA_BARRIO_TABLE[numCp] : undefined;
+        const isMulti    = Array.isArray(cabaEntry);
+        const autoBarrio = isMulti
+          ? cabaEntry[0]
+          : (typeof cabaEntry === 'string'
+              ? cabaEntry
+              : addr.suburb || addr.neighbourhood || addr.quarter || addr.city_district || '');
+
+        const resolvedCity     = addr.city || addr.town || addr.municipality || addr.county || '';
+        const resolvedProvince = normalizeProvince(addr.state || '');
+
+        setFormData(prev => ({
+          ...prev,
+          // Corrige campo rua: remove número se o usuário digitou junto
+          rua:         effectiveStreet || prev.rua,
+          // Preenche número separado se detectado dentro do campo rua
+          numero:      prev.numero.trim() || effectiveNumber,
+          bairro:      autoBarrio || prev.bairro,
+          cidade:      resolvedCity   || prev.cidade,
+          provincia:   resolvedProvince || prev.provincia,
+          codigoPostal: cpFinal || prev.codigoPostal,
+        }));
+
+        if (isMulti) {
+          setAvailableBarrios(cabaEntry);
+          setIsMultipleZone(true);
+        } else {
+          setAvailableBarrios([]);
+          setIsMultipleZone(false);
+        }
+
+        if (cpFinal) {
+          setZipSearched(true);
+          setAddressResolved(true);
+          setTimeout(() => setAddressResolved(false), 3000);
+        }
+      } catch (err) {
+        // Falha silenciosa — usuário ainda pode preencher manualmente
+        console.debug('[GeoReverse] Falha na resolução automática:', err.message);
+      }
+      setIsResolvingAddress(false);
+    }, 800);
+
+    return () => clearTimeout(resolveDebounceRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.rua, formData.numero]);
+
   // ─── useEffect REATIVO: Calcula frete quando endereço está completo ───────────────
   // Gatilho: rua + número + codigoPostal + bairro preenchidos
   // Desacoplado do lookup de CP — o frete só é buscado quando o endereço está COMPLETO.
@@ -955,15 +1046,26 @@ export default function Checkout() {
               {/* Calle / Avenida — com autocomplete preditivo via Nominatim (restrito ao CP) */}
               <div className="form-group" style={{ position: 'relative' }} data-street-autocomplete>
                 <label>
-                  Calle / Avenida *
-                  <span style={{ fontSize: '0.72rem', color: isLoadingStreet ? '#4A7C59' : '#888', fontWeight: 400, marginLeft: '0.4rem' }}>
-                    {isLoadingStreet ? '🔍 buscando...' : '(escriba para ver sugerencias)'}
-                  </span>
+                  Calle / Avenida + Número *
+                  {isResolvingAddress ? (
+                    <span style={{ fontSize: '0.72rem', color: '#4A7C59', fontWeight: 400, marginLeft: '0.5rem' }}>
+                      ⏳ buscando dirección...
+                    </span>
+                  ) : addressResolved ? (
+                    <span style={{ fontSize: '0.72rem', color: '#2E7D32', fontWeight: 600, marginLeft: '0.5rem',
+                      background: '#E8F5E9', padding: '1px 6px', borderRadius: '4px' }}>
+                      ✓ dirección autocompletada
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', color: '#888', fontWeight: 400, marginLeft: '0.4rem' }}>
+                      (escriba calle y número — el resto se completa solo)
+                    </span>
+                  )}
                 </label>
                 <input
                   type="text"
                   name="rua"
-                  placeholder="Ej: Av. Corrientes"
+                  placeholder="Ej: Sarandi 31  o  Av. Corrientes 1234"
                   value={formData.rua}
                   onChange={handleStreetInput}
                   onFocus={() => streetSuggestions.length > 0 && setShowStreetDropdown(true)}
