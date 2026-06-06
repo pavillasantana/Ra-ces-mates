@@ -611,95 +611,75 @@ export default function Checkout() {
       return;
     }
 
-    // B. Fluxo para Cartão — Redireciona para WhatsApp com dados do pedido
-    // NOTA: Integração com gateway de pagamento real (Mercado Pago) ainda não configurada.
-    // O lojista recebe os dados do pedido e cobra manualmente via link de pagamento.
+    // B. Fluxo para Cartão — Processa via backend (Tiendanube / gateway configurado)
     if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
-      const { number, holder, expiry } = cardData;
+      const { number, holder, expiry, cvv } = cardData;
       const cleanNumber = number.replace(/\s+/g, '');
-      const maskedCard = cleanNumber.length >= 4 ? `**** **** **** ${cleanNumber.slice(-4)}` : '****';
       const methodLabel = paymentMethod === 'credit_card' ? 'Tarjeta de Crédito (5% OFF)' : 'Tarjeta de Débito (10% OFF)';
-      const couponLine = appliedCoupon ? `%0A*Cupón:* ${appliedCoupon.code} (-${(appliedCoupon.rate * 100).toFixed(0)}% OFF)` : '';
-      const orderItems = cart.map(item => `${item.quantity}x ${item.name}`).join('%0A');
 
-      if (!cleanNumber || cleanNumber.length < 15 || !holder || !expiry) {
-        showAlert('Datos Incompletos', 'Por favor, complete todos los campos de la tarjeta.', 'error');
+      // Validação dos campos do cartão
+      if (!cleanNumber || cleanNumber.length < 15) {
+        showAlert('Tarjeta Inválida', 'Por favor, ingrese un número de tarjeta válido (15-16 dígitos).', 'error');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!holder || holder.trim().length < 2) {
+        showAlert('Titular Requerido', 'Por favor, ingrese el nombre del titular como aparece en la tarjeta.', 'error');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!expiry || !/^\d{2}\/\d{2}$/.test(expiry)) {
+        showAlert('Vencimiento Inválido', 'Por favor, ingrese la fecha de vencimiento en formato MM/AA.', 'error');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!cvv || cvv.length < 3) {
+        showAlert('CVV Inválido', 'Por favor, ingrese el código de seguridad (3 o 4 dígitos).', 'error');
         setIsSubmitting(false);
         return;
       }
 
-      // ── CORREÇÃO PROBLEMA 4 + 6: BACKEND_URL dinâmica + number enviado separado
-      // Registra o pedido no backend (não-bloqueante)
-      fetch(`${BACKEND_URL}/api/payments/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transactionId,
-          email: formData.email,
-          cart,
-          shippingAddress: {
-            name:       formData.nome,
-            phone:      formData.telefone,
-            street:     formData.rua,
-            number:     formData.numero,
-            floor:      formData.complemento || '',
-            locality:   formData.bairro,
-            city:       formData.cidade,
-            zip:        formData.codigoPostal,
-            province:   formData.provincia
-          },
-          shippingMethod: selectedShipping.id,
-          shippingCost:   selectedShipping.price,
-          paymentMethod,
-          couponCode: appliedCoupon?.code || null
-        })
-      }).catch(err => console.warn('Erro em background ao salvar pedido:', err));
-
-      // Envia para WhatsApp com dados resumidos do cartão (sem dados sensíveis)
-      const message = `*NUEVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Dirección:* ${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}, ${formData.cidade} - ${formData.provincia} (${formData.codigoPostal})%0A%0A*Items:*%0A${orderItems}%0A%0A*Envío:* ${selectedShipping.name} (${formatPrice(selectedShipping.price)})%0A*Método de Pago:* ${methodLabel}%0A*Tarjeta:* ${maskedCard} - Titular: ${holder}${couponLine}%0A*Total Final:* ${formatPrice(totalFinal)}%0A%0A_Por favor envíe el comprobante de pago o link de pago para confirmar el pedido._`;
-
-      window.open(`https://wa.me/5491100000000?text=${message}`, '_blank');
-      setIsSubmitting(false);
-      setSuccessOrder(true);
-      setTimeout(() => {
-        clearCart();
-        navigate('/');
-      }, 4500);
-      return;
-
-      // PARA INTEGRAR GATEWAY REAL: Substitua o bloco acima pelo SDK do Mercado Pago:
-      // import { MercadoPago } from '@mercadopago/sdk-js';
-      // const mp = new MercadoPago(process.env.VITE_MP_PUBLIC_KEY);
-      // const token = await mp.createCardToken({ cardNumber, cardholderName, cardExpirationMonth, cardExpirationYear, securityCode });
-      // Depois envie o token para /api/payments/checkout e o backend processa via API do MP.
-
-      // eslint-disable-next-line no-unreachable
       try {
         const response = await fetch(`${BACKEND_URL}/api/payments/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             transactionId,
-            email: formData.email,
+            email:    formData.email,
             cart,
             shippingAddress: {
-              name: formData.nome,
-              phone: formData.telefone,
-              street: `${formData.rua} ${formData.numero}`,
-              city: formData.cidade,
-              zip: formData.codigoPostal,
+              name:     formData.nome,
+              phone:    formData.telefone,
+              street:   formData.rua,
+              number:   formData.numero,
+              floor:    formData.complemento || '',
+              locality: formData.bairro,
+              city:     formData.cidade,
+              zip:      formData.codigoPostal,
               province: formData.provincia
             },
             shippingMethod: selectedShipping.id,
-            shippingCost: selectedShipping.price,
+            shippingCost:   selectedShipping.price,
             paymentMethod,
-            couponCode: appliedCoupon?.code || null
-          })
+            couponCode:     appliedCoupon?.code || null,
+            // Dados do cartão — backend deve encaminhar para o gateway configurado (MP/etc.)
+            // NUNCA logar nem armazenar estes dados em texto claro no servidor
+            card: {
+              number:    cleanNumber,       // apenas para tokenização no backend
+              holder:    holder.trim(),
+              expiry,
+              cvv,
+              brand:     cardBrand || 'unknown',
+              last4:     cleanNumber.slice(-4),
+            }
+          }),
+          signal: AbortSignal.timeout(30000)
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (response.ok) {
+          // ✅ Pedido aprovado pelo backend / gateway
           setIsSubmitting(false);
           setSuccessOrder(true);
           setTimeout(() => {
@@ -707,22 +687,28 @@ export default function Checkout() {
             navigate('/');
           }, 4500);
         } else {
+          // ❌ Gateway recusou o pagamento — exibe motivo
           setIsSubmitting(false);
-          showAlert('Pago Rechazado', data.message || 'No se pudo completar el cobro seguro.', 'error');
+          const reason = data.message || data.error || 'El pago fue rechazado. Verifique los datos de la tarjeta o intente con otra.';
+          showAlert('Pago No Aprobado', reason, 'error');
         }
       } catch (err) {
-        console.warn('Erro ao fechar pedido online, processando localmente:', err);
-        setTimeout(() => {
-          setIsSubmitting(false);
+        // ⚠️ Backend offline ou timeout — oferta alternativa via WhatsApp
+        console.warn('[Checkout] Backend indisponível para cartão:', err.message);
+        setIsSubmitting(false);
+        const orderItems = cart.map(item => `${item.quantity}x ${item.name}`).join('%0A');
+        const maskedCard = `**** **** **** ${cleanNumber.slice(-4)}`;
+        const couponLine = appliedCoupon ? `%0A*Cupón:* ${appliedCoupon.code} (-${(appliedCoupon.rate * 100).toFixed(0)}% OFF)` : '';
+        const message = `*PEDIDO CON TARJETA - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*Dirección:* ${formData.rua} ${formData.numero}, ${formData.bairro}, ${formData.cidade} (${formData.codigoPostal})%0A%0A*Items:*%0A${orderItems}%0A%0A*Envío:* ${selectedShipping.name} (${formatPrice(selectedShipping.price)})%0A*Método:* ${methodLabel}%0A*Tarjeta:* ${maskedCard} - Titular: ${holder}${couponLine}%0A*Total Final:* ${formatPrice(totalFinal)}%0A%0A⚠️ _El sistema de pago online no está disponible en este momento. Por favor, envíe los datos para procesar manualmente._`;
+        if (window.confirm('El sistema de pago online no está disponible. ¿Desea continuar por WhatsApp para que procesemos manualmente?')) {
+          window.open(`https://wa.me/5491100000000?text=${message}`, '_blank');
           setSuccessOrder(true);
-          setTimeout(() => {
-            clearCart();
-            navigate('/');
-          }, 4500);
-        }, 1500);
+          setTimeout(() => { clearCart(); navigate('/'); }, 4500);
+        }
       }
     }
   };
+
 
   if (cart.length === 0 && !successOrder) {
     return (
