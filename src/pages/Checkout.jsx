@@ -60,7 +60,12 @@ export default function Checkout() {
   const [isLoadingCp, setIsLoadingCp]           = useState(false);
   const cpDebounceRef = useRef(null);
 
-
+  // 2d. Autocomplete por Rua + Número
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+  const addressDebounceRef = useRef(null);
+  const selectedFromSuggestionsRef = useRef(false);
 
   // 3. Estados de Cupons e Descontos
   const [couponInput, setCouponInput] = useState('');
@@ -213,13 +218,115 @@ export default function Checkout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fecha dropdown CP ao clicar fora
+  // Fecha dropdowns ao clicar fora
   useEffect(() => {
     const h = (e) => {
       if (!e.target.closest('[data-cp-autocomplete]')) setShowCpDropdown(false);
+      if (!e.target.closest('[data-address-autocomplete]')) setShowAddressDropdown(false);
     };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  // ─── AUTOCOMPLETE POR RUA + NÚMERO ───────────────────────────────────────────
+  // Quando o usuário digita rua + número → busca endereços no Nominatim
+  // → mostra dropdown com sugestões → clique preenche rua, número, cp, bairro, cidade, provincia.
+  useEffect(() => {
+    const { rua, numero } = formData;
+
+    if (selectedFromSuggestionsRef.current) {
+      selectedFromSuggestionsRef.current = false;
+      return;
+    }
+
+    if (rua.trim().length < 3 || numero.trim().length < 1) {
+      setAddressSuggestions([]);
+      setShowAddressDropdown(false);
+      return;
+    }
+
+    clearTimeout(addressDebounceRef.current);
+    addressDebounceRef.current = setTimeout(async () => {
+      setIsLoadingAddress(true);
+      try {
+        const query = encodeURIComponent(`${rua.trim()} ${numero.trim()}, Argentina`);
+        const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&addressdetails=1&limit=5`;
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' },
+          signal: AbortSignal.timeout(6000)
+        });
+        if (!res.ok) throw new Error('err');
+        const data = await res.json();
+
+        const sugs = data.reduce((acc, item) => {
+          const addr = item.address || {};
+          const road = addr.road || '';
+          const house_number = addr.house_number || numero.trim();
+          const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.city_district || '';
+          const city = addr.city || addr.town || addr.municipality || addr.county || '';
+          const province = addr.state || '';
+          const postcode = addr.postcode || '';
+
+          if (!road || !city) return acc;
+
+          // Formata a exibição amigável
+          const display = `${road} ${house_number}, ${suburb ? suburb + ', ' : ''}${city} (${province}) - CP ${postcode}`;
+
+          acc.push({
+            road,
+            house_number,
+            suburb,
+            city,
+            province,
+            postcode,
+            display
+          });
+          return acc;
+        }, []);
+
+        setAddressSuggestions(sugs);
+        setShowAddressDropdown(sugs.length > 0);
+      } catch (err) {
+        console.warn('[Address Autocomplete] Falhou:', err.message);
+      } finally {
+        setIsLoadingAddress(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(addressDebounceRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.rua, formData.numero]);
+
+  // Usuário clicou numa sugestão de endereço
+  const handleAddressSuggestionSelect = useCallback((sug) => {
+    selectedFromSuggestionsRef.current = true;
+    const cpClean = sug.postcode.replace(/[^\d]/g, '').slice(0, 4);
+    const numCp = parseInt(cpClean, 10);
+
+    // Checa tabela CABA para multi-zona se for CABA
+    const cabaEntry  = !isNaN(numCp) ? CABA_BARRIO_TABLE[numCp] : undefined;
+    const isMulti    = Array.isArray(cabaEntry);
+    const autoBarrio = isMulti
+      ? cabaEntry[0]
+      : (typeof cabaEntry === 'string' ? cabaEntry : sug.suburb || '');
+
+    setFormData(prev => ({
+      ...prev,
+      rua: sug.road || prev.rua,
+      numero: sug.house_number || prev.numero,
+      codigoPostal: cpClean || sug.postcode || prev.codigoPostal,
+      bairro: autoBarrio || sug.suburb || prev.bairro,
+      cidade: sug.city || prev.cidade,
+      provincia: normalizeProvince(sug.province) || prev.provincia
+    }));
+
+    if (isMulti) { setAvailableBarrios(cabaEntry); setIsMultipleZone(true); }
+    else         { setAvailableBarrios([]);         setIsMultipleZone(false); }
+
+    setZipSearched(true);
+    setAddressSuggestions([]);
+    setShowAddressDropdown(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -958,9 +1065,16 @@ export default function Checkout() {
             </div>
 
             <div className="form-row">
-              {/* Calle / Avenida — campo simples, CP já preenche barrio/cidade/provincia */}
-              <div className="form-group">
-                <label>Calle / Avenida *</label>
+              {/* Calle / Avenida — autocomplete com sugestões baseadas na rua + número */}
+              <div className="form-group" style={{ position: 'relative' }} data-address-autocomplete>
+                <label>
+                  Calle / Avenida *
+                  {isLoadingAddress && (
+                    <span style={{ fontSize: '0.72rem', color: '#4A7C59', fontWeight: 400, marginLeft: '0.5rem' }}>
+                      🔍 buscando dirección...
+                    </span>
+                  )}
+                </label>
                 <input
                   type="text"
                   name="rua"
@@ -970,6 +1084,36 @@ export default function Checkout() {
                   autoComplete="off"
                   required
                 />
+                {/* Dropdown de endereços sugeridos */}
+                {showAddressDropdown && addressSuggestions.length > 0 && (
+                  <ul style={{
+                    position: 'absolute', top: 'calc(100% + 2px)', left: 0, right: 0,
+                    background: '#fff', border: '1.5px solid #E8C99A', borderRadius: '8px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.13)', zIndex: 999, margin: 0,
+                    padding: '0.25rem 0', listStyle: 'none', maxHeight: '220px', overflowY: 'auto'
+                  }}>
+                    {addressSuggestions.map((sug, idx) => (
+                      <li
+                        key={idx}
+                        onMouseDown={(ev) => { ev.preventDefault(); handleAddressSuggestionSelect(sug); }}
+                        style={{
+                          padding: '0.65rem 1rem', cursor: 'pointer',
+                          borderBottom: idx < addressSuggestions.length - 1 ? '1px solid #F5ECD5' : 'none',
+                          display: 'flex', flexDirection: 'column', gap: '2px'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#FFF8F0'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <strong style={{ color: '#3D2B1F', fontSize: '0.95rem' }}>
+                          {sug.road} {sug.house_number}
+                        </strong>
+                        <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
+                          {sug.suburb ? `${sug.suburb}, ` : ''}{sug.city} · {sug.province} · CP {sug.postcode}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="form-group">
