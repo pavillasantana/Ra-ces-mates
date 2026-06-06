@@ -144,10 +144,13 @@ export default function Checkout() {
       setIsLoadingStreet(true);
       try {
         const cp = formData.codigoPostal.trim();
-        // Refina a busca pelo CP para retornar ruas dentro da zona correta
+        // Remove números do valor digitado antes de buscar — evita que
+        // "Corrientes 1234" vire query de ponto de interesse em vez de rua.
+        // O campo Número já existe separado no formulário.
+        const streetOnly = val.trim().replace(/^\d+\s*|\s*\d+$/g, '').trim() || val.trim();
         const query = cp
-          ? `${val.trim()}, ${cp}, Argentina`
-          : `${val.trim()}, Argentina`;
+          ? `${streetOnly}, ${cp}, Argentina`
+          : `${streetOnly}, Argentina`;
         const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=AR&format=json&addressdetails=1&limit=6`;
         const res = await fetch(url, {
           headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' },
@@ -964,6 +967,10 @@ export default function Checkout() {
                   value={formData.rua}
                   onChange={handleStreetInput}
                   onFocus={() => streetSuggestions.length > 0 && setShowStreetDropdown(true)}
+                  onBlur={() => {
+                    // Delay: permite que o onMouseDown da sugestão dispare antes de fechar
+                    setTimeout(() => setShowStreetDropdown(false), 200);
+                  }}
                   autoComplete="off"
                   required
                 />
