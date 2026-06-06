@@ -49,11 +49,7 @@ export default function Checkout() {
   const [isLoadingCp, setIsLoadingCp]           = useState(false);
   const cpDebounceRef = useRef(null);
 
-  // 2d. Autocomplete de Calle / Avenida (opcional — sugestões de rua)
-  const [streetSuggestions, setStreetSuggestions] = useState([]);
-  const [isLoadingStreet, setIsLoadingStreet]     = useState(false);
-  const [showStreetDropdown, setShowStreetDropdown] = useState(false);
-  const streetDebounceRef = useRef(null);
+
 
   // 3. Estados de Cupons e Descontos
   const [couponInput, setCouponInput] = useState('');
@@ -131,125 +127,7 @@ export default function Checkout() {
     setFormData(prev => ({ ...prev, bairro: e.target.value }));
   };
 
-  // ─── AUTOCOMPLETE DE CALLE/AVENIDA (Nominatim, restrito a AR + CP atual) ───────────
-  // - Debounce 500ms para não saturar a API a cada tecla
-  // - Query refinada pelo CP já inserido para resultados precisos
-  // - Ao selecionar: autopreenche Cidade e Barrio correspondentes
-  const handleStreetInput = useCallback((e) => {
-    const val = e.target.value;
-    setFormData(prev => ({ ...prev, rua: val }));
 
-    if (val.trim().length < 3) {
-      setStreetSuggestions([]);
-      setShowStreetDropdown(false);
-      return;
-    }
-
-    clearTimeout(streetDebounceRef.current);
-    streetDebounceRef.current = setTimeout(async () => {
-      setIsLoadingStreet(true);
-      try {
-        const cp = formData.codigoPostal.trim();
-        // Remove números do valor digitado antes de buscar — evita que
-        // "Corrientes 1234" vire query de ponto de interesse em vez de rua.
-        // O campo Número já existe separado no formulário.
-        const streetOnly = val.trim().replace(/^\d+\s*|\s*\d+$/g, '').trim() || val.trim();
-        const query = cp
-          ? `${streetOnly}, ${cp}, Argentina`
-          : `${streetOnly}, Argentina`;
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=AR&format=json&addressdetails=1&limit=6`;
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' },
-          signal: AbortSignal.timeout(5000)
-        });
-        if (res.ok) {
-          const data = await res.json();
-          // Filtra apenas resultados com nome de rua (road/street)
-          const seen = new Set();
-          const suggestions = data.reduce((acc, item) => {
-            const addr = item.address || {};
-            const road = addr.road || addr.pedestrian || addr.path || '';
-            if (!road || seen.has(road)) return acc;
-            seen.add(road);
-            acc.push({
-              road,
-              suburb:   addr.suburb || addr.neighbourhood || addr.quarter || '',
-              city:     addr.city || addr.town || addr.municipality || addr.county || '',
-              province: addr.state || '',
-              postcode: addr.postcode || '',   // ← captura CP para autopreenchimento
-              display:  `${road}${addr.suburb ? ' — ' + addr.suburb : ''}`,
-            });
-            return acc;
-          }, []);
-          setStreetSuggestions(suggestions);
-          setShowStreetDropdown(suggestions.length > 0);
-        }
-      } catch (err) {
-        // Silencioso — autocomplete é UX bonus, não bloqueante
-        console.debug('[Autocomplete Rua] Indisponível:', err.message);
-      }
-      setIsLoadingStreet(false);
-    }, 500);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.codigoPostal]);
-
-  // Usuário selecionou uma sugestão de rua → preenche TODOS os campos de endereço
-  // incluindo Código Postal, Barrio (com check multi-zona CABA), Ciudad e Provincia.
-  const handleStreetSelect = useCallback((suggestion) => {
-    const rawCp    = suggestion.postcode || '';
-    // Nominatim pode retornar CPA completo (C1074AAZ) — extrai apenas os 4 dígitos numéricos
-    const cpClean  = rawCp.replace(/[^\d]/g, '').slice(0, 4);
-    const cpFinal  = cpClean || rawCp;   // mantém o original se não extraiu dígitos
-    const numCp    = parseInt(cpClean, 10);
-
-    // Verifica CABA_BARRIO_TABLE com o CP detectado para ativar dropdown multi-zona
-    const cabaEntry = !isNaN(numCp) ? CABA_BARRIO_TABLE[numCp] : undefined;
-    const isMulti   = Array.isArray(cabaEntry);
-    const autoBarrio = isMulti
-      ? cabaEntry[0]                                          // pré-seleciona primeiro item
-      : (typeof cabaEntry === 'string' ? cabaEntry : suggestion.suburb || '');
-
-    setFormData(prev => ({
-      ...prev,
-      rua:         suggestion.road,
-      bairro:      autoBarrio || suggestion.suburb || prev.bairro,
-      cidade:      suggestion.city     || prev.cidade,
-      provincia:   suggestion.province
-                     ? normalizeProvince(suggestion.province)
-                     : prev.provincia,
-      codigoPostal: cpFinal || prev.codigoPostal,
-    }));
-
-    // Ativa estado de zona múltipla se o CP cobrir mais de um bairro em CABA
-    if (isMulti) {
-      setAvailableBarrios(cabaEntry);
-      setIsMultipleZone(true);
-    } else {
-      setAvailableBarrios([]);
-      setIsMultipleZone(false);
-    }
-
-    // Marca o CP como pesquisado para exibir seção de frete
-    if (cpFinal) setZipSearched(true);
-
-    setStreetSuggestions([]);
-    setShowStreetDropdown(false);
-  // CABA_BARRIO_TABLE é const do escopo do componente — sem dependência externa
-  // normalizeProvince é pura/estável (deps=[]) — seguro usar [] aqui
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
-  // Fecha dropdown ao clicar fora
-  useEffect(() => {
-    const handler = (e) => {
-      if (!e.target.closest('[data-street-autocomplete]')) {
-        setShowStreetDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   // ─── AUTOCOMPLETE DO CÓDIGO POSTAL ────────────────────────────────────────────
   // Quando o usuário digita o CP → busca localidades no Nominatim por postalcode
