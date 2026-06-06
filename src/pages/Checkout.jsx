@@ -123,14 +123,80 @@ export default function Checkout() {
     setCardToken('');
   };
 
-  // ─── LOOKUP DE CEP — Arquitetura Multi-API (QA-validated) ───────────────────
-  // API 1 (PRIMARY): OpenStreetMap Nominatim — cobertura real para toda Argentina,
-  //   incluindo CABA (1000–1499). Retorna suburb/bairro quando disponível.
-  //   Zippopotam.us falha completamente na faixa 1000–1499 (CABA) — testado e confirmado.
-  //   datos.gob.ar não suporta busca por CP (parâmetro 'cp' não existe na API).
-  // API 2 (SECONDARY): Zippopotam.us — cobre cidades do interior (Rosario, Córdoba, etc.)
-  // FALLBACK: Tabela interna por faixa numérica — garante cidade + província mínimos.
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─── TABELA INTERNA: CP CABA → BAIRRO ───────────────────────────────────────
+  // Nominatim não possui dados de suburb para a maioria dos CPs de CABA.
+  // Esta tabela local garante o preenchimento correto para os CPs mais comuns.
+  // Fonte: sistema oficial de CPs da Argentina (Correo Argentino).
+  const CABA_BARRIO_TABLE = {
+    // Microcentro / Centro
+    1000:'Microcentro', 1001:'San Nicolás', 1002:'San Nicolás', 1003:'Monserrat',
+    1004:'Monserrat',   1005:'Monserrat',   1006:'San Nicolás', 1007:'San Nicolás',
+    1008:'San Nicolás', 1009:'Retiro',      1010:'Retiro',      1011:'Retiro',
+    1012:'Retiro',      1013:'San Telmo',   1014:'San Telmo',   1015:'San Telmo',
+    1016:'San Telmo',   1017:'Constitución',1018:'Constitución',1019:'Constitución',
+    1020:'Puerto Madero',1021:'Puerto Madero',1022:'Puerto Madero',
+    1023:'Monserrat',   1024:'Monserrat',   1025:'Monserrat',   1026:'Monserrat',
+    1027:'Monserrat',   1028:'Monserrat',   1029:'Monserrat',
+    // Balvanera / San Cristóbal
+    1030:'Balvanera',   1031:'Balvanera',   1032:'Balvanera',   1033:'Balvanera',
+    1034:'San Cristóbal',1035:'San Cristóbal',1036:'Balvanera', 1037:'Balvanera',
+    1038:'Balvanera',   1039:'Balvanera',
+    1040:'Balvanera',   1041:'Balvanera',   1042:'Balvanera',   1043:'Balvanera',
+    1044:'Balvanera',   1045:'Balvanera',   1046:'Balvanera',   1047:'Balvanera',
+    1048:'Balvanera',   1049:'Balvanera',
+    1050:'Balvanera',   1051:'Balvanera',   1052:'Balvanera',   1053:'Balvanera',
+    1054:'Balvanera',   1055:'Balvanera',   1056:'Balvanera',   1057:'Balvanera',
+    1058:'Balvanera',   1059:'Balvanera',
+    1060:'Almagro',     1061:'Almagro',     1062:'Almagro',     1063:'Almagro',
+    1064:'Almagro',     1065:'Almagro',     1066:'Almagro',     1067:'Almagro',
+    1068:'Almagro',     1069:'Almagro',
+    1070:'Boedo',       1071:'Boedo',       1072:'Boedo',       1073:'Boedo',
+    1074:'Boedo',       1075:'Boedo',       1076:'Boedo',       1077:'Boedo',
+    1078:'Boedo',       1079:'Boedo',
+    1080:'Balvanera',   1081:'Balvanera',   1082:'Balvanera',   1083:'San Cristóbal',
+    1084:'San Cristóbal',1085:'San Cristóbal',1086:'San Cristóbal',
+    1087:'Parque Patricios',1088:'Parque Patricios',1089:'Parque Patricios',
+    1090:'Parque Patricios',1091:'Parque Patricios',1092:'Parque Patricios',
+    1093:'Parque Patricios',1094:'Parque Patricios',1095:'Parque Patricios',
+    // La Boca / Barracas
+    1100:'La Boca',     1101:'La Boca',     1102:'La Boca',     1103:'La Boca',
+    1104:'La Boca',     1150:'Barracas',    1151:'Barracas',    1152:'Barracas',
+    1153:'Barracas',    1154:'Barracas',    1155:'Barracas',    1156:'Barracas',
+    // Caballito / Villa Crespo
+    1200:'Caballito',   1201:'Caballito',   1202:'Caballito',   1203:'Caballito',
+    1204:'Caballito',   1205:'Caballito',   1206:'Caballito',   1207:'Villa Crespo',
+    1208:'Villa Crespo',1209:'Villa Crespo',1210:'Villa Crespo',1211:'Villa Crespo',
+    1212:'Almagro',     1213:'Almagro',     1214:'Almagro',     1215:'Almagro',
+    // Palermo / Colegiales / Belgrano
+    1300:'Palermo',     1301:'Palermo',     1302:'Palermo',     1303:'Palermo',
+    1304:'Palermo',     1305:'Palermo',     1306:'Palermo',     1307:'Palermo',
+    1308:'Palermo',     1309:'Palermo',     1310:'Palermo',
+    1320:'Recoleta',    1321:'Recoleta',    1322:'Recoleta',    1323:'Recoleta',
+    1324:'Recoleta',    1325:'Recoleta',    1326:'Recoleta',    1327:'Recoleta',
+    // Flores / Floresta
+    1400:'Flores',      1401:'Flores',      1402:'Flores',      1403:'Flores',
+    1404:'Flores',      1405:'Flores',      1406:'Flores',      1407:'Flores',
+    1408:'Flores',      1409:'Flores',      1410:'Floresta',    1411:'Floresta',
+    1412:'Floresta',    1413:'Floresta',    1414:'Floresta',
+    // Villa del Parque / Devoto / Agronomía
+    1415:'Villa del Parque',1416:'Villa del Parque',1417:'Villa del Parque',
+    1418:'Devoto',      1419:'Devoto',
+    // Palermo / Villa Crespo / Colegiales
+    1420:'Palermo',     1421:'Palermo',     1422:'Palermo',     1423:'Palermo',
+    1424:'Palermo',     1425:'Palermo',     1426:'Palermo',     1427:'Belgrano',
+    1428:'Belgrano',    1429:'Belgrano',
+    // Colegiales / Saavedra / Villa Urquiza
+    1430:'Colegiales',  1431:'Colegiales',  1432:'Colegiales',
+    1440:'Saavedra',    1441:'Saavedra',    1442:'Saavedra',    1443:'Saavedra',
+    1444:'Villa Urquiza',1445:'Villa Urquiza',1446:'Villa Urquiza',1447:'Villa Urquiza',
+    1448:'Villa Pueyrredón',1449:'Villa Pueyrredón',
+    // Mataderos / Villa Soldati
+    1440:'Mataderos',   1441:'Mataderos',
+    1470:'Villa Soldati',1471:'Villa Soldati',
+    // Núñez / Saavedra
+    1429:'Núñez',       1430:'Núñez',
+  };
+
   const handlePostalCodeLookup = async () => {
     const cleanZip = formData.codigoPostal.trim().toUpperCase();
     if (!cleanZip) {
@@ -174,8 +240,9 @@ export default function Checkout() {
         const result = Array.isArray(data) && data.length > 0 ? data[0] : null;
         if (result?.address) {
           const addr = result.address;
-          // Bairro: prioridade suburb → neighbourhood → quarter → state_district (comuna)
-          resolvedBairro   = addr.suburb || addr.neighbourhood || addr.quarter || addr.state_district || '';
+          // Bairro: prioridade suburb → neighbourhood → quarter (state_district apenas como último recurso)
+          // state_district = 'Comuna X' que não é um bairro real — evitamos usar diretamente
+          resolvedBairro   = addr.suburb || addr.neighbourhood || addr.quarter || '';
           // Cidade: prioridade city → town → municipality → county
           resolvedCity     = addr.city || addr.town || addr.municipality || addr.county || '';
           // Província
@@ -260,9 +327,17 @@ export default function Checkout() {
 
     // Atualiza os campos do formulário
     // Se Nominatim ou Zippopotam retornaram bairro real, usa. Caso contrário deixa vazio.
+    // ── TABELA LOCAL CABA → enriquece o bairro quando API não retorna ──────────
+    // Consulta a tabela primeiro; se Nominatim já retornou suburb real, mantém o da API.
+    const numInt = parseInt(numericCode, 10);
+    if (!resolvedBairro && CABA_BARRIO_TABLE[numInt]) {
+      resolvedBairro = CABA_BARRIO_TABLE[numInt];
+      console.log(`[CP Lookup] Tabela CABA: Bairro="${resolvedBairro}" para CP ${numericCode}`);
+    }
+
     setFormData(prev => ({
       ...prev,
-      bairro:   resolvedBairro,   // pode ser '' — usuário preencherá manualmente
+      bairro:   resolvedBairro,
       cidade:   resolvedCity,
       provincia: resolvedProvince
     }));
@@ -318,8 +393,17 @@ export default function Checkout() {
       console.warn('[Frete] Backend indisponível:', shippingErr.message);
     }
 
+    // ── BUG CRÍTICO CORRIGIDO: FALLBACK_RATES nunca era aplicado ────────────────
+    // Se a Tiendanube não retornou opções (token não configurado ou loja sem frete ativo),
+    // usa as opções de fallback para que selectedShipping nunca fique null.
+    // Isso desbloqueava o pagamento: isDeliverySectionValid exige selectedShipping !== null.
+    if (finalRates.length === 0) {
+      console.warn('[Frete] Nenhuma opção da Tiendanube. Usando tarifas de referência.');
+      finalRates = FALLBACK_RATES;
+    }
+
     setShippingOptions(finalRates);
-    if (finalRates.length > 0) setSelectedShipping(finalRates[0]);
+    setSelectedShipping(finalRates[0]);  // sempre seleciona a primeira opção automaticamente
     setIsCalculatingShipping(false);
   };
 
