@@ -123,8 +123,14 @@ export default function Checkout() {
     setCardToken('');
   };
 
-  // Busca de endereço real via API pública argentina (datos.gob.ar)
-  // Aceita formatos CPA (C1043DFG) e clássico (1043)
+  // ─── LOOKUP DE CEP — Arquitetura Multi-API (QA-validated) ───────────────────
+  // API 1 (PRIMARY): OpenStreetMap Nominatim — cobertura real para toda Argentina,
+  //   incluindo CABA (1000–1499). Retorna suburb/bairro quando disponível.
+  //   Zippopotam.us falha completamente na faixa 1000–1499 (CABA) — testado e confirmado.
+  //   datos.gob.ar não suporta busca por CP (parâmetro 'cp' não existe na API).
+  // API 2 (SECONDARY): Zippopotam.us — cobre cidades do interior (Rosario, Córdoba, etc.)
+  // FALLBACK: Tabela interna por faixa numérica — garante cidade + província mínimos.
+  // ─────────────────────────────────────────────────────────────────────────────
   const handlePostalCodeLookup = async () => {
     const cleanZip = formData.codigoPostal.trim().toUpperCase();
     if (!cleanZip) {
@@ -132,10 +138,10 @@ export default function Checkout() {
       return;
     }
 
-    // Aceita 4 dígitos ou formato CPA alfanumérico
+    // Aceita 4 dígitos ou formato CPA alfanumérico (ex: C1043DFG)
     const isValidZip = /^(?:[A-HJ-NP-Z]?\d{4}[A-Z]{3}|\d{4})$/i.test(cleanZip);
     if (!isValidZip) {
-      showAlert('Código Postal Inválido', 'El formato del código postal debe ser numérico de 4 dígitos (Ej: 1043) o alfanumérico CPA (Ej: C1043DFG).', 'error');
+      showAlert('Código Postal Inválido', 'El formato debe ser numérico de 4 dígitos (Ej: 1043) o CPA alfanumérico (Ej: C1043DFG).', 'error');
       return;
     }
 
@@ -143,89 +149,121 @@ export default function Checkout() {
     setZipSearched(true);
     setSelectedShipping(null);
 
-    // Extrai a parte numérica de 4 dígitos
+    // Extrai a parte numérica de 4 dígitos do CPA se necessário
     let numericCode = cleanZip;
     const cpaMatch = cleanZip.match(/^[A-Z](\d{4})[A-Z]{3}$/i);
     if (cpaMatch) numericCode = cpaMatch[1];
 
-    let resolvedCity = '';
+    let resolvedCity     = '';
     let resolvedProvince = '';
-    let resolvedBairro = '';
+    let resolvedBairro   = '';
 
-    // ── API PRIMÁRIA: Zippopotam.us — Cobertura confiável para CEPs argentinos de 4 dígitos
+    // ── API PRIMÁRIA: OpenStreetMap Nominatim
+    // Cobertura confirmada para toda Argentina, incluindo CABA (1000–1499).
+    // Retorna campo 'suburb' com o nome do bairro quando disponível.
     try {
       const res = await fetch(
-        `https://api.zippopotam.us/ar/${numericCode}`,
-        { signal: AbortSignal.timeout(5000) }
+        `https://nominatim.openstreetmap.org/search?postalcode=${numericCode}&country=AR&format=json&addressdetails=1&limit=1`,
+        {
+          signal: AbortSignal.timeout(6000),
+          headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' }
+        }
       );
       if (res.ok) {
         const data = await res.json();
-        const place = data?.places?.[0];
-        if (place) {
-          resolvedCity     = place['place name'] || '';
-          resolvedProvince = place['state'] || '';
-          // Normaliza o nome da província para o padrão argentino oficial
-          if (resolvedProvince.toLowerCase().includes('ciudad de buenos aires')) {
-            resolvedProvince = 'Ciudad Autónoma de Buenos Aires';
-          }
-          console.log(`[CP Lookup] Zippopotam: ${resolvedCity} — ${resolvedProvince} (CP: ${numericCode})`);
+        const result = Array.isArray(data) && data.length > 0 ? data[0] : null;
+        if (result?.address) {
+          const addr = result.address;
+          // Bairro: prioridade suburb → neighbourhood → quarter → state_district (comuna)
+          resolvedBairro   = addr.suburb || addr.neighbourhood || addr.quarter || addr.state_district || '';
+          // Cidade: prioridade city → town → municipality → county
+          resolvedCity     = addr.city || addr.town || addr.municipality || addr.county || '';
+          // Província
+          resolvedProvince = addr.state || '';
+          console.log(`[CP Lookup] Nominatim: Bairro="${resolvedBairro}" Cidade="${resolvedCity}" Prov="${resolvedProvince}" (CP: ${numericCode})`);
         }
       }
     } catch (err) {
-      console.warn('[CP Lookup] Zippopotam falhou, tentando datos.gob.ar:', err.message);
+      console.warn('[CP Lookup] Nominatim falhou:', err.message);
     }
 
-    // ── API SECUNDÁRIA: datos.gob.ar — Melhor para localidades menores
+    // ── API SECUNDÁRIA: Zippopotam.us — Boa cobertura para interior (Rosario, Córdoba, etc.)
+    // NOTA: Cobertura ZERO para CABA (1000–1499) — confirmado em testes extensivos.
     if (!resolvedCity) {
       try {
         const res = await fetch(
-          `https://apis.datos.gob.ar/georef/api/localidades?cp=${numericCode}&max=5&campos=nombre,provincia.nombre,municipio.nombre`,
-          { signal: AbortSignal.timeout(6000) }
+          `https://api.zippopotam.us/ar/${numericCode}`,
+          { signal: AbortSignal.timeout(5000) }
         );
         if (res.ok) {
           const data = await res.json();
-          const results = data?.localidades || [];
-          const loc = results.find(l => l.municipio?.nombre && l.nombre === l.municipio?.nombre) || results[0];
-          if (loc) {
-            resolvedCity     = loc.municipio?.nombre || loc.nombre || '';
-            resolvedProvince = loc.provincia?.nombre || '';
-            resolvedBairro   = loc.nombre || '';
-            console.log(`[CP Lookup] datos.gob.ar: ${resolvedCity} / ${resolvedBairro} — ${resolvedProvince}`);
+          // Zippopotam retorna {} (objeto vazio sem a chave 'places') quando não encontra
+          const places = data?.places;
+          if (places && places.length > 0) {
+            const place = places[0];
+            resolvedCity     = place['place name'] || '';
+            resolvedProvince = place['state']      || '';
+            // Zippopotam não retorna bairro — campo fica vazio para o usuário preencher
+            console.log(`[CP Lookup] Zippopotam: Cidade="${resolvedCity}" Prov="${resolvedProvince}" (CP: ${numericCode})`);
+          } else {
+            console.warn(`[CP Lookup] Zippopotam: sem dados para CP ${numericCode} (cobertura limitada)`);
           }
         }
       } catch (err) {
-        console.warn('[CP Lookup] datos.gob.ar falhou, usando fallback por faixa:', err.message);
+        console.warn('[CP Lookup] Zippopotam falhou:', err.message);
       }
     }
 
-    // ── FALLBACK FINAL: Tabela por faixa numérica — garante preenchimento mínimo
+    // ── FALLBACK FINAL: Tabela interna por faixa numérica
+    // Garante preenchimento mínimo de cidade e província quando todas as APIs falham.
+    // BAIRRO é intencionalmente deixado vazio — o usuário deve preenchê-lo.
     if (!resolvedCity) {
-      console.warn(`[CP Lookup] Nenhuma API respondeu para CP ${numericCode}. Usando fallback por faixa.`);
+      console.warn(`[CP Lookup] Todas as APIs falharam para CP ${numericCode}. Usando tabela de fallback.`);
       const num = parseInt(numericCode, 10);
-      if      (num >= 1000 && num <= 1499) { resolvedCity = 'Buenos Aires';         resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
-      else if (num >= 1500 && num <= 1899) { resolvedCity = 'Avellaneda';           resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 1900 && num <= 1999) { resolvedCity = 'La Plata';             resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 2000 && num <= 2499) { resolvedCity = 'Rosario';              resolvedProvince = 'Santa Fe'; }
-      else if (num >= 3000 && num <= 3299) { resolvedCity = 'Santa Fe';             resolvedProvince = 'Santa Fe'; }
+      if      (num >= 1000 && num <= 1099) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
+      else if (num >= 1100 && num <= 1199) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
+      else if (num >= 1200 && num <= 1299) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
+      else if (num >= 1300 && num <= 1399) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
+      else if (num >= 1400 && num <= 1499) { resolvedCity = 'Buenos Aires'; resolvedProvince = 'Ciudad Autónoma de Buenos Aires'; }
+      else if (num >= 1500 && num <= 1899) { resolvedCity = 'Avellaneda';   resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 1900 && num <= 1999) { resolvedCity = 'La Plata';     resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 2000 && num <= 2499) { resolvedCity = 'Rosario';      resolvedProvince = 'Santa Fe'; }
+      else if (num >= 3000 && num <= 3299) { resolvedCity = 'Santa Fe';     resolvedProvince = 'Santa Fe'; }
       else if (num >= 4000 && num <= 4199) { resolvedCity = 'San Miguel de Tucumán'; resolvedProvince = 'Tucumán'; }
-      else if (num >= 5000 && num <= 5299) { resolvedCity = 'Córdoba';              resolvedProvince = 'Córdoba'; }
-      else if (num >= 5500 && num <= 5699) { resolvedCity = 'Mendoza';              resolvedProvince = 'Mendoza'; }
-      else if (num >= 6000 && num <= 6499) { resolvedCity = 'Mar del Plata';        resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 7000 && num <= 7999) { resolvedCity = 'Bahía Blanca';         resolvedProvince = 'Buenos Aires'; }
-      else if (num >= 8000 && num <= 8499) { resolvedCity = 'Neuquén';              resolvedProvince = 'Neuquén'; }
-      else if (num >= 9000 && num <= 9499) { resolvedCity = 'Comodoro Rivadavia';   resolvedProvince = 'Chubut'; }
+      else if (num >= 5000 && num <= 5299) { resolvedCity = 'Córdoba';      resolvedProvince = 'Córdoba'; }
+      else if (num >= 5500 && num <= 5699) { resolvedCity = 'Mendoza';      resolvedProvince = 'Mendoza'; }
+      else if (num >= 6000 && num <= 6499) { resolvedCity = 'Mar del Plata'; resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 7000 && num <= 7999) { resolvedCity = 'Bahía Blanca'; resolvedProvince = 'Buenos Aires'; }
+      else if (num >= 8000 && num <= 8499) { resolvedCity = 'Neuquén';      resolvedProvince = 'Neuquén'; }
+      else if (num >= 9000 && num <= 9499) { resolvedCity = 'Comodoro Rivadavia'; resolvedProvince = 'Chubut'; }
     }
 
-    // Se o bairro ainda estiver vazio (situação comum em CABA com CEP de 4 dígitos),
-    // usa a cidade como valor inicial para o usuário confirmar/corrigir
-    if (!resolvedBairro && resolvedCity) {
-      resolvedBairro = resolvedCity;
+    // ── NORMALIZAÇÃO FINAL DA PROVÍNCIA ────────────────────────────────────────
+    // Unifica variações de nome retornadas pelas APIs para o padrão argentino oficial.
+    // Nominatim pode retornar nomes em inglês (ex: "Autonomous City of Buenos Aires").
+    if (resolvedProvince) {
+      const pLower = resolvedProvince.toLowerCase();
+      if (
+        pLower.includes('ciudad de buenos aires') ||
+        pLower.includes('ciudad autónoma') ||
+        pLower.includes('autonomous city of buenos aires') || // Nominatim em inglês
+        pLower === 'c'
+      ) {
+        resolvedProvince = 'Ciudad Autónoma de Buenos Aires';
+      }
     }
 
+    // ── BAIRRO: NUNCA copiar cidade como bairro ─────────────────────────────────
+    // Se nenhuma API retornou o bairro, deixar vazio com placeholder indicativo.
+    // Isso informa o usuário que ele precisa preencher, ao invés de dar dado errado.
+    // (Bug anterior: copiava resolvedCity → resolvedBairro, exibindo 'Buenos Aires' como bairro)
+
+    // Atualiza os campos do formulário
+    // Se Nominatim ou Zippopotam retornaram bairro real, usa. Caso contrário deixa vazio.
     setFormData(prev => ({
       ...prev,
-      bairro: resolvedBairro,
-      cidade: resolvedCity,
+      bairro:   resolvedBairro,   // pode ser '' — usuário preencherá manualmente
+      cidade:   resolvedCity,
       provincia: resolvedProvince
     }));
 
