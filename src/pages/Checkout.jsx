@@ -37,10 +37,10 @@ export default function Checkout() {
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [zipSearched, setZipSearched] = useState(false);
 
-  // 2b. Multi-localidade: quando um CP cobre vários bairros/cidades
-  // availableLocalities = [{city, province, bairro, label}]
-  // isMultipleZone = true → mostra dropdown para o usuário escolher
-  const [availableLocalities, setAvailableLocalities] = useState([]);
+  // 2b. Multi-bairro: quando um CP CABA cobre vários bairros
+  // availableBarrios = ['Palermo', 'Recoleta', 'San Nicolás']
+  // isMultipleZone = true → campo Barrio vira <select> dropdown
+  const [availableBarrios, setAvailableBarrios] = useState([]);
   const [isMultipleZone, setIsMultipleZone] = useState(false);
 
   // 3. Estados de Cupons e Descontos
@@ -107,24 +107,104 @@ export default function Checkout() {
       setZipSearched(false);
       setShippingOptions([]);
       setSelectedShipping(null);
-      setAvailableLocalities([]);
+      setAvailableBarrios([]);
       setIsMultipleZone(false);
     }
   };
 
-  // Quando o usuário seleciona uma localidade no dropdown (CP multi-zona)
-  const handleLocalitySelect = (e) => {
-    const idx = parseInt(e.target.value, 10);
-    const loc = availableLocalities[idx];
-    if (loc) {
-      setFormData(prev => ({
-        ...prev,
-        cidade:   loc.city,
-        provincia: loc.province,
-        bairro:   loc.bairro,
-      }));
-    }
+  // Quando o usuário escolhe um bairro no dropdown (CP multi-zona CABA)
+  const handleBairroSelect = (e) => {
+    setFormData(prev => ({ ...prev, bairro: e.target.value }));
   };
+
+  // ─── useEffect REATIVO: Calcula frete quando endereço está completo ───────────────
+  // Gatilho: rua + número + codigoPostal + bairro preenchidos
+  // Desacoplado do lookup de CP — o frete só é buscado quando o endereço está COMPLETO.
+  useEffect(() => {
+    const { codigoPostal, rua, numero, bairro, cidade, provincia } = formData;
+    const isAddressComplete =
+      codigoPostal.trim().length >= 4 &&
+      rua.trim().length >= 2 &&
+      numero.trim().length >= 1 &&
+      bairro.trim().length >= 2;
+
+    if (!isAddressComplete || !zipSearched) return;
+
+    // Extrai código numérico do CPA se necessário
+    const cpaMatch = codigoPostal.toUpperCase().match(/^[A-Z](\d{4})[A-Z]{3}$/i);
+    const numericCode = cpaMatch ? cpaMatch[1] : codigoPostal.trim();
+
+    const fetchShippingRates = async () => {
+      setIsCalculatingShipping(true);
+
+      const FALLBACK_RATES = [
+        { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles', price: 4500 },
+        { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles', price: 5200 },
+        { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles', price: 3800 },
+      ];
+      const isCABAorGBA = provincia.toLowerCase().includes('buenos aires') || provincia.toLowerCase().includes('autónoma');
+      if (isCABAorGBA) {
+        FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
+      }
+
+      let finalRates = [];
+      try {
+        const shippingRes = await fetch(
+          `${BACKEND_URL}/api/payments/shipping-rates`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              // Payload completo conforme spec da Tiendanube Shipping Carrier API
+              shipping_address: {
+                zipcode:  numericCode,
+                street:   rua.trim(),
+                number:   numero.trim(),
+                floor:    formData.complemento.trim() || '',
+                locality: bairro.trim(),
+                city:     cidade.trim(),
+                province: provincia.trim(),
+                country:  'AR'
+              },
+              // Dados dos produtos para cálculo de volumetria
+              currency: 'ARS',
+              products: (cart || []).map(item => ({
+                variant_id: item.tiendanubeVariantId || item.id || null,
+                id: item.id, quantity: item.quantity || 1,
+                weight: String(item.weight || '0.500'),
+                width:  String(item.width  || '10.00'),
+                height: String(item.height || '10.00'),
+                depth:  String(item.depth  || '10.00'),
+              }))
+            }),
+            signal: AbortSignal.timeout(12000)
+          }
+        );
+        if (shippingRes.ok) {
+          const shippingData = await shippingRes.json();
+          if (Array.isArray(shippingData.rates) && shippingData.rates.length > 0) {
+            finalRates = shippingData.rates;
+            console.log(`[Frete] ${finalRates.length} opção(ões) da Tiendanube para ${bairro}, ${cidade}.`);
+          } else {
+            console.warn('[Frete] Tiendanube retornou lista vazia. Usando fallback.');
+          }
+        }
+      } catch (err) {
+        console.warn('[Frete] Backend indisponível:', err.message);
+      }
+
+      if (finalRates.length === 0) finalRates = FALLBACK_RATES;
+      setShippingOptions(finalRates);
+      setSelectedShipping(finalRates[0]);
+      setIsCalculatingShipping(false);
+      console.log(`[Frete] Endereço completo: ${rua} ${numero}, ${bairro}, ${cidade} ${numericCode}`);
+    };
+
+    // Debounce de 800ms para não disparar a cada tecla no campo "numero"
+    const timer = setTimeout(fetchShippingRates, 800);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.rua, formData.numero, formData.bairro, formData.codigoPostal, zipSearched]);
 
   // Mudança de campos de cartão
   const handleCardInputChange = (e) => {
@@ -145,79 +225,84 @@ export default function Checkout() {
     setCardToken('');
   };
 
-  // ─── TABELA INTERNA: CP CABA → BAIRRO ───────────────────────────────────────
-  // Nominatim não possui dados de suburb para a maioria dos CPs de CABA.
-  // Esta tabela local garante o preenchimento correto para os CPs mais comuns.
-  // Fonte: sistema oficial de CPs da Argentina (Correo Argentino).
+  // ─── TABELA INTERNA: CP CABA → BAIRRO(S) ─────────────────────────────────────
+  // Valor string = CP unívoco → preenche automaticamente
+  // Valor array  = CP multi-zona → campo Barrio vira <select> dropdown
+  // Fonte: Correo Argentino + conhecimento da divisão postal de CABA.
   const CABA_BARRIO_TABLE = {
-    // Microcentro / Centro
-    1000:'Microcentro', 1001:'San Nicolás', 1002:'San Nicolás', 1003:'Monserrat',
-    1004:'Monserrat',   1005:'Monserrat',   1006:'San Nicolás', 1007:'San Nicolás',
-    1008:'San Nicolás', 1009:'Retiro',      1010:'Retiro',      1011:'Retiro',
-    1012:'Retiro',      1013:'San Telmo',   1014:'San Telmo',   1015:'San Telmo',
-    1016:'San Telmo',   1017:'Constitución',1018:'Constitución',1019:'Constitución',
+    // Microcentro / Centro — unión de barrios históricos
+
+    1000:['Microcentro','San Nicolás'], 1001:'San Nicolás', 1002:'San Nicolás',
+    1003:'Monserrat',  1004:'Monserrat',  1005:'Monserrat',
+    1006:'San Nicolás', 1007:'San Nicolás', 1008:'San Nicolás',
+    1009:'Retiro',     1010:'Retiro',     1011:'Retiro',     1012:'Retiro',
+    1013:'San Telmo',  1014:'San Telmo',  1015:'San Telmo',  1016:'San Telmo',
+    1017:'Constitución',1018:'Constitución',
+    // CP 1019 cobre San Nicolás e parte de Constitución/Monserrat → multi-zona
+    1019:['San Nicolás','Constitución','Monserrat'],
     1020:'Puerto Madero',1021:'Puerto Madero',1022:'Puerto Madero',
-    1023:'Monserrat',   1024:'Monserrat',   1025:'Monserrat',   1026:'Monserrat',
-    1027:'Monserrat',   1028:'Monserrat',   1029:'Monserrat',
+    1023:'Monserrat',  1024:'Monserrat',  1025:'Monserrat',  1026:'Monserrat',
+    1027:'Monserrat',  1028:'Monserrat',  1029:'Monserrat',
     // Balvanera / San Cristóbal
-    1030:'Balvanera',   1031:'Balvanera',   1032:'Balvanera',   1033:'Balvanera',
-    1034:'San Cristóbal',1035:'San Cristóbal',1036:'Balvanera', 1037:'Balvanera',
-    1038:'Balvanera',   1039:'Balvanera',
-    1040:'Balvanera',   1041:'Balvanera',   1042:'Balvanera',   1043:'Balvanera',
-    1044:'Balvanera',   1045:'Balvanera',   1046:'Balvanera',   1047:'Balvanera',
-    1048:'Balvanera',   1049:'Balvanera',
-    1050:'Balvanera',   1051:'Balvanera',   1052:'Balvanera',   1053:'Balvanera',
-    1054:'Balvanera',   1055:'Balvanera',   1056:'Balvanera',   1057:'Balvanera',
-    1058:'Balvanera',   1059:'Balvanera',
-    1060:'Almagro',     1061:'Almagro',     1062:'Almagro',     1063:'Almagro',
-    1064:'Almagro',     1065:'Almagro',     1066:'Almagro',     1067:'Almagro',
-    1068:'Almagro',     1069:'Almagro',
-    1070:'Boedo',       1071:'Boedo',       1072:'Boedo',       1073:'Boedo',
-    1074:'Boedo',       1075:'Boedo',       1076:'Boedo',       1077:'Boedo',
-    1078:'Boedo',       1079:'Boedo',
-    1080:'Balvanera',   1081:'Balvanera',   1082:'Balvanera',   1083:'San Cristóbal',
+    1030:'Balvanera',  1031:'Balvanera',  1032:'Balvanera',  1033:'Balvanera',
+    1034:'San Cristóbal',1035:'San Cristóbal',1036:'Balvanera',1037:'Balvanera',
+    1038:'Balvanera',  1039:'Balvanera',
+    1040:'Balvanera',  1041:'Balvanera',  1042:'Balvanera',  1043:'Balvanera',
+    1044:'Balvanera',  1045:'Balvanera',  1046:'Balvanera',  1047:'Balvanera',
+    1048:'Balvanera',  1049:'Balvanera',
+    1050:'Balvanera',  1051:'Balvanera',  1052:'Balvanera',  1053:'Balvanera',
+    1054:'Balvanera',  1055:'Balvanera',  1056:'Balvanera',  1057:'Balvanera',
+    1058:'Balvanera',  1059:'Balvanera',
+    1060:'Almagro',    1061:'Almagro',    1062:'Almagro',    1063:'Almagro',
+    1064:'Almagro',    1065:'Almagro',    1066:'Almagro',    1067:'Almagro',
+    1068:'Almagro',    1069:'Almagro',
+    1070:'Boedo',      1071:'Boedo',      1072:'Boedo',      1073:'Boedo',
+    1074:'Boedo',      1075:'Boedo',      1076:'Boedo',      1077:'Boedo',
+    1078:'Boedo',      1079:'Boedo',
+    1080:'Balvanera',  1081:'Balvanera',  1082:'Balvanera',  1083:'San Cristóbal',
     1084:'San Cristóbal',1085:'San Cristóbal',1086:'San Cristóbal',
     1087:'Parque Patricios',1088:'Parque Patricios',1089:'Parque Patricios',
     1090:'Parque Patricios',1091:'Parque Patricios',1092:'Parque Patricios',
     1093:'Parque Patricios',1094:'Parque Patricios',1095:'Parque Patricios',
     // La Boca / Barracas
-    1100:'La Boca',     1101:'La Boca',     1102:'La Boca',     1103:'La Boca',
-    1104:'La Boca',     1150:'Barracas',    1151:'Barracas',    1152:'Barracas',
-    1153:'Barracas',    1154:'Barracas',    1155:'Barracas',    1156:'Barracas',
-    // Caballito / Villa Crespo
-    1200:'Caballito',   1201:'Caballito',   1202:'Caballito',   1203:'Caballito',
-    1204:'Caballito',   1205:'Caballito',   1206:'Caballito',   1207:'Villa Crespo',
-    1208:'Villa Crespo',1209:'Villa Crespo',1210:'Villa Crespo',1211:'Villa Crespo',
-    1212:'Almagro',     1213:'Almagro',     1214:'Almagro',     1215:'Almagro',
-    // Palermo / Colegiales / Belgrano
-    1300:'Palermo',     1301:'Palermo',     1302:'Palermo',     1303:'Palermo',
-    1304:'Palermo',     1305:'Palermo',     1306:'Palermo',     1307:'Palermo',
-    1308:'Palermo',     1309:'Palermo',     1310:'Palermo',
-    1320:'Recoleta',    1321:'Recoleta',    1322:'Recoleta',    1323:'Recoleta',
-    1324:'Recoleta',    1325:'Recoleta',    1326:'Recoleta',    1327:'Recoleta',
+    1100:'La Boca',    1101:'La Boca',    1102:'La Boca',    1103:'La Boca',
+    1104:'La Boca',
+    1150:'Barracas',   1151:'Barracas',   1152:'Barracas',   1153:'Barracas',
+    1154:'Barracas',   1155:'Barracas',   1156:'Barracas',
+    // Caballito / Villa Crespo / Almagro — faixa de transição
+    1200:'Caballito',  1201:'Caballito',  1202:'Caballito',  1203:'Caballito',
+    1204:'Caballito',  1205:'Caballito',  1206:'Caballito',
+    1207:'Villa Crespo',1208:'Villa Crespo',1209:'Villa Crespo',
+    1210:'Villa Crespo',1211:'Villa Crespo',
+    1212:'Almagro',    1213:'Almagro',    1214:'Almagro',    1215:'Almagro',
+    // Recoleta / Barrio Norte — multi-zona real
+    1300:['Palermo','Recoleta'],
+    1301:'Palermo',    1302:'Palermo',    1303:'Palermo',    1304:'Palermo',
+    1305:'Palermo',    1306:'Palermo',    1307:'Palermo',    1308:'Palermo',
+    1309:'Palermo',    1310:'Palermo',
+    1320:'Recoleta',   1321:'Recoleta',   1322:'Recoleta',   1323:'Recoleta',
+    1324:'Recoleta',   1325:'Recoleta',   1326:'Recoleta',   1327:'Recoleta',
     // Flores / Floresta
-    1400:'Flores',      1401:'Flores',      1402:'Flores',      1403:'Flores',
-    1404:'Flores',      1405:'Flores',      1406:'Flores',      1407:'Flores',
-    1408:'Flores',      1409:'Flores',      1410:'Floresta',    1411:'Floresta',
-    1412:'Floresta',    1413:'Floresta',    1414:'Floresta',
-    // Villa del Parque / Devoto / Agronomía
+    1400:'Flores',     1401:'Flores',     1402:'Flores',     1403:'Flores',
+    1404:'Flores',     1405:'Flores',     1406:'Flores',     1407:'Flores',
+    1408:'Flores',     1409:'Flores',
+    1410:'Floresta',   1411:'Floresta',   1412:'Floresta',   1413:'Floresta',  1414:'Floresta',
+    // Villa del Parque / Devoto
     1415:'Villa del Parque',1416:'Villa del Parque',1417:'Villa del Parque',
-    1418:'Devoto',      1419:'Devoto',
-    // Palermo / Villa Crespo / Colegiales
-    1420:'Palermo',     1421:'Palermo',     1422:'Palermo',     1423:'Palermo',
-    1424:'Palermo',     1425:'Palermo',     1426:'Palermo',     1427:'Belgrano',
-    1428:'Belgrano',    1429:'Belgrano',
-    // Colegiales / Saavedra / Villa Urquiza
-    1430:'Colegiales',  1431:'Colegiales',  1432:'Colegiales',
-    1440:'Saavedra',    1441:'Saavedra',    1442:'Saavedra',    1443:'Saavedra',
+    1418:'Devoto',     1419:'Devoto',
+    // Palermo / Villa Crespo / Belgrano
+    1420:'Palermo',    1421:'Palermo',    1422:'Palermo',    1423:'Palermo',
+    1424:'Palermo',    1425:'Palermo',    1426:'Palermo',
+    1427:'Belgrano',   1428:'Belgrano',
+    // Belgrano / Núñez / Colegiales — faixa de transição
+    1429:['Belgrano','Núñez'],
+    1430:'Colegiales', 1431:'Colegiales', 1432:'Colegiales',
+    1440:'Saavedra',   1441:'Saavedra',   1442:'Saavedra',   1443:'Saavedra',
     1444:'Villa Urquiza',1445:'Villa Urquiza',1446:'Villa Urquiza',1447:'Villa Urquiza',
     1448:'Villa Pueyrredón',1449:'Villa Pueyrredón',
-    // Mataderos / Villa Soldati
-    1440:'Mataderos',   1441:'Mataderos',
     1470:'Villa Soldati',1471:'Villa Soldati',
-    // Núñez / Saavedra
-    1429:'Núñez',       1430:'Núñez',
   };
+
 
   // ─── LOOKUP DE CEP: Arquitetura Multi-Localidade ────────────────────────────
   // Fluxo:
@@ -243,7 +328,7 @@ export default function Checkout() {
     setIsCalculatingShipping(true);
     setZipSearched(true);
     setSelectedShipping(null);
-    setAvailableLocalities([]);
+    setAvailableBarrios([]);
     setIsMultipleZone(false);
 
     let numericCode = cleanZip;
@@ -319,12 +404,12 @@ export default function Checkout() {
     let resolvedCity     = '';
     let resolvedProvince = '';
     let resolvedBairro   = '';
-    let allLocalities    = []; // para multi-zona
 
-    // ── PASSO 1: Nominatim com limit=5 para detectar multi-localidade ────────────
+    // ── PASSO 1: Nominatim — Cidade e Província (limit=1 suficiente) ─────────────
+    // O bairro será resolvido pela tabela CABA ou pelo Nominatim como fallback.
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?postalcode=${numericCode}&country=AR&format=json&addressdetails=1&limit=5`,
+        `https://nominatim.openstreetmap.org/search?postalcode=${numericCode}&country=AR&format=json&addressdetails=1&limit=1`,
         {
           signal: AbortSignal.timeout(6000),
           headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' }
@@ -332,40 +417,20 @@ export default function Checkout() {
       );
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          // Deduplica por combinação cidade+bairro
-          const seen = new Set();
-          data.forEach(item => {
-            const addr = item.address || {};
-            const city   = addr.city || addr.town || addr.municipality || addr.county || '';
-            const bairro = addr.suburb || addr.neighbourhood || addr.quarter || '';
-            const prov   = normalizeProvince(addr.state || '');
-            const key    = `${city}|${bairro}`;
-            if (city && !seen.has(key)) {
-              seen.add(key);
-              allLocalities.push({ city, province: prov, bairro, label: bairro ? `${bairro} — ${city}` : city });
-            }
-          });
-
-          if (allLocalities.length === 1) {
-            // CP unívoco → preenche direto
-            resolvedCity     = allLocalities[0].city;
-            resolvedProvince = allLocalities[0].province;
-            resolvedBairro   = allLocalities[0].bairro;
-          } else if (allLocalities.length > 1) {
-            // CP multi-zona → vai mostrar dropdown
-            resolvedCity     = allLocalities[0].city;
-            resolvedProvince = allLocalities[0].province;
-            resolvedBairro   = allLocalities[0].bairro;
-            console.log(`[CP Lookup] Multi-zona detectado: ${allLocalities.length} localidades para CP ${numericCode}`);
-          }
+        const result = Array.isArray(data) && data.length > 0 ? data[0] : null;
+        if (result?.address) {
+          const addr = result.address;
+          resolvedCity     = addr.city || addr.town || addr.municipality || addr.county || '';
+          resolvedProvince = addr.state || '';
+          // Bairro do Nominatim só se não vier da tabela CABA (prioridade tabela)
+          resolvedBairro   = addr.suburb || addr.neighbourhood || addr.quarter || '';
         }
       }
     } catch (err) {
       console.warn('[CP Lookup] Nominatim falhou:', err.message);
     }
 
-    // ── PASSO 2: Zippopotam — interior (Rosario, Córdoba, etc.) ─────────────────
+    // ── PASSO 2: Zippopotam — fallback para interior ─────────────────────────────
     if (!resolvedCity) {
       try {
         const res = await fetch(`https://api.zippopotam.us/ar/${numericCode}`, { signal: AbortSignal.timeout(5000) });
@@ -375,7 +440,6 @@ export default function Checkout() {
           if (places && places.length > 0) {
             resolvedCity     = places[0]['place name'] || '';
             resolvedProvince = normalizeProvince(places[0]['state'] || '');
-            console.log(`[CP Lookup] Zippopotam: ${resolvedCity} / ${resolvedProvince}`);
           }
         }
       } catch (err) {
@@ -383,109 +447,56 @@ export default function Checkout() {
       }
     }
 
-    // ── PASSO 3: CABA — tabela local (Nominatim não tem suburb para CABA) ────────
-    if (!resolvedBairro && CABA_BARRIO_TABLE[numInt]) {
-      resolvedBairro = CABA_BARRIO_TABLE[numInt];
-      console.log(`[CP Lookup] Tabela CABA: Bairro="${resolvedBairro}" para CP ${numericCode}`);
-    }
-
-    // ── PASSO 4: GBA/Interior — fallback numérico corrigido ─────────────────────
+    // ── PASSO 3: GBA/Interior — fallback numérico corrigido ─────────────────────
     if (!resolvedCity) {
-      // CABA (1000–1499)
       if (numInt >= 1000 && numInt <= 1499) {
         resolvedCity     = 'Buenos Aires';
         resolvedProvince = 'Ciudad Autónoma de Buenos Aires';
       } else {
         const match = GBA_INTERIOR_TABLE.find(r => numInt >= r.min && numInt <= r.max);
-        if (match) {
-          resolvedCity     = match.city;
-          resolvedProvince = match.province;
-          console.log(`[CP Lookup] Tabela GBA/Interior: ${resolvedCity} / ${resolvedProvince} para CP ${numericCode}`);
-        }
+        if (match) { resolvedCity = match.city; resolvedProvince = match.province; }
       }
     }
-
     resolvedProvince = normalizeProvince(resolvedProvince);
 
-    // ── PASSO 5: Atualiza UI — single ou multi-zona ──────────────────────────────
-    if (allLocalities.length > 1) {
-      // Enriquece cada opção com barrio da tabela CABA se necessário
-      const enriched = allLocalities.map(loc => ({
-        ...loc,
-        bairro: loc.bairro || CABA_BARRIO_TABLE[numInt] || '',
-        label:  loc.bairro ? `${loc.bairro} — ${loc.city}` : loc.city,
-      }));
-      setAvailableLocalities(enriched);
-      setIsMultipleZone(true);
-      // Preenche com a primeira opção como padrão
-      setFormData(prev => ({
-        ...prev,
-        bairro:   enriched[0].bairro,
-        cidade:   enriched[0].city,
-        provincia: enriched[0].province,
-      }));
-    } else {
-      setIsMultipleZone(false);
-      setAvailableLocalities([]);
-      setFormData(prev => ({
-        ...prev,
-        bairro:   resolvedBairro,
-        cidade:   resolvedCity,
-        provincia: resolvedProvince,
-      }));
-    }
-
-    // ── PASSO 6: Frete ───────────────────────────────────────────────────────────
-    const FALLBACK_RATES = [
-      { id: 'andreani',    name: 'Andreani Envío Nacional',          time: '3-5 días hábiles', price: 4500 },
-      { id: 'oca',         name: 'OCA Envíos a Domicilio',           time: '4-6 días hábiles', price: 5200 },
-      { id: 'envios_pack', name: 'Envíos Pack Estándar',             time: '2-4 días hábiles', price: 3800 },
-    ];
-    const isCABAorGBA = resolvedProvince.toLowerCase().includes('buenos aires') || resolvedProvince.toLowerCase().includes('autónoma');
-    if (isCABAorGBA) {
-      FALLBACK_RATES.unshift({ id: 'motomensajeria', name: 'Motomensajería Express (CABA/GBA)', time: 'Entrega en 24h hábiles', price: 3500 });
-    }
-
-    let finalRates = [];
-    try {
-      const shippingRes = await fetch(
-        `${BACKEND_URL}/api/payments/shipping-rates`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cp: numericCode,
-            currency: 'ARS',
-            products: (cart || []).map(item => ({
-              variant_id: item.tiendanubeVariantId || item.id || null,
-              id: item.id, quantity: item.quantity || 1,
-              weight: String(item.weight || '0.500'),
-              width:  String(item.width  || '10.00'),
-              height: String(item.height || '10.00'),
-              depth:  String(item.depth  || '10.00'),
-            }))
-          }),
-          signal: AbortSignal.timeout(12000)
-        }
-      );
-      if (shippingRes.ok) {
-        const shippingData = await shippingRes.json();
-        if (Array.isArray(shippingData.rates) && shippingData.rates.length > 0) {
-          finalRates = shippingData.rates;
-          console.log(`[Frete] ${finalRates.length} opção(ões) recebida(s) da Tiendanube.`);
-        } else {
-          console.warn('[Frete] Tiendanube retornou lista vazia. Usando fallback.');
-        }
+    // ── PASSO 4: CABA_BARRIO_TABLE — autoridade sobre bairro ─────────────────────
+    // Tabela tem prioridade sobre Nominatim para CABA.
+    // String → CP unívoco, Array → CP multi-zona (campo Barrio vira dropdown).
+    const cabaEntry = CABA_BARRIO_TABLE[numInt];
+    if (cabaEntry) {
+      if (Array.isArray(cabaEntry)) {
+        // CP MULTI-ZONA: mostra dropdown no campo Barrio
+        setAvailableBarrios(cabaEntry);
+        setIsMultipleZone(true);
+        resolvedBairro = cabaEntry[0]; // primeira opção como padrão
+        console.log(`[CP Lookup] Multi-zona CABA: [${cabaEntry.join(', ')}] para CP ${numericCode}`);
+      } else {
+        // CP UNÍVOCO: preenche direto
+        setAvailableBarrios([]);
+        setIsMultipleZone(false);
+        resolvedBairro = cabaEntry;
       }
-    } catch (shippingErr) {
-      console.warn('[Frete] Backend indisponível:', shippingErr.message);
+    } else if (resolvedBairro) {
+      // Nominatim retornou suburb para CPs fora da tabela CABA
+      setAvailableBarrios([]);
+      setIsMultipleZone(false);
+    } else {
+      setAvailableBarrios([]);
+      setIsMultipleZone(false);
     }
 
-    if (finalRates.length === 0) finalRates = FALLBACK_RATES;
-    setShippingOptions(finalRates);
-    setSelectedShipping(finalRates[0]);
+    // ── PASSO 5: Atualiza formulário ─────────────────────────────────────────────
+    setFormData(prev => ({
+      ...prev,
+      bairro:   resolvedBairro,
+      cidade:   resolvedCity,
+      provincia: resolvedProvince,
+    }));
+
+    // zipSearched=true dispara o useEffect de frete (quando rua+numero forem preenchidos)
     setIsCalculatingShipping(false);
   };
+
 
   // Motor de cupons com validação no backend Render/Local e trava de duplicidade
 
@@ -784,33 +795,14 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Ciudad: dropdown se CP multi-zona, input se unívoco */}
+              {/* Ciudad: sempre input — preenchido automaticamente pelo CP */}
               <div className="form-group">
-                <label>
-                  {t('checkout_city')} *
-                  {isMultipleZone && (
-                    <span style={{ fontSize: '0.75rem', color: '#8B5E3C', fontWeight: 400, marginLeft: '0.5rem' }}>
-                      — seleccione su localidad
-                    </span>
-                  )}
-                </label>
-                {isMultipleZone ? (
-                  <select
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1rem' }}
-                    onChange={handleLocalitySelect}
-                    defaultValue={0}
-                  >
-                    {availableLocalities.map((loc, idx) => (
-                      <option key={idx} value={idx}>{loc.label}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required />
-                )}
+                <label>{t('checkout_city')} *</label>
+                <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required />
               </div>
             </div>
 
-            {/* Banner informativo para CP multi-zona */}
+            {/* Banner informativo para CP multi-zona CABA */}
             {isMultipleZone && (
               <div style={{
                 background: '#FFF8F0', border: '1px solid #E8C99A', borderRadius: '8px',
@@ -819,7 +811,7 @@ export default function Checkout() {
               }}>
                 <span style={{ fontSize: '1.1rem' }}>ℹ️</span>
                 <span>
-                  <strong>Su código postal cubre varias zonas.</strong> Seleccione la localidad correcta en el campo "Ciudad" para asegurar una entrega precisa.
+                  <strong>Su CP cubre varios barrios.</strong> Seleccione el barrio correcto en el campo <em>Barrio / Zona</em> — esto garantiza el cálculo de flete preciso.
                 </span>
               </div>
             )}
@@ -835,14 +827,19 @@ export default function Checkout() {
               <div className="form-group">
                 <label>
                   Calle / Avenida *
-                  <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 400, marginLeft: '0.5rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#888', fontWeight: 400, marginLeft: '0.4rem' }}>
                     (ingrese manualmente)
                   </span>
                 </label>
                 <input type="text" name="rua" placeholder="Ej: Av. Corrientes" value={formData.rua} onChange={handleInputChange} required />
               </div>
               <div className="form-group">
-                <label>Número *</label>
+                <label>
+                  Número *
+                  <span style={{ fontSize: '0.72rem', color: '#4A7C59', fontWeight: 400, marginLeft: '0.4rem' }}>
+                    (calcula flete al completar)
+                  </span>
+                </label>
                 <input type="text" name="numero" placeholder="Ej: 4200" value={formData.numero} onChange={handleInputChange} required />
               </div>
             </div>
@@ -852,19 +849,42 @@ export default function Checkout() {
                 <label>Piso / Depto / Complemento (Opcional)</label>
                 <input type="text" name="complemento" placeholder="Ej: Piso 3B" value={formData.complemento} onChange={handleInputChange} />
               </div>
+
+              {/* Barrio / Zona: dropdown se CP multi-zona (CABA), input se unívoco ou interior */}
               <div className="form-group">
-                <label>Barrio / Zona *</label>
+                <label>
+                  Barrio / Zona *
+                  {isMultipleZone && (
+                    <span style={{ fontSize: '0.72rem', color: '#8B5E3C', fontWeight: 400, marginLeft: '0.4rem' }}>
+                      — seleccione su barrio
+                    </span>
+                  )}
+                </label>
                 {isMultipleZone ? (
+                  <select
+                    name="bairro"
+                    value={formData.bairro}
+                    onChange={handleBairroSelect}
+                    required
+                    style={{
+                      width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
+                      border: '2px solid #E8C99A', fontSize: '1rem', background: '#FFFDF9',
+                      color: '#3D2B1F', cursor: 'pointer', appearance: 'auto'
+                    }}
+                  >
+                    {availableBarrios.map((barrio, idx) => (
+                      <option key={idx} value={barrio}>{barrio}</option>
+                    ))}
+                  </select>
+                ) : (
                   <input
                     type="text"
                     name="bairro"
+                    placeholder="Ej: Palermo"
                     value={formData.bairro}
                     onChange={handleInputChange}
-                    placeholder="Confirme o edite su barrio"
                     required
                   />
-                ) : (
-                  <input type="text" name="bairro" placeholder="Ej: Palermo" value={formData.bairro} onChange={handleInputChange} required />
                 )}
               </div>
             </div>
