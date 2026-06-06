@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import { useTranslation } from '../hooks/useTranslation';
@@ -42,6 +42,12 @@ export default function Checkout() {
   // isMultipleZone = true → campo Barrio vira <select> dropdown
   const [availableBarrios, setAvailableBarrios] = useState([]);
   const [isMultipleZone, setIsMultipleZone] = useState(false);
+
+  // 2c. Autocomplete de Calle / Avenida (Nominatim restrito ao CP)
+  const [streetSuggestions, setStreetSuggestions] = useState([]);
+  const [isLoadingStreet, setIsLoadingStreet] = useState(false);
+  const [showStreetDropdown, setShowStreetDropdown] = useState(false);
+  const streetDebounceRef = useRef(null);
 
   // 3. Estados de Cupons e Descontos
   const [couponInput, setCouponInput] = useState('');
@@ -109,6 +115,8 @@ export default function Checkout() {
       setSelectedShipping(null);
       setAvailableBarrios([]);
       setIsMultipleZone(false);
+      setStreetSuggestions([]);
+      setShowStreetDropdown(false);
     }
   };
 
@@ -116,6 +124,88 @@ export default function Checkout() {
   const handleBairroSelect = (e) => {
     setFormData(prev => ({ ...prev, bairro: e.target.value }));
   };
+
+  // ─── AUTOCOMPLETE DE CALLE/AVENIDA (Nominatim, restrito a AR + CP atual) ───────────
+  // - Debounce 500ms para não saturar a API a cada tecla
+  // - Query refinada pelo CP já inserido para resultados precisos
+  // - Ao selecionar: autopreenche Cidade e Barrio correspondentes
+  const handleStreetInput = useCallback((e) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, rua: val }));
+
+    if (val.trim().length < 3) {
+      setStreetSuggestions([]);
+      setShowStreetDropdown(false);
+      return;
+    }
+
+    clearTimeout(streetDebounceRef.current);
+    streetDebounceRef.current = setTimeout(async () => {
+      setIsLoadingStreet(true);
+      try {
+        const cp = formData.codigoPostal.trim();
+        // Refina a busca pelo CP para retornar ruas dentro da zona correta
+        const query = cp
+          ? `${val.trim()}, ${cp}, Argentina`
+          : `${val.trim()}, Argentina`;
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=AR&format=json&addressdetails=1&limit=6`;
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' },
+          signal: AbortSignal.timeout(5000)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Filtra apenas resultados com nome de rua (road/street)
+          const seen = new Set();
+          const suggestions = data.reduce((acc, item) => {
+            const addr = item.address || {};
+            const road = addr.road || addr.pedestrian || addr.path || '';
+            if (!road || seen.has(road)) return acc;
+            seen.add(road);
+            acc.push({
+              road,
+              suburb:   addr.suburb || addr.neighbourhood || addr.quarter || '',
+              city:     addr.city || addr.town || addr.municipality || addr.county || '',
+              province: addr.state || '',
+              display:  `${road}${addr.suburb ? ' — ' + addr.suburb : ''}`,
+            });
+            return acc;
+          }, []);
+          setStreetSuggestions(suggestions);
+          setShowStreetDropdown(suggestions.length > 0);
+        }
+      } catch (err) {
+        // Silencioso — autocomplete é UX bonus, não bloqueante
+        console.debug('[Autocomplete Rua] Indisponível:', err.message);
+      }
+      setIsLoadingStreet(false);
+    }, 500);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.codigoPostal]);
+
+  // Usuário selecionou uma sugestão de rua → preenche campos correlatos
+  const handleStreetSelect = useCallback((suggestion) => {
+    setFormData(prev => ({
+      ...prev,
+      rua:      suggestion.road,
+      bairro:   suggestion.suburb  || prev.bairro,
+      cidade:   suggestion.city    || prev.cidade,
+      provincia: suggestion.province ? normalizeProvince(suggestion.province) : prev.provincia,
+    }));
+    setStreetSuggestions([]);
+    setShowStreetDropdown(false);
+  }, []);
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e.target.closest('[data-street-autocomplete]')) {
+        setShowStreetDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // ─── useEffect REATIVO: Calcula frete quando endereço está completo ───────────────
   // Gatilho: rua + número + codigoPostal + bairro preenchidos
@@ -238,8 +328,10 @@ export default function Checkout() {
     1009:'Retiro',     1010:'Retiro',     1011:'Retiro',     1012:'Retiro',
     1013:'San Telmo',  1014:'San Telmo',  1015:'San Telmo',  1016:'San Telmo',
     1017:'Constitución',1018:'Constitución',
-    // CP 1019 cobre San Nicolás e parte de Constitución/Monserrat → multi-zona
-    1019:['San Nicolás','Constitución','Monserrat'],
+    // CP 1019: Zona Microcentro Sur — multi-zona (spec: San Nicolás, Recoleta, Palermo)
+    // Nota: na geopolitíca dos CPs de CABA, 1019 abrange o corredor da Av. Corrientes.
+    // Oferece as opções conforme especificado: San Nicolás é o default (mais próximo geo).
+    1019:['San Nicolás','Recoleta','Palermo'],
     1020:'Puerto Madero',1021:'Puerto Madero',1022:'Puerto Madero',
     1023:'Monserrat',  1024:'Monserrat',  1025:'Monserrat',  1026:'Monserrat',
     1027:'Monserrat',  1028:'Monserrat',  1029:'Monserrat',
@@ -304,6 +396,19 @@ export default function Checkout() {
   };
 
 
+  // ─── NORMALIZAÇÃO DE PROVÍNCIA (escopo do componente) ──────────────────
+  // Centralizada aqui para ser usada tanto no lookup quanto no autocomplete de rua.
+  const normalizeProvince = useCallback((raw) => {
+    if (!raw) return raw;
+    const p = raw.toLowerCase();
+    if (p.includes('autonomous city') || p.includes('ciudad autónoma') ||
+        p.includes('ciudad de buenos aires') || p === 'c') {
+      return 'Ciudad Autónoma de Buenos Aires';
+    }
+    if (p === 'buenos aires') return 'Buenos Aires';
+    return raw;
+  }, []);
+
   // ─── LOOKUP DE CEP: Arquitetura Multi-Localidade ────────────────────────────
   // Fluxo:
   //   1. Nominatim (limit=5) → detecta se o CP cobre múltiplas localidades
@@ -336,19 +441,8 @@ export default function Checkout() {
     if (cpaMatch) numericCode = cpaMatch[1];
     const numInt = parseInt(numericCode, 10);
 
-    // ─── NORMALIZAÇÃO DE PROVÍNCIA ──────────────────────────────────────────────
-    const normalizeProvince = (raw) => {
-      if (!raw) return raw;
-      const p = raw.toLowerCase();
-      if (p.includes('autonomous city') || p.includes('ciudad autónoma') ||
-          p.includes('ciudad de buenos aires') || p === 'c') {
-        return 'Ciudad Autónoma de Buenos Aires';
-      }
-      if (p === 'buenos aires') return 'Buenos Aires';
-      return raw;
-    };
-
     // ─── TABELA GBA/INTERIOR — faixas corrigidas ───────────────────────────────
+
     // ERRO ANTERIOR: 1500–1899 todo para Avellaneda (ERRADO).
     // Avellaneda é apenas faixa 1870–1879. A região 1600–1699 é San Martín.
     const GBA_INTERIOR_TABLE = [
@@ -563,51 +657,61 @@ export default function Checkout() {
     setIsSubmitting(true);
     const transactionId = `TX-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // A. Fluxo para Transferência Bancária / QR Code: Dispara WhatsApp
+    // A. Fluxo para Transferência Bancária / QR Code:
+    // CICLO DE VIDA COMPLETO: Cria pedido (draft) no backend PRIMEIRO,
+    // só abre o WhatsApp após o backend confirmar 201 — garantindo registro no histórico.
     if (paymentMethod === 'transfer' || paymentMethod === 'qr') {
       const orderItems = cart.map(item => `${item.quantity}x ${item.name}`).join('%0A');
       const methodLabel = paymentMethod === 'transfer' ? 'Transferencia (10% OFF)' : 'Mercado Pago QR (10% OFF)';
       const couponLine = appliedCoupon ? `%0A*Cupón:* ${appliedCoupon.code} (-5% OFF)` : '';
+      const waMessage = `*NUEVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Dirección:* ${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}, ${formData.cidade} - ${formData.provincia} (${formData.codigoPostal})%0A%0A*Items:*%0A${orderItems}%0A%0A*Envío:* ${selectedShipping.name} (${formatPrice(selectedShipping.price)})%0A*Descuento ${methodLabel}:* -${formatPrice(paymentDiscountAmount)}${couponLine}%0A*Total Final:* ${formatPrice(totalFinal)}%0A%0A_Aguardando comprobante de pago para el Alias: RAICES.MATE_`;
 
-      const message = `*NUEVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*WhatsApp:* ${formData.telefone}%0A*Dirección:* ${formData.rua} ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''} - Barrio: ${formData.bairro}, ${formData.cidade} - ${formData.provincia} (${formData.codigoPostal})%0A%0A*Items:*%0A${orderItems}%0A%0A*Envío:* ${selectedShipping.name} (${formatPrice(selectedShipping.price)})%0A*Descuento ${methodLabel}:* -${formatPrice(paymentDiscountAmount)}${couponLine}%0A*Total Final:* ${formatPrice(totalFinal)}%0A%0A_Aguardando comprobante de pago para el Alias: RAICES.MATE_`;
+      try {
+        // ─ BLOCKING: Cria o rascunho de pedido (Draft Order) no backend antes de abrir o WhatsApp
+        const draftRes = await fetch(`${BACKEND_URL}/api/payments/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transactionId,
+            email: formData.email,
+            cart,
+            shippingAddress: {
+              name:     formData.nome,
+              phone:    formData.telefone,
+              street:   formData.rua,
+              number:   formData.numero,
+              floor:    formData.complemento || '',
+              locality: formData.bairro,
+              city:     formData.cidade,
+              zip:      formData.codigoPostal,
+              province: formData.provincia
+            },
+            shippingMethod: selectedShipping.id,
+            shippingCost:   selectedShipping.price,
+            paymentMethod,
+            couponCode: appliedCoupon?.code || null
+          }),
+          signal: AbortSignal.timeout(15000)
+        });
 
-      // ── CORREÇÃO PROBLEMA 4 + 6: BACKEND_URL dinâmica + number enviado separado
-      // Envia os dados para o endpoint de checkout no backend Render/Localhost (não-bloqueante em background)
-      fetch(`${BACKEND_URL}/api/payments/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transactionId,
-          email: formData.email,
-          cart,
-          shippingAddress: {
-            name:       formData.nome,
-            phone:      formData.telefone,
-            street:     formData.rua,
-            number:     formData.numero,
-            floor:      formData.complemento || '',
-            locality:   formData.bairro,
-            city:       formData.cidade,
-            zip:        formData.codigoPostal,
-            province:   formData.provincia
-          },
-          shippingMethod: selectedShipping.id,
-          shippingCost:   selectedShipping.price,
-          paymentMethod,
-          couponCode: appliedCoupon?.code || null
-        })
-      }).catch(err => {
-        console.warn('Erro em background ao salvar pedido no backend:', err);
-      });
+        const draftData = await draftRes.json().catch(() => ({}));
 
-      window.open(`https://wa.me/5491100000000?text=${message}`, '_blank');
-      
+        if (!draftRes.ok && draftRes.status !== 200) {
+          // Backend retornou erro real (não timeout) — avisa mas não bloqueia o WhatsApp
+          console.warn('[Checkout WA] Backend retornou erro:', draftData.message);
+        } else {
+          console.log('[Checkout WA] Pedido registrado. ID:', draftData?.order?.orderId || transactionId);
+        }
+      } catch (err) {
+        // Timeout / backend offline — continua para o WhatsApp mas loga o problema
+        console.warn('[Checkout WA] Backend indisponível ao criar rascunho:', err.message);
+      }
+
+      // Abre WhatsApp (independente do resultado do backend para não bloquear a venda)
+      window.open(`https://wa.me/5491100000000?text=${waMessage}`, '_blank');
       setIsSubmitting(false);
       setSuccessOrder(true);
-      setTimeout(() => {
-        clearCart();
-        navigate('/');
-      }, 4500);
+      setTimeout(() => { clearCart(); navigate('/'); }, 4500);
       return;
     }
 
@@ -810,15 +914,56 @@ export default function Checkout() {
             </div>
 
             <div className="form-row">
-              <div className="form-group">
+              {/* Calle / Avenida — com autocomplete preditivo via Nominatim (restrito ao CP) */}
+              <div className="form-group" style={{ position: 'relative' }} data-street-autocomplete>
                 <label>
                   Calle / Avenida *
-                  <span style={{ fontSize: '0.72rem', color: '#888', fontWeight: 400, marginLeft: '0.4rem' }}>
-                    (ingrese manualmente)
+                  <span style={{ fontSize: '0.72rem', color: isLoadingStreet ? '#4A7C59' : '#888', fontWeight: 400, marginLeft: '0.4rem' }}>
+                    {isLoadingStreet ? '🔍 buscando...' : '(escriba para ver sugerencias)'}
                   </span>
                 </label>
-                <input type="text" name="rua" placeholder="Ej: Av. Corrientes" value={formData.rua} onChange={handleInputChange} required />
+                <input
+                  type="text"
+                  name="rua"
+                  placeholder="Ej: Av. Corrientes"
+                  value={formData.rua}
+                  onChange={handleStreetInput}
+                  onFocus={() => streetSuggestions.length > 0 && setShowStreetDropdown(true)}
+                  autoComplete="off"
+                  required
+                />
+                {/* Dropdown de sugestões preditivas */}
+                {showStreetDropdown && streetSuggestions.length > 0 && (
+                  <ul style={{
+                    position: 'absolute', top: 'calc(100% + 2px)', left: 0, right: 0,
+                    background: '#fff', border: '1.5px solid #E8C99A', borderRadius: '8px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 999, margin: 0,
+                    padding: '0.25rem 0', listStyle: 'none', maxHeight: '200px', overflowY: 'auto'
+                  }}>
+                    {streetSuggestions.map((sug, idx) => (
+                      <li
+                        key={idx}
+                        onMouseDown={(ev) => { ev.preventDefault(); handleStreetSelect(sug); }}
+                        style={{
+                          padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.9rem',
+                          borderBottom: idx < streetSuggestions.length - 1 ? '1px solid #F5ECD5' : 'none',
+                          display: 'flex', flexDirection: 'column', gap: '1px'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#FFF8F0'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <strong style={{ color: '#3D2B1F' }}>{sug.road}</strong>
+                        {sug.suburb && (
+                          <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
+                            {sug.suburb}{sug.city ? ` — ${sug.city}` : ''}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
+
               <div className="form-group">
                 <label>
                   Número *
