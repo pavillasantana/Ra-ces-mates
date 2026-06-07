@@ -185,34 +185,38 @@ export const submitOrderToTiendanube = async (checkoutData) => {
     }
 
     for (const item of checkoutData.cart) {
-      let variantId = null;
+      let variantId = item.tiendanubeVariantId || item.variantId || item.variant_id || null;
       let price = (item.price || 0).toFixed(2);
 
-      // A. Tenta casar pelo slug/handle tiendanubeProductId (ex: 'teste-v1')
-      const targetHandle = String(item.tiendanubeProductId || '').trim().toLowerCase();
-      
-      // B. Tenta casar pelo nome do produto
-      const targetName = String(item.name || '').trim().toLowerCase();
-
-      // Procura no catálogo retornado
-      const matchedTnProduct = tnProducts.find(p => {
-        // Verifica se o handle bate em algum dos idiomas cadastrados
-        const matchesHandle = p.handle && Object.values(p.handle).some(h => String(h).toLowerCase() === targetHandle);
-        const matchesName = p.name && Object.values(p.name).some(n => String(n).toLowerCase() === targetName);
-        return matchesHandle || matchesName || String(p.id) === targetHandle;
-      });
-
-      if (matchedTnProduct && matchedTnProduct.variants && matchedTnProduct.variants.length > 0) {
-        variantId = matchedTnProduct.variants[0].id;
-        console.log(`[Tiendanube Match] Casou "${item.name}" com variante oficial ID ${variantId} na Tiendanube.`);
+      if (variantId) {
+        console.log(`[Tiendanube Match] Usando variantId direto enviado do carrinho: ${variantId} para "${item.name}".`);
       } else {
-        // Fallback: se não achar, usa o fallback universal de estoque ou um número estático para evitar que a API rejeite
-        variantId = fallbackVariantId || 999999999;
-        console.log(`[Tiendanube Match] Não casou "${item.name}". Utilizando variant ID fallback: ${variantId}.`);
+        // A. Tenta casar pelo slug/handle tiendanubeProductId (ex: 'teste-v1')
+        const targetHandle = String(item.tiendanubeProductId || '').trim().toLowerCase();
+        
+        // B. Tenta casar pelo nome do produto
+        const targetName = String(item.name || '').trim().toLowerCase();
+
+        // Procura no catálogo retornado
+        const matchedTnProduct = tnProducts.find(p => {
+          // Verifica se o handle bate em algum dos idiomas cadastrados
+          const matchesHandle = p.handle && Object.values(p.handle).some(h => String(h).toLowerCase() === targetHandle);
+          const matchesName = p.name && Object.values(p.name).some(n => String(n).toLowerCase() === targetName);
+          return matchesHandle || matchesName || String(p.id) === targetHandle;
+        });
+
+        if (matchedTnProduct && matchedTnProduct.variants && matchedTnProduct.variants.length > 0) {
+          variantId = matchedTnProduct.variants[0].id;
+          console.log(`[Tiendanube Match] Casou "${item.name}" com variante oficial ID ${variantId} na Tiendanube.`);
+        } else {
+          // Fallback: se não achar, usa o fallback universal de estoque ou um número estático para evitar que a API rejeite
+          variantId = fallbackVariantId || 999999999;
+          console.warn(`[Tiendanube Match] Não casou "${item.name}". Utilizando variant ID fallback: ${variantId}.`);
+        }
       }
 
       matchedProducts.push({
-        variant_id: variantId,
+        variant_id: Number(variantId) || variantId,
         quantity: parseInt(item.quantity, 10) || 1,
         price: price
       });

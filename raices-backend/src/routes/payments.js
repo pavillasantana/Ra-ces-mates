@@ -308,10 +308,14 @@ router.post('/checkout', async (req, res) => {
           }
         }
       } else {
-        console.warn('[Checkout Sincronizado] Falha silenciosa ao criar pedido na Tiendanube:', tnResult.reason || tnResult.details);
+        console.error('❌ FALHA CRÍTICA NA SINCRONIZAÇÃO TIENDANUBE:', JSON.stringify({
+          reason: tnResult.reason,
+          details: tnResult.details,
+          error: tnResult.error
+        }, null, 2));
       }
     }).catch(err => {
-      console.error('[Checkout Sincronizado] Erro na sincronização da Tiendanube:', err.message);
+      console.error('❌ FALHA CRÍTICA NA SINCRONIZAÇÃO TIENDANUBE (Exceção):', err.message);
     });
 
     return res.status(201).json({
