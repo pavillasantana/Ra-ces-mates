@@ -1043,33 +1043,36 @@ export default function Checkout() {
                   </button>
                 </div>
                 {/* Dropdown de localidades */}
-                {showCpDropdown && cpSuggestions.length > 0 && (
+                {showCpDropdown && cpSuggestions?.length > 0 && (
                   <ul style={{
                     position: 'absolute', top: 'calc(100% + 2px)', left: 0, right: 0,
                     background: '#fff', border: '1.5px solid #E8C99A', borderRadius: '8px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.13)', zIndex: 999, margin: 0,
                     padding: '0.25rem 0', listStyle: 'none', maxHeight: '220px', overflowY: 'auto'
                   }}>
-                    {cpSuggestions.map((sug, idx) => (
-                      <li
-                        key={idx}
-                        onMouseDown={(ev) => { ev.preventDefault(); handleCpSuggestionSelect(sug); }}
-                        style={{
-                          padding: '0.65rem 1rem', cursor: 'pointer',
-                          borderBottom: idx < cpSuggestions.length - 1 ? '1px solid #F5ECD5' : 'none',
-                          display: 'flex', flexDirection: 'column', gap: '2px'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#FFF8F0'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                      >
-                        <strong style={{ color: '#3D2B1F', fontSize: '0.95rem' }}>
-                          {sug.suburb ? `${sug.suburb} — ${sug.city}` : sug.city}
-                        </strong>
-                        <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
-                          {sug.province} · CP {sug.postcode.replace(/[^\d]/g, '').slice(0, 4)}
-                        </span>
-                      </li>
-                    ))}
+                    {cpSuggestions.map((sug, idx) => {
+                      if (!sug) return null;
+                      return (
+                        <li
+                          key={idx}
+                          onMouseDown={(ev) => { ev.preventDefault(); handleCpSuggestionSelect(sug); }}
+                          style={{
+                            padding: '0.65rem 1rem', cursor: 'pointer',
+                            borderBottom: idx < cpSuggestions.length - 1 ? '1px solid #F5ECD5' : 'none',
+                            display: 'flex', flexDirection: 'column', gap: '2px'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#FFF8F0'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <strong style={{ color: '#3D2B1F', fontSize: '0.95rem' }}>
+                            {sug.suburb ? `${sug.suburb} — ${sug.city || ''}` : (sug.city || '')}
+                          </strong>
+                          <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
+                            {sug.province || ''}{sug.postcode ? ` · CP ${sug.postcode.replace(/[^\d]/g, '').slice(0, 4)}` : ''}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -1123,33 +1126,36 @@ export default function Checkout() {
                   required
                 />
                 {/* Dropdown de endereços sugeridos */}
-                {showAddressDropdown && addressSuggestions.length > 0 && (
+                {showAddressDropdown && addressSuggestions?.length > 0 && (
                   <ul style={{
                     position: 'absolute', top: 'calc(100% + 2px)', left: 0, right: 0,
                     background: '#fff', border: '1.5px solid #E8C99A', borderRadius: '8px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.13)', zIndex: 999, margin: 0,
                     padding: '0.25rem 0', listStyle: 'none', maxHeight: '220px', overflowY: 'auto'
                   }}>
-                    {addressSuggestions.map((sug, idx) => (
-                      <li
-                        key={idx}
-                        onMouseDown={(ev) => { ev.preventDefault(); handleAddressSuggestionSelect(sug); }}
-                        style={{
-                          padding: '0.65rem 1rem', cursor: 'pointer',
-                          borderBottom: idx < addressSuggestions.length - 1 ? '1px solid #F5ECD5' : 'none',
-                          display: 'flex', flexDirection: 'column', gap: '2px'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#FFF8F0'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                      >
-                        <strong style={{ color: '#3D2B1F', fontSize: '0.95rem' }}>
-                          {sug.road}{sug.house_number ? ` ${sug.house_number}` : ''}
-                        </strong>
-                        <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
-                          {sug.suburb ? `${sug.suburb}, ` : ''}{sug.city} · {sug.province}{sug.postcode ? ` · CP ${sug.postcode}` : ''}
-                        </span>
-                      </li>
-                    ))}
+                    {addressSuggestions.map((sug, idx) => {
+                      if (!sug) return null;
+                      return (
+                        <li
+                          key={idx}
+                          onMouseDown={(ev) => { ev.preventDefault(); handleAddressSuggestionSelect(sug); }}
+                          style={{
+                            padding: '0.65rem 1rem', cursor: 'pointer',
+                            borderBottom: idx < addressSuggestions.length - 1 ? '1px solid #F5ECD5' : 'none',
+                            display: 'flex', flexDirection: 'column', gap: '2px'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#FFF8F0'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <strong style={{ color: '#3D2B1F', fontSize: '0.95rem' }}>
+                            {sug.road || ''}{sug.house_number ? ` ${sug.house_number}` : ''}
+                          </strong>
+                          <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
+                            {sug.suburb ? `${sug.suburb}, ` : ''}{sug.city || ''} · {sug.province || ''}{sug.postcode ? ` · CP ${sug.postcode}` : ''}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
