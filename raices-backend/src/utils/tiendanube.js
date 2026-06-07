@@ -1,15 +1,40 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import TiendanubeToken from '../models/TiendanubeToken.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CREDENTIALS_FILE = path.join(__dirname, '..', '..', 'tiendanube-credentials.json');
 
+// Cache em memória para credenciais da Tiendanube
+let cachedCreds = null;
+
+// Função para carregar as credenciais do banco de dados na inicialização do servidor
+export const loadTiendanubeCredentials = async () => {
+  try {
+    const doc = await TiendanubeToken.findOne().sort({ createdAt: -1 });
+    if (doc) {
+      cachedCreds = {
+        access_token: doc.access_token,
+        store_id: doc.store_id,
+        scope: doc.scope,
+        authorized_at: doc.authorized_at
+      };
+      console.log('[Tiendanube API] Credenciais OAuth carregadas com sucesso do MongoDB Atlas.');
+    } else {
+      console.log('[Tiendanube API] Nenhuma credencial OAuth cadastrada no MongoDB Atlas.');
+    }
+  } catch (err) {
+    console.error('[Tiendanube API] Erro ao carregar credenciais do MongoDB:', err.message);
+  }
+};
+
 // Obter credenciais salvas de OAuth ou variáveis de ambiente fallback
 export const getTiendanubeCredentials = () => {
-  let saved = {};
-  if (fs.existsSync(CREDENTIALS_FILE)) {
+  let saved = cachedCreds || {};
+
+  if (!cachedCreds && fs.existsSync(CREDENTIALS_FILE)) {
     try {
       saved = JSON.parse(fs.readFileSync(CREDENTIALS_FILE, 'utf8'));
     } catch (err) {
@@ -32,9 +57,29 @@ export const getTiendanubeCredentials = () => {
 };
 
 // Salvar credenciais de OAuth obtidas no handshake
-export const saveTiendanubeCredentials = (credentials) => {
+export const saveTiendanubeCredentials = async (credentials) => {
   try {
+    // 1. Salva em arquivo local para compatibilidade local
     fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(credentials, null, 2), 'utf8');
+    
+    // 2. Salva no banco de dados MongoDB Atlas para persistência de produção resiliente
+    try {
+      await TiendanubeToken.deleteMany({});
+      const tokenDoc = new TiendanubeToken({
+        access_token: credentials.access_token,
+        store_id: credentials.store_id,
+        scope: credentials.scope,
+        authorized_at: credentials.authorized_at
+      });
+      await tokenDoc.save();
+      console.log('[Tiendanube API] Credenciais OAuth salvas com sucesso no MongoDB Atlas!');
+    } catch (dbErr) {
+      console.error('[Tiendanube API] Falha ao salvar credenciais no MongoDB:', dbErr.message);
+    }
+
+    // 3. Atualiza cache em memória
+    cachedCreds = { ...credentials };
+
     console.log('Credenciais da Tiendanube salvas com sucesso em:', CREDENTIALS_FILE);
     // Exibe o token de forma destacada nos logs do Render para o administrador salvá-lo como variável de ambiente
     console.log('\n============================================================');

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import paymentsRoutes from './routes/payments.js'; // Nota: Como usaremos o Link Direto da Tiendanube, essa rota poderá ser limpa depois!
+import { loadTiendanubeCredentials } from './utils/tiendanube.js';
 
 dotenv.config();
 const app = express();
@@ -49,7 +50,10 @@ if (!MONGO_URI) {
   console.error('ERRO: A variável MONGO_URI não foi definida no ambiente.');
 } else {
   mongoose.connect(MONGO_URI)
-    .then(() => console.log('MongoDB Atlas Conectado com sucesso!'))
+    .then(async () => {
+      console.log('MongoDB Atlas Conectado com sucesso!');
+      await loadTiendanubeCredentials();
+    })
     .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 }
 

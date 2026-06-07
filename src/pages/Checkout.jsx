@@ -228,8 +228,8 @@ export default function Checkout() {
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  // ─── AUTOCOMPLETE POR RUA + NÚMERO ───────────────────────────────────────────
-  // Quando o usuário digita rua + número → busca endereços no Nominatim
+  // ─── AUTOCOMPLETE POR RUA (E OPÇÕES DE BAIRRO/CEP) ───────────────────────────
+  // Quando o usuário digita a rua (mínimo 3 caracteres) → busca endereços no Nominatim
   // → mostra dropdown com sugestões → clique preenche rua, número, cp, bairro, cidade, provincia.
   useEffect(() => {
     const { rua, numero } = formData;
@@ -239,7 +239,7 @@ export default function Checkout() {
       return;
     }
 
-    if (rua.trim().length < 3 || numero.trim().length < 1) {
+    if (rua.trim().length < 3) {
       setAddressSuggestions([]);
       setShowAddressDropdown(false);
       return;
@@ -249,8 +249,9 @@ export default function Checkout() {
     addressDebounceRef.current = setTimeout(async () => {
       setIsLoadingAddress(true);
       try {
-        const query = encodeURIComponent(`${rua.trim()} ${numero.trim()}, Argentina`);
-        const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&addressdetails=1&limit=5`;
+        const queryText = numero.trim() ? `${rua.trim()} ${numero.trim()}` : rua.trim();
+        const query = encodeURIComponent(`${queryText}, Argentina`);
+        const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&addressdetails=1&limit=8`;
         const res = await fetch(url, {
           headers: { 'User-Agent': 'RaicesHeritageMate/1.0 (raicesoficial.online)' },
           signal: AbortSignal.timeout(6000)
@@ -260,17 +261,31 @@ export default function Checkout() {
 
         const sugs = data.reduce((acc, item) => {
           const addr = item.address || {};
-          const road = addr.road || '';
-          const house_number = addr.house_number || numero.trim();
+          
+          let road = addr.road || addr.pedestrian || addr.footway || addr.cycleway || '';
+          if (!road && (item.class === 'highway' || item.type === 'residential')) {
+            road = item.name || '';
+          }
+          if (!road) {
+            road = addr.town || addr.village || addr.hamlet || item.name || '';
+          }
+
+          const house_number = addr.house_number || numero.trim() || '';
           const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.city_district || '';
           const city = addr.city || addr.town || addr.municipality || addr.county || '';
           const province = addr.state || '';
           const postcode = addr.postcode || '';
 
-          if (!road || !city) return acc;
+          if (!road) return acc;
 
           // Formata a exibição amigável
-          const display = `${road} ${house_number}, ${suburb ? suburb + ', ' : ''}${city} (${province}) - CP ${postcode}`;
+          const streetStr = house_number ? `${road} ${house_number}` : road;
+          const locationParts = [];
+          if (suburb) locationParts.push(suburb);
+          if (city && city !== road) locationParts.push(city);
+          if (province) locationParts.push(province);
+          
+          const display = `${streetStr}, ${locationParts.join(', ')}${postcode ? ` · CP ${postcode}` : ''}`;
 
           acc.push({
             road,
@@ -284,8 +299,18 @@ export default function Checkout() {
           return acc;
         }, []);
 
-        setAddressSuggestions(sugs);
-        setShowAddressDropdown(sugs.length > 0);
+        // Deduplica sugestões pelo display text
+        const uniqueSugs = [];
+        const seen = new Set();
+        for (const sug of sugs) {
+          if (!seen.has(sug.display)) {
+            seen.add(sug.display);
+            uniqueSugs.push(sug);
+          }
+        }
+
+        setAddressSuggestions(uniqueSugs);
+        setShowAddressDropdown(uniqueSugs.length > 0);
       } catch (err) {
         console.warn('[Address Autocomplete] Falhou:', err.message);
       } finally {
@@ -300,15 +325,15 @@ export default function Checkout() {
   // Usuário clicou numa sugestão de endereço
   const handleAddressSuggestionSelect = useCallback((sug) => {
     selectedFromSuggestionsRef.current = true;
-    const cpClean = sug.postcode.replace(/[^\d]/g, '').slice(0, 4);
-    const numCp = parseInt(cpClean, 10);
+    const cpClean = sug.postcode ? sug.postcode.replace(/[^\d]/g, '').slice(0, 4) : '';
+    const numCp = cpClean ? parseInt(cpClean, 10) : NaN;
 
     // Checa tabela CABA para multi-zona se for CABA
     const cabaEntry  = !isNaN(numCp) ? CABA_BARRIO_TABLE[numCp] : undefined;
     const isMulti    = Array.isArray(cabaEntry);
     const autoBarrio = isMulti
       ? cabaEntry[0]
-      : (typeof cabaEntry === 'string' ? cabaEntry : sug.suburb || '');
+      : (typeof cabaEntry === 'string' ? cabaEntry : sug.suburb || sug.city || '');
 
     setFormData(prev => ({
       ...prev,
@@ -323,9 +348,22 @@ export default function Checkout() {
     if (isMulti) { setAvailableBarrios(cabaEntry); setIsMultipleZone(true); }
     else         { setAvailableBarrios([]);         setIsMultipleZone(false); }
 
-    setZipSearched(true);
+    if (cpClean.length >= 4) {
+      setZipSearched(true);
+    } else {
+      setZipSearched(false);
+    }
+
     setAddressSuggestions([]);
     setShowAddressDropdown(false);
+
+    // Foca o campo de número automaticamente se não estiver preenchido
+    setTimeout(() => {
+      const numInput = document.querySelector('input[name="numero"]');
+      if (numInput && !sug.house_number) {
+        numInput.focus();
+      }
+    }, 50);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1105,10 +1143,10 @@ export default function Checkout() {
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
                         <strong style={{ color: '#3D2B1F', fontSize: '0.95rem' }}>
-                          {sug.road} {sug.house_number}
+                          {sug.road}{sug.house_number ? ` ${sug.house_number}` : ''}
                         </strong>
                         <span style={{ fontSize: '0.78rem', color: '#8B6B4A' }}>
-                          {sug.suburb ? `${sug.suburb}, ` : ''}{sug.city} · {sug.province} · CP {sug.postcode}
+                          {sug.suburb ? `${sug.suburb}, ` : ''}{sug.city} · {sug.province}{sug.postcode ? ` · CP ${sug.postcode}` : ''}
                         </span>
                       </li>
                     ))}
