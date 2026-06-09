@@ -37,7 +37,7 @@ export const useAuthStore = create(
             });
             return true;
           } else {
-            throw new Error(data.message || 'Erro ao registrar no servidor.');
+            throw new Error(data.message || 'Error al registrarse en el servidor.');
           }
         } catch (error) {
           console.warn('Erro ao registrar no backend, executando fallback local:', error.message);
@@ -46,7 +46,7 @@ export const useAuthStore = create(
           const users = JSON.parse(localStorage.getItem('raices_users') || '[]');
           const exists = users.find(u => u.email === email);
           if (exists) {
-            set({ error: 'E-mail já cadastrado localmente.', loading: false });
+            set({ error: 'El correo electrónico ya está registrado localmente.', loading: false });
             return false;
           }
 
@@ -96,7 +96,7 @@ export const useAuthStore = create(
             });
             return 'success';
           } else {
-            throw new Error(data.message || 'Credenciais inválidas.');
+            throw new Error(data.message || 'Credenciales inválidas.');
           }
         } catch (error) {
           console.warn('Erro no login com o backend, executando fallback local:', error.message);
@@ -106,7 +106,7 @@ export const useAuthStore = create(
           const user = users.find(u => u.email === email && u.password === password);
           
           if (!user) {
-            set({ error: 'Credenciais inválidas.', loading: false });
+            set({ error: 'Credenciales inválidas.', loading: false });
             return 'error';
           }
 
@@ -128,7 +128,7 @@ export const useAuthStore = create(
         const { tempToken } = get();
 
         if (!tempToken) {
-          set({ error: 'Token temporário ausente. Refaça o login.', loading: false });
+          set({ error: 'Falta el token temporal. Por favor, iniciá sesión nuevamente.', loading: false });
           return false;
         }
 
@@ -155,7 +155,7 @@ export const useAuthStore = create(
             });
             return true;
           } else {
-            throw new Error(data.message || 'Código 2FA incorreto ou expirado.');
+            throw new Error(data.message || 'Código 2FA incorrecto o expirado.');
           }
         } catch (error) {
           console.warn('Erro na verificação do backend, executando fallback local:', error.message);
@@ -163,11 +163,11 @@ export const useAuthStore = create(
           const trimmedCode = code.trim();
           const genericCodes = ['1234', '1111', '0000', '123456', '000000', '999999', '12345'];
           if (genericCodes.includes(trimmedCode)) {
-            set({ error: 'Código inválido ou genérico bloqueado.', loading: false });
+            set({ error: 'Código inválido o genérico bloqueado.', loading: false });
             return false;
           }
           if (trimmedCode !== '202688') {
-            set({ error: 'Código 2FA incorreto ou expirado.', loading: false });
+            set({ error: 'Código 2FA incorrecto o expirado.', loading: false });
             return false;
           }
 

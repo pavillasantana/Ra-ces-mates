@@ -3,11 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { featuredProducts } from '../data/products';
 import { useCartStore } from '../store/cartStore';
 import { useFavoritesStore } from '../store/favoritesStore';
+import { useTranslation } from '../hooks/useTranslation';
 import { useModal } from '../components/ModalProvider';
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
-};
 
 const matchesPriceRange = (price, priceRange) => {
   if (priceRange === 'all') return true;
@@ -17,12 +14,15 @@ const matchesPriceRange = (price, priceRange) => {
   return true;
 };
 
-export default function Category() {
+export default function Category({ forcedSlug }) {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const { slug: routeSlug } = useParams();
+  const slug = forcedSlug || routeSlug;
+  
   const { showAlert } = useModal();
   const { addToCart } = useCartStore();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const { t, formatPrice, lang } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('relevance');
@@ -45,61 +45,78 @@ export default function Category() {
 
   const handleBuyNow = (product) => {
     addToCart(product);
-    navigate('/checkout');
+    navigate(lang === 'pt' ? '/pt/checkout' : '/checkout');
+  };
+
+  const getCategoryTitle = (categorySlug) => {
+    if (categorySlug === 'mates-y-cuias') return t('menu_mates');
+    if (categorySlug === 'yerba-mate') return t('menu_yerba');
+    if (categorySlug === 'velas-y-inciensos') return t('menu_velas');
+    return categorySlug;
   };
 
   return (
     <div style={{ padding: '5rem 5%', minHeight: '80vh', backgroundColor: 'var(--color-bg-primary)' }}>
-      <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem', textTransform: 'capitalize' }}>Categoria: {slug}</h2>
+      <h1 style={{ fontSize: '2.5rem', marginBottom: '2rem', color: 'var(--color-primary-green)', fontFamily: "'Playfair Display', serif" }}>
+        {t('category_title')}: {getCategoryTitle(slug)}
+      </h1>
       <div className="filters-bar" style={{ marginBottom: '2rem' }}>
         <input
           type="text"
-          placeholder="Buscar nesta categoria"
+          placeholder={t('search_category_placeholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="filter-control"
         />
         <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="filter-control">
-          <option value="all">Todas faixas</option>
-          <option value="upTo20k">Até ARS 20.000</option>
-          <option value="20kTo60k">ARS 20.001 a 60.000</option>
-          <option value="above60k">Acima de ARS 60.000</option>
+          <option value="all">{t('all_ranges')}</option>
+          <option value="upTo20k">{t('up_to_20k')}</option>
+          <option value="20kTo60k">{t('range_20k_to_60k')}</option>
+          <option value="above60k">{t('above_60k')}</option>
         </select>
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="filter-control">
-          <option value="relevance">Mais relevantes</option>
-          <option value="priceAsc">Menor preço</option>
-          <option value="priceDesc">Maior preço</option>
-          <option value="nameAsc">Nome (A-Z)</option>
+          <option value="relevance">{t('sortBy_relevance')}</option>
+          <option value="priceAsc">{t('sortBy_priceAsc')}</option>
+          <option value="priceDesc">{t('sortBy_priceDesc')}</option>
+          <option value="nameAsc">{t('sortBy_nameAsc')}</option>
         </select>
       </div>
       {products.length === 0 ? (
-        <p>Nenhum produto encontrado nesta categoria.</p>
+        <p>{t('no_products_category')}</p>
       ) : (
         <div className="product-grid">
-          {products.map(product => (
-            <div key={product.id} className="product-card">
-              <div className="product-image-wrap">
-                <button
-                  type="button"
-                  className={`favorite-btn ${isFavorite(product.id) ? 'active' : ''}`}
-                  onClick={() => toggleFavorite(product)}
-                >
-                  {isFavorite(product.id) ? '♥' : '♡'}
-                </button>
-                <Link to={`/produto/${product.id}`} style={{display: 'block', height: '100%'}}>
-                  <img src={product.image} alt={product.name} />
-                </Link>
-              </div>
-              <div className="product-info">
-                <h3><Link to={`/produto/${product.id}`}>{product.name}</Link></h3>
-                <p className="product-price">{formatPrice(product.price)}</p>
-                <div style={{ display: 'grid', gap: '0.6rem' }}>
-                  <button className="btn btn-outline" onClick={() => addToCart(product)}>Adicionar</button>
-                  <button className="btn" onClick={() => handleBuyNow(product)}>Comprar</button>
+          {products.map(product => {
+            const productUrl = lang === 'pt' ? `/pt/produto/${product.id}` : `/producto/${product.id}`;
+            return (
+              <div key={product.id} className="product-card">
+                <div className="product-image-wrap">
+                  {product.badge && (
+                    <span className={`product-badge ${product.badge}`}>
+                      {t(`badge_${product.badge}`)}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    className={`favorite-btn ${isFavorite(product.id) ? 'active' : ''}`}
+                    onClick={() => toggleFavorite(product)}
+                  >
+                    {isFavorite(product.id) ? '♥' : '♡'}
+                  </button>
+                  <Link to={productUrl} style={{display: 'block', height: '100%'}}>
+                    <img src={product.image} alt={t(product.name)} loading="lazy" />
+                  </Link>
+                </div>
+                <div className="product-info">
+                  <h3><Link to={productUrl}>{t(product.name)}</Link></h3>
+                  <p className="product-price">{formatPrice(product.price)}</p>
+                  <div style={{ display: 'grid', gap: '0.6rem' }}>
+                    <button className="btn btn-outline" onClick={() => addToCart(product)}>{t('add_to_cart')}</button>
+                    <button className="btn" onClick={() => handleBuyNow(product)}>{t('buy_now')}</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

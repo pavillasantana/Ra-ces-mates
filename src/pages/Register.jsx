@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useModal } from '../components/ModalProvider';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Register() {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuthStore();
   const { showAlert } = useModal();
+  const { t, lang } = useTranslation();
   
   const [formData, setFormData] = useState({ 
     name: '', 
@@ -25,35 +27,50 @@ export default function Register() {
     const success = await register(formData);
     
     if (success) {
-      showAlert('¡Éxito!', 'Conta criada com sucesso! Faça seu login.', 'success');
-      navigate('/login');
+      const alertTitle = lang === 'pt' ? 'Sucesso!' : '¡Éxito!';
+      const alertMsg = lang === 'pt' ? 'Conta criada com sucesso! Faça login.' : '¡Cuenta creada con éxito! Iniciá sesión.';
+      showAlert(alertTitle, alertMsg, 'success');
+      navigate(lang === 'pt' ? '/pt/login' : '/login');
     }
   };
+
+  const title = lang === 'pt' ? 'Criar Conta' : 'Crear Cuenta';
+  const labelName = lang === 'pt' ? 'Nome Completo' : 'Nombre Completo';
+  const labelDocType = lang === 'pt' ? 'Tipo Doc.' : 'Tipo Doc.';
+  const labelDocNumber = lang === 'pt' ? 'Nº Documento' : 'Nº Documento';
+  const placeholderDoc = lang === 'pt' ? 'Ex: 40123456' : 'Ej: 40123456';
+  const labelPhone = lang === 'pt' ? 'Telefone / WhatsApp' : 'Teléfono / WhatsApp';
+  const labelPassword = lang === 'pt' ? 'Senha' : 'Contraseña';
+  const buttonText = loading 
+    ? (lang === 'pt' ? 'Registrando...' : 'Registrando...')
+    : (lang === 'pt' ? 'Registrar-se' : 'Registrarse');
+  const footerText = lang === 'pt' ? 'Já tem uma conta?' : '¿Ya tenés una cuenta?';
+  const footerLinkText = lang === 'pt' ? 'Iniciar Sessão' : 'Iniciar Sesión';
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', backgroundColor: 'var(--color-bg-primary)' }}>
       <div style={{ backgroundColor: '#fff', padding: '3rem', borderRadius: '8px', boxShadow: 'var(--shadow-subtle)', width: '100%', maxWidth: '400px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Criar Conta</h2>
+        <h1 style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '2rem', fontFamily: "'Playfair Display', serif", color: 'var(--color-primary-green)' }}>{title}</h1>
         
         {error && <div style={{ backgroundColor: '#fdecea', color: '#d9534f', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{error}</div>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label>Nome Completo</label>
+            <label>{labelName}</label>
             <input type="text" name="name" required value={formData.name} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label>Tipo Doc.</label>
+              <label>{labelDocType}</label>
               <select name="docType" value={formData.docType} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#fff', height: '45px' }}>
                 <option value="DNI">DNI</option>
-                <option value="Estrangeiro">Estrangeiro</option>
+                <option value="Estrangeiro">{lang === 'pt' ? 'Estrangeiro' : 'Extranjero'}</option>
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label>Nº Documento</label>
-              <input type="text" name="docNumber" required placeholder="Ex: 40123456" value={formData.docNumber} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+              <label>{labelDocNumber}</label>
+              <input type="text" name="docNumber" required placeholder={placeholderDoc} value={formData.docNumber} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
             </div>
           </div>
 
@@ -62,19 +79,19 @@ export default function Register() {
             <input type="email" name="email" required value={formData.email} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label>Telefone / WhatsApp</label>
+            <label>{labelPhone}</label>
             <input type="tel" name="phone" required placeholder="+54 9 11 ..." value={formData.phone} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label>Senha</label>
+            <label>{labelPassword}</label>
             <input type="password" name="password" required value={formData.password} onChange={handleChange} style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }} />
           </div>
           <button type="submit" className="btn" disabled={loading} style={{ marginTop: '1rem' }}>
-            {loading ? 'Cadastrando...' : 'Cadastrar'}
+            {buttonText}
           </button>
         </form>
         <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
-          Já tem conta? <Link to="/login" style={{ color: 'var(--color-accent-green)', fontWeight: 'bold' }}>Entrar</Link>
+          {footerText} <Link to={lang === 'pt' ? '/pt/login' : '/login'} style={{ color: 'var(--color-accent-green)', fontWeight: 'bold' }}>{footerLinkText}</Link>
         </p>
       </div>
     </div>

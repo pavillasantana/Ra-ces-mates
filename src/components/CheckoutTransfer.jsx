@@ -10,11 +10,11 @@ export default function CheckoutTransfer({ onBack }) {
   const { cart, clearCart } = useCartStore();
   
   const [formData, setFormData] = useState({
-    nome: '',
+    nombre: '',
     email: '',
-    telefone: '',
-    endereco: '',
-    cidade: '',
+    telefono: '',
+    direccion: '',
+    ciudad: '',
     provincia: ''
   });
 
@@ -27,9 +27,9 @@ export default function CheckoutTransfer({ onBack }) {
 
   const handleWhatsAppCheckout = () => {
     const orderItems = cart.map(item => `${item.quantity}x ${item.name}`).join('%0A');
-    const message = `*NOVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nome}%0A*Email:* ${formData.email}%0A*Telefone:* ${formData.telefone}%0A*Endereço:* ${formData.endereco}, ${formData.cidade} - ${formData.provincia}%0A%0A*Itens:*%0A${orderItems}%0A%0A*Total a Pagar (Transferência):* ${formatPrice(discountTotal)}%0A%0A_Aguardando envio do comprovante para o alias: RAICES.MATE_`;
+    const message = `*NUEVO PEDIDO - RAÍCES*%0A%0A*Cliente:* ${formData.nombre}%0A*Email:* ${formData.email}%0A*Teléfono:* ${formData.telefono}%0A*Dirección:* ${formData.direccion}, ${formData.ciudad} - ${formData.provincia}%0A%0A*Artículos:*%0A${orderItems}%0A%0A*Total a Pagar (Transferencia):* ${formatPrice(discountTotal)}%0A%0A_Aguardando envío del comprobante al alias: RAICES.MATE_`;
     
-    window.open(`https://wa.me/5491100000000?text=${message}`, '_blank');
+    window.open(`https://wa.me/5491176419463?text=${message}`, '_blank');
     clearCart();
     onBack();
   };
@@ -37,23 +37,23 @@ export default function CheckoutTransfer({ onBack }) {
   if (cart.length === 0) {
     return (
       <div className="checkout-empty">
-        <h2>Seu carrinho está vazio.</h2>
-        <button className="btn" onClick={onBack}>Voltar para a loja</button>
+        <h2>Tu carrito está vacío.</h2>
+        <button className="btn" onClick={onBack}>Volver a la tienda</button>
       </div>
     );
   }
 
   return (
     <div className="checkout-transfer-container">
-      <button className="back-btn" onClick={onBack}>← Voltar para a loja</button>
+      <button className="back-btn" onClick={onBack}>← Volver a la tienda</button>
       
       <div className="checkout-grid">
         <div className="checkout-form">
-          <h2>1. Dados de Entrega</h2>
+          <h2>1. Datos de Entrega</h2>
           <form>
             <div className="form-group">
-              <label>Nome Completo</label>
-              <input type="text" name="nome" value={formData.nome} onChange={handleInputChange} required />
+              <label>Nombre Completo</label>
+              <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -62,28 +62,28 @@ export default function CheckoutTransfer({ onBack }) {
               </div>
               <div className="form-group">
                 <label>WhatsApp</label>
-                <input type="text" name="telefone" value={formData.telefone} onChange={handleInputChange} required />
+                <input type="text" name="telefono" value={formData.telefono} onChange={handleInputChange} required />
               </div>
             </div>
             <div className="form-group">
-              <label>Endereço Completo (Rua, Número, Piso/Depto)</label>
-              <input type="text" name="endereco" value={formData.endereco} onChange={handleInputChange} required />
+              <label>Dirección Completa (Calle, Número, Piso/Depto)</label>
+              <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} required />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Cidade / Localidad</label>
-                <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} required />
+                <label>Ciudad / Localidad</label>
+                <input type="text" name="ciudad" value={formData.ciudad} onChange={handleInputChange} required />
               </div>
               <div className="form-group">
-                <label>Província</label>
+                <label>Provincia</label>
                 <input type="text" name="provincia" value={formData.provincia} onChange={handleInputChange} required />
               </div>
             </div>
           </form>
 
           <div className="payment-instructions">
-            <h2>2. Dados Bancários</h2>
-            <p>Realize a transferência para garantir o desconto de 10%.</p>
+            <h2>2. Datos Bancarios</h2>
+            <p>Realizá la transferencia para garantizar el descuento de 10%.</p>
             <div className="bank-card">
               <p><strong>Banco:</strong> Banco Galicia</p>
               <p><strong>Titular:</strong> Raíces Artesanal S.A.</p>
@@ -94,14 +94,14 @@ export default function CheckoutTransfer({ onBack }) {
         </div>
 
         <div className="checkout-summary">
-          <h2>Resumo do Pedido</h2>
+          <h2>Resumen del Pedido</h2>
           <div className="summary-items">
             {cart.map(item => (
               <div key={item.id} className="summary-item">
                 <img src={item.image} alt={item.name} />
                 <div className="summary-item-info">
                   <h4>{item.name}</h4>
-                  <p>Qtd: {item.quantity}</p>
+                  <p>Cant: {item.quantity}</p>
                 </div>
                 <div className="summary-item-price">
                   {formatPrice(item.price * item.quantity)}
@@ -116,7 +116,7 @@ export default function CheckoutTransfer({ onBack }) {
               <span>{formatPrice(cartTotal)}</span>
             </div>
             <div className="total-line discount-line">
-              <span>Desconto Transferência (10%):</span>
+              <span>Descuento Transferencia (10%):</span>
               <span>- {formatPrice(cartTotal * 0.1)}</span>
             </div>
             <div className="total-line final-total">
@@ -128,12 +128,12 @@ export default function CheckoutTransfer({ onBack }) {
           <button 
             className="btn btn-whatsapp-checkout" 
             onClick={handleWhatsAppCheckout}
-            disabled={!formData.nome || !formData.telefone || !formData.endereco}
+            disabled={!formData.nombre || !formData.telefono || !formData.direccion}
           >
-            Enviar Comprovante via WhatsApp
+            Enviar Comprobante vía WhatsApp
           </button>
           <p className="checkout-disclaimer">
-            Ao clicar, você será redirecionado para o nosso WhatsApp para enviar o comprovante de pagamento e finalizar seu pedido.
+            Al hacer clic, serás redirigido a nuestro WhatsApp para enviar el comprobante de pago y finalizar tu pedido.
           </p>
         </div>
       </div>

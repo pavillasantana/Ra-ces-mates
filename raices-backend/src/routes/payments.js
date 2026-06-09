@@ -34,7 +34,7 @@ router.post('/shipping-rates', async (req, res) => {
   const { cp, products = [], currency = 'ARS' } = req.body;
 
   if (!cp) {
-    return res.status(400).json({ message: 'Código postal (cp) é obrigatório.' });
+    return res.status(400).json({ message: 'El código postal (cp) es obligatorio.' });
   }
 
   const { accessToken, storeId } = getTiendanubeCredentials();
@@ -42,7 +42,7 @@ router.post('/shipping-rates', async (req, res) => {
   if (!accessToken) {
     console.error('[Fretes] NUVEMSHOP_ACCESS_TOKEN não configurado. Complete o OAuth em /api/payments/tiendanube/authorize');
     return res.status(503).json({
-      message: 'Gateway logístico não autorizado. Configure NUVEMSHOP_ACCESS_TOKEN no Render.',
+      message: 'Portal logístico no autorizado. Configure NUVEMSHOP_ACCESS_TOKEN en Render.',
       rates: []
     });
   }
@@ -89,7 +89,7 @@ router.post('/shipping-rates', async (req, res) => {
     if (!tnRes.ok) {
       console.error(`[Fretes] Tiendanube ${tnRes.status}: ${rawBody}`);
       return res.status(tnRes.status).json({
-        message: `Erro na API Tiendanube (${tnRes.status}). Verifique se o Envío Nube está ativo.`,
+        message: `Error en la API de Tiendanube (${tnRes.status}). Verifique que Envío Nube esté activo.`,
         detail: rawBody,
         rates: []
       });
@@ -115,7 +115,7 @@ router.post('/shipping-rates', async (req, res) => {
 
   } catch (err) {
     console.error('[Fretes] Exceção ao chamar Tiendanube:', err.message);
-    return res.status(500).json({ message: 'Erro interno ao calcular fretes.', rates: [] });
+    return res.status(500).json({ message: 'Error interno al calcular los envíos.', rates: [] });
   }
 });
 
@@ -125,13 +125,13 @@ router.post('/validate-coupon', (req, res) => {
   const { couponCode, email } = req.body;
 
   if (!couponCode || !email) {
-    return res.status(400).json({ message: 'Código do cupom e e-mail do usuário são obrigatórios.' });
+    return res.status(400).json({ message: 'El código del cupón y el correo electrónico del usuario son obligatorios.' });
   }
 
   const normalizedCode = couponCode.trim().toUpperCase();
   
   if (normalizedCode !== 'RAICES5') {
-    return res.status(400).json({ valid: false, message: 'Cupom inválido.' });
+    return res.status(400).json({ valid: false, message: 'Cupón inválido.' });
   }
 
   // Trava de duplicidade
@@ -139,7 +139,7 @@ router.post('/validate-coupon', (req, res) => {
   if (userCoupons.includes(normalizedCode)) {
     return res.status(400).json({ 
       valid: false, 
-      message: 'Este cupom de boas-vindas já foi aplicado nesta sessão para sua conta.' 
+      message: 'Este cupón de bienvenida ya ha sido aplicado en esta sesión para su cuenta.' 
     });
   }
 
@@ -147,7 +147,7 @@ router.post('/validate-coupon', (req, res) => {
     valid: true,
     code: 'RAICES5',
     rate: 0.05,
-    message: 'Cupom de boas-vindas (5% OFF) aplicado com sucesso!'
+    message: '¡Cupón de bienvenida (5% OFF) aplicado con éxito!'
   });
 });
 
@@ -168,12 +168,12 @@ router.post('/checkout', async (req, res) => {
 
     // A. Validação de Idempotência
     if (!transactionId) {
-      return res.status(400).json({ message: 'ID de transação ausente. Requerido para idempotência.' });
+      return res.status(400).json({ message: 'ID de transacción ausente. Requerido para la idempotencia.' });
     }
 
     if (processedTransactions.has(transactionId)) {
       return res.status(200).json({ 
-        message: 'Pedido já processado anteriormente. (Idempotência Ativa)',
+        message: 'Pedido ya procesado anteriormente. (Idempotencia activa)',
         idempotent: true
       });
     }
@@ -320,7 +320,7 @@ router.post('/checkout', async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Pedido processado e criado com sucesso!',
+      message: '¡Pedido procesado y creado con éxito!',
       order: newOrder
     });
 
@@ -337,18 +337,18 @@ router.post('/webhooks/tiendanube', (req, res) => {
 
   // Verificação de origem básica
   if (!signature) {
-    return res.status(401).json({ message: 'Assinatura Nuvemshop ausente.' });
+    return res.status(401).json({ message: 'Falta la firma de Tiendanube.' });
   }
 
   // Idempotência
   if (processedTransactions.has(eventId)) {
-    return res.status(200).json({ status: 'OK', message: 'Webhook já processado (Duplicidade evitada).' });
+    return res.status(200).json({ status: 'OK', message: 'Webhook ya procesado (Duplicidad evitada).' });
   }
 
   processedTransactions.add(eventId);
   console.log(`[Nuvemshop Webhook] Evento processado com sucesso ID: ${eventId}`);
 
-  return res.status(200).json({ status: 'OK', message: 'Evento recebido e processado.' });
+  return res.status(200).json({ status: 'OK', message: 'Evento recibido y procesado.' });
 });
 
 // 4. Webhook Mercado Pago (Idempotente)
@@ -357,18 +357,18 @@ router.post('/webhooks/mercadopago', (req, res) => {
   const paymentId = req.body.data?.id || req.query.id;
 
   if (!paymentId) {
-    return res.status(400).json({ message: 'ID do pagamento ausente.' });
+    return res.status(400).json({ message: 'Falta el ID del pago.' });
   }
 
   // Idempotência
   if (processedTransactions.has(paymentId)) {
-    return res.status(200).json({ status: 'OK', message: 'Notificação MP já processada.' });
+    return res.status(200).json({ status: 'OK', message: 'Notificación de MP ya procesada.' });
   }
 
   processedTransactions.add(paymentId);
   console.log(`[Mercado Pago Webhook] Pagamento processado ID: ${paymentId}`);
 
-  return res.status(200).json({ status: 'OK', message: 'Notificação recebida com sucesso.' });
+  return res.status(200).json({ status: 'OK', message: 'Notificación recibida con éxito.' });
 });
 
 // ==========================================
@@ -514,13 +514,13 @@ router.get('/tiendanube/callback', async (req, res) => {
           </div>
 
           <div style="background:#0d1f14;border:1px solid rgba(197,160,89,0.4);border-radius:8px;padding:16px;margin-bottom:24px;text-align:left;font-size:13px;">
-            <p style="color:#c5a059;font-weight:700;margin:0 0 10px 0;font-size:14px;">⚠️ IMPORTANTE: Salve no Render agora</p>
-            <p style="color:#a4b3a9;margin:0 0 6px 0;">Copie estas variáveis para o painel do Render → Environment:</p>
+            <p style="color:#c5a059;font-weight:700;margin:0 0 10px 0;font-size:14px;">⚠️ IMPORTANTE: Guarde en Render ahora</p>
+            <p style="color:#a4b3a9;margin:0 0 6px 0;">Copie estas variables en el panel de Render → Environment:</p>
             <div style="background:#060f09;padding:10px;border-radius:6px;word-break:break-all;font-family:monospace;color:#5ba370;font-size:12px;line-height:1.8;">
               NUVEMSHOP_ACCESS_TOKEN = ${creds.access_token}<br>
               NUVEMSHOP_STORE_ID = ${creds.store_id}
             </div>
-            <p style="color:#6b7f71;margin:8px 0 0 0;font-size:11px;">⚡ Depois de salvar, clique em "Save" no Render e aguarde o redeploy automático.</p>
+            <p style="color:#6b7f71;margin:8px 0 0 0;font-size:11px;">⚡ Después de guardar, haga clic en "Save" en Render y espere el redeploy automático.</p>
           </div>
 
           <a href="${process.env.CLIENT_URL || 'https://raicesoficial.online'}" class="btn">Volver al Sitio</a>

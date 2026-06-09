@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useState, useEffect } from 'react';
 import { useModal } from '../components/ModalProvider';
+import { useTranslation } from '../hooks/useTranslation';
 
 const PROVINCES = [
   "Ciudad Autónoma de Buenos Aires",
@@ -64,6 +65,8 @@ export default function Addresses() {
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
   const { showAlert } = useModal();
+  const { t, lang } = useTranslation();
+
   const [addresses, setAddresses] = useState(() => {
     const saved = JSON.parse(localStorage.getItem('raices-addresses') || '[]');
     if (saved.length === 0) {
@@ -306,7 +309,9 @@ export default function Addresses() {
   const handleAddAddrSubmit = async (e) => {
     e.preventDefault();
     if (!newAddrData.street || !newAddrData.number || !newAddrData.city || !newAddrData.province) {
-      showAlert('Dirección', 'Por favor, preencha todos os campos obrigatórios!', 'warning');
+      const warningTitle = lang === 'pt' ? 'Endereço' : 'Dirección';
+      const warningMsg = lang === 'pt' ? 'Por favor, preencha todos os campos obrigatórios!' : '¡Por favor, completá todos los campos obligatorios!';
+      showAlert(warningTitle, warningMsg, 'warning');
       return;
     }
 
@@ -335,7 +340,7 @@ export default function Addresses() {
       }
 
       if (!matched) {
-        setErrorMsg('A rua informada não foi reconhecida ou não existe nesta província.');
+        setErrorMsg(lang === 'pt' ? 'A rua informada não foi reconhecida ou não existe nesta província.' : 'La calle ingresada no fue reconocida o no existe en esta provincia.');
         setIsValidating(false);
         return;
       }
@@ -380,23 +385,31 @@ export default function Addresses() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate(lang === 'pt' ? '/pt/login' : '/login');
   };
+
+  const welcomeText = lang === 'pt' ? `Olá, ${user?.name?.split(' ')[0] || 'Cliente'}.` : `Hola, ${user?.name?.split(' ')[0] || 'Cliente'}.`;
+  
+  const ordersLink = lang === 'pt' ? '/pt/perfil/pedidos' : '/perfil/pedidos';
+  const addressesLink = lang === 'pt' ? '/pt/perfil/direcciones' : '/perfil/direcciones';
+  const paymentsLink = lang === 'pt' ? '/pt/perfil/pagos' : '/perfil/pagos';
+  const favoritesLink = lang === 'pt' ? '/pt/perfil/favoritos' : '/perfil/favoritos';
+  const personalDataLink = lang === 'pt' ? '/pt/perfil' : '/perfil';
 
   return (
     <div style={{ display: 'flex', minHeight: '80vh', backgroundColor: 'var(--color-bg-primary)' }}>
-      {/* Sidebar de Conta */}
+      {/* Sidebar de Cuenta */}
       <div style={{ width: '250px', backgroundColor: '#fff', padding: '2rem', borderRight: '1px solid #eee' }}>
-        <h3 style={{ marginBottom: '2rem' }}>Olá, {user?.name?.split(' ')[0] || 'Cliente'}.</h3>
+        <h3 style={{ marginBottom: '2rem', fontFamily: "'Playfair Display', serif" }}>{welcomeText}</h3>
         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <li><Link to="/perfil/pedidos">Meus Pedidos</Link></li>
-          <li><Link to="/perfil/enderecos" style={{ fontWeight: 'bold', color: 'var(--color-accent-green)' }}>Endereços</Link></li>
-          <li><Link to="/perfil/pagamentos">Pagamentos</Link></li>
-          <li><Link to="/perfil/favoritos">Favoritos</Link></li>
-          <li><Link to="/perfil">Dados Pessoais</Link></li>
+          <li><Link to={ordersLink}>{lang === 'pt' ? 'Meus Pedidos' : 'Mis Pedidos'}</Link></li>
+          <li><Link to={addressesLink} style={{ fontWeight: 'bold', color: 'var(--color-accent-green)' }}>{lang === 'pt' ? 'Endereços' : 'Direcciones'}</Link></li>
+          <li><Link to={paymentsLink}>{lang === 'pt' ? 'Pagamentos' : 'Pagos'}</Link></li>
+          <li><Link to={favoritesLink}>{lang === 'pt' ? 'Favoritos' : 'Favoritos'}</Link></li>
+          <li><Link to={personalDataLink}>{lang === 'pt' ? 'Dados Pessoais' : 'Datos Personales'}</Link></li>
           <li style={{ marginTop: '2rem' }}>
             <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#d9534f', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Sair da Conta
+              {lang === 'pt' ? 'Sair' : 'Cerrar Sesión'}
             </button>
           </li>
         </ul>
@@ -405,8 +418,12 @@ export default function Addresses() {
       {/* Conteúdo Principal */}
       <div style={{ flex: 1, padding: '3rem 5%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h2>Meus Endereços</h2>
-          <button className="btn" onClick={() => { setErrorMsg(''); setIsModalOpen(true); }}>Adicionar Endereço</button>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: 'var(--color-primary-green)', margin: 0 }}>
+            {lang === 'pt' ? 'Meus Endereços' : 'Mis Direcciones'}
+          </h1>
+          <button className="btn" onClick={() => { setErrorMsg(''); setIsModalOpen(true); }}>
+            {lang === 'pt' ? 'Adicionar Endereço' : 'Agregar Dirección'}
+          </button>
         </div>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
@@ -416,19 +433,23 @@ export default function Addresses() {
               <h4 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>{addr.street} {addr.number} {addr.floor && `, ${addr.floor}`}</h4>
               <p style={{ color: '#555', marginBottom: '1rem' }}>{addr.city}, {addr.province} {addr.zip && `- ${addr.zip}`}</p>
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <button onClick={() => removeAddress(addr.id)} style={{ background: 'none', border: 'none', color: '#d9534f', fontWeight: 'bold', cursor: 'pointer' }}>Excluir</button>
+                <button onClick={() => removeAddress(addr.id)} style={{ background: 'none', border: 'none', color: '#d9534f', fontWeight: 'bold', cursor: 'pointer' }}>
+                  {lang === 'pt' ? 'Remover' : 'Eliminar'}
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Modal Popup de Adicionar Endereço Completo com Validação Georef */}
+      {/* Modal Popup de Agregar Dirección Completa con Validación Georef */}
       {isModalOpen && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 }}>
           <div style={{ backgroundColor: '#fff', padding: '2.5rem', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Novo Endereço de Entrega</h3>
+              <h3 style={{ margin: 0, fontSize: '1.5rem', fontFamily: "'Playfair Display', serif" }}>
+                {lang === 'pt' ? 'Novo Endereço de Entrega' : 'Nueva Dirección de Entrega'}
+              </h3>
             </div>
             
             {errorMsg && (
@@ -440,11 +461,11 @@ export default function Addresses() {
             <form onSubmit={handleAddAddrSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Apelido do Endereço</label>
+                <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Nome do Endereço' : 'Etiqueta de la Dirección'}</label>
                 <input 
                   type="text" 
                   name="nickname" 
-                  placeholder="Ex: Minha Casa, Trabalho" 
+                  placeholder={lang === 'pt' ? 'Ex: Minha Casa, Trabalho' : 'Ej: Mi Casa, Trabajo'} 
                   value={newAddrData.nickname} 
                   onChange={handleInputChange} 
                   style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '6px', width: '100%', boxSizing: 'border-box' }} 
@@ -453,7 +474,7 @@ export default function Addresses() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '1rem', width: '100%' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Rua / Avenida</label>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Rua / Avenida' : 'Calle / Avenida'}</label>
                   <input 
                     type="text" 
                     name="street" 
@@ -466,7 +487,7 @@ export default function Addresses() {
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Número</label>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Número' : 'Número'}</label>
                   <input 
                     type="text" 
                     name="number" 
@@ -482,22 +503,22 @@ export default function Addresses() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Piso / Depto (Opcional)</label>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Andar / Apto (Opcional)' : 'Piso / Depto (Opcional)'}</label>
                   <input 
                     type="text" 
                     name="floor" 
-                    placeholder="Ex: 5A" 
+                    placeholder={lang === 'pt' ? 'Ex: 5º A' : 'Ej: 5A'} 
                     value={newAddrData.floor} 
                     onChange={handleInputChange} 
                     style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '6px', width: '100%', boxSizing: 'border-box' }} 
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Código Postal / CEP</label>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Código Postal' : 'Código Postal'}</label>
                   <input 
                     type="text" 
                     name="zip" 
-                    placeholder="Ex: 1043" 
+                    placeholder={lang === 'pt' ? 'Ex: 1425' : 'Ej: 1425'} 
                     value={newAddrData.zip} 
                     onChange={handleInputChange} 
                     style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '6px', width: '100%', boxSizing: 'border-box' }} 
@@ -507,7 +528,7 @@ export default function Addresses() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Cidade</label>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Cidade' : 'Ciudad'}</label>
                   <input 
                     type="text" 
                     name="city" 
@@ -519,7 +540,7 @@ export default function Addresses() {
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>Província / Estado</label>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '600' }}>{lang === 'pt' ? 'Província / Estado' : 'Provincia / Estado'}</label>
                   <select 
                     name="province" 
                     value={newAddrData.province} 
@@ -534,9 +555,13 @@ export default function Addresses() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '0.8rem 1.5rem', border: '1px solid #ccc', borderRadius: '6px', background: 'none', cursor: 'pointer' }}>Cancelar</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '0.8rem 1.5rem', border: '1px solid #ccc', borderRadius: '6px', background: 'none', cursor: 'pointer' }}>
+                  {lang === 'pt' ? 'Cancelar' : 'Cancelar'}
+                </button>
                 <button type="submit" className="btn" disabled={isValidating} style={{ padding: '0.8rem 1.5rem' }}>
-                  {isValidating ? 'Validando...' : 'Salvar Endereço'}
+                  {isValidating 
+                    ? (lang === 'pt' ? 'Validando...' : 'Validando...') 
+                    : (lang === 'pt' ? 'Salvar Endereço' : 'Guardar Dirección')}
                 </button>
               </div>
             </form>

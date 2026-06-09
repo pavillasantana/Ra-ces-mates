@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage -->
+  <url>
+    <loc>https://raicesoficial.online/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt"/>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt"/>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Mates / Cuias -->
+  <url>
+    <loc>https://raicesoficial.online/mates</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/mates"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/cuias"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/cuias</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/mates"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/cuias"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Yerba Mate -->
+  <url>
+    <loc>https://raicesoficial.online/yerba-mate</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/yerba-mate"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/erva-mate"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/erva-mate</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/yerba-mate"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/erva-mate"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Velas y Sahumerios / Velas e Incensos -->
+  <url>
+    <loc>https://raicesoficial.online/velas-y-sahumerios</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/velas-y-sahumerios"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/velas-e-incensos"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/velas-e-incensos</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/velas-y-sahumerios"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/velas-e-incensos"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Contacto / Contato -->
+  <url>
+    <loc>https://raicesoficial.online/contacto</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/contacto"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/contato"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/contato</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/contacto"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/contato"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Product 1 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/1</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/1"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/1"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/1</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/1"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/1"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 2 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/2</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/2"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/2"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/2</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/2"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/2"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 3 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/3</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/3"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/3"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/3</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/3"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/3"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 4 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/4</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/4"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/4"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/4</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/4"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/4"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 5 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/5</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/5"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/5"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/5</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/5"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/5"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 6 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/6</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/6"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/6"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/6</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/6"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/6"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 10 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/10</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/10"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/10"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/10</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/10"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/10"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Product 11 -->
+  <url>
+    <loc>https://raicesoficial.online/producto/11</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/11"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/11"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://raicesoficial.online/pt/produto/11</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://raicesoficial.online/producto/11"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://raicesoficial.online/pt/produto/11"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>
